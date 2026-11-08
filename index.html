@@ -349,7 +349,7 @@
     <script>
     "use strict";
     // ===== 実績スナップショット（2026-11-07 時点の確定値。記録の正は各配達アプリ側） =====
-    var WEEK_SNAPSHOT = { amount: 12841, jobs: 33, rocketPoints: 232, greenTarget: 300, dashLabel: "スタートダッシュ完了" };
+    var WEEK_SNAPSHOT = { amount: 25978, jobs: 63, rocketPoints: 356, greenTarget: 300, dashLabel: "スタートダッシュ完了" };
 
     // ===== 回廊（吉祥寺〜阿佐ヶ谷）エリア定義 =====
     var CORRIDOR_AREAS = [
@@ -527,9 +527,10 @@
         "売上 <b>" + fmtYen(WEEK_SNAPSHOT.amount) + '</b><span class="sep">／</span>件数 <b>' + WEEK_SNAPSHOT.jobs +
         '件</b><span class="sep">／</span>ロケット <b>' + WEEK_SNAPSHOT.rocketPoints + "P</b>";
       var remain = WEEK_SNAPSHOT.greenTarget - WEEK_SNAPSHOT.rocketPoints;
+      var reached = WEEK_SNAPSHOT.rocketPoints >= WEEK_SNAPSHOT.greenTarget;
       el("sum-bar").style.width = Math.min(100, WEEK_SNAPSHOT.rocketPoints / WEEK_SNAPSHOT.greenTarget * 100) + "%";
-      el("sum-bar-wrap").setAttribute("aria-label", "ロケットポイント" + WEEK_SNAPSHOT.rocketPoints + "P、グリーンの週最低" + WEEK_SNAPSHOT.greenTarget + "Pまで残り" + remain + "P");
-      el("sum-bar-label").innerHTML = "グリーン" + WEEK_SNAPSHOT.greenTarget + "Pまで <b>残り" + remain + "P</b>";
+      el("sum-bar-wrap").setAttribute("aria-label", reached ? "ロケットポイント" + WEEK_SNAPSHOT.rocketPoints + "P、グリーン週次" + WEEK_SNAPSHOT.greenTarget + "P 到達" : "ロケットポイント" + WEEK_SNAPSHOT.rocketPoints + "P、グリーンの週最低" + WEEK_SNAPSHOT.greenTarget + "Pまで残り" + remain + "P");
+      el("sum-bar-label").innerHTML = reached ? "グリーン週次" + WEEK_SNAPSHOT.greenTarget + "P <b>到達</b>" : "グリーン" + WEEK_SNAPSHOT.greenTarget + "Pまで <b>残り" + remain + "P</b>";
     }
 
     // ===== 推奨待機スポット =====
