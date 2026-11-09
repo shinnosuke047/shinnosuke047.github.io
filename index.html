@@ -50,8 +50,38 @@
       .tabpage[hidden] { display: none; }
       .wrap { margin: 0 auto; width: 100%; max-width: 576px; }
 
-      /* ===== 判断タブ ===== */
+      /* ===== 手前味噌タブ ===== */
       #tab-judge .wrap { display: flex; min-height: 100%; flex-direction: column; gap: 4px; padding: 4px 8px; }
+
+      /* ===== 手前味噌パネル ===== */
+      .tm { padding: 10px; flex-shrink: 0; }
+      .tm-title { margin: 0; font-size: 17px; font-weight: 900; }
+      .tm-desc { margin: 4px 0 0; font-size: 12px; line-height: 1.6; color: var(--dim); }
+      .tm-label { margin: 10px 0 0; font-size: 12px; font-weight: 900; color: var(--dim); }
+      .bb-grid { margin-top: 6px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+      .bb-grid .chip { font-size: 11px; min-height: 40px; }
+      .bb-grid .chip .ease { font-size: 8px; }
+      .preset-row { margin-top: 8px; display: flex; gap: 6px; }
+      .preset-btn {
+        min-height: 44px; flex: 1; border-radius: var(--radius); border: 1px solid var(--border);
+        background: var(--surface2); color: var(--dim); padding: 0 4px; font-size: 12px; font-weight: 900; line-height: 1.3;
+      }
+      .preset-btn.active { border-color: var(--accent); background: rgba(46,230,107,0.14); color: var(--text); }
+      .tm-prompt { margin: 12px 0 2px; font-size: 14px; font-weight: 700; line-height: 1.6; color: var(--dim); }
+      .tm-route { margin: 12px 0 0; font-size: 15px; font-weight: 900; line-height: 1.4; }
+      .tm-route .from-gps { color: var(--accent); }
+      .tm-how { margin: 4px 0 0; font-size: 13px; font-weight: 700; line-height: 1.6; }
+      .tm-note { margin: 10px 0 0; font-size: 13px; font-weight: 700; line-height: 1.6; color: var(--cond); }
+      .tm-h { margin: 14px 0 0; font-size: 17px; font-weight: 900; line-height: 1.3; }
+      .tm-h .cnt { font-size: 13px; color: var(--dim); }
+      .tm-h.band-h { color: #facc15; }
+      .tm-h.land-h { color: #22d3ee; }
+      .tm-chips { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 6px; }
+      .town-chip {
+        display: inline-block; border-radius: 999px; background: var(--surface2);
+        border: 1px solid var(--border); padding: 6px 10px; font-size: 14px; font-weight: 700; line-height: 1.3;
+      }
+      .tm-empty { margin: 6px 0 0; font-size: 13px; font-weight: 700; color: var(--dim); }
       .card { border-radius: var(--radius); background: var(--surface); }
       .area-row { display: flex; align-items: stretch; gap: 6px; }
       .area-grid { display: grid; flex: 1; grid-template-columns: repeat(7, 1fr); gap: 4px; }
@@ -154,6 +184,8 @@
       .map-legend b { color: var(--text); font-weight: 700; }
       .map-legend .sep { margin: 0 6px; }
       .map-legend .cap { display: inline-block; width: 16px; border-top: 3px dashed #f472b6; vertical-align: middle; }
+      .map-legend .band-sw { display: inline-block; width: 16px; border-top: 4px solid #facc15; vertical-align: middle; }
+      .map-legend .land-sw { display: inline-block; width: 16px; border-top: 4px solid #22d3ee; vertical-align: middle; }
       .fish-note { margin: 6px 0 0; font-size: 10px; line-height: 1.5; color: var(--dim); }
       .fish-nav-btn {
         margin-top: 4px; display: flex; min-height: 44px; align-items: center; justify-content: center;
@@ -187,8 +219,8 @@
     <div id="app">
       <div id="content">
 
-        <!-- ===== 判断タブ ===== -->
-        <main id="tab-judge" class="tabpage" aria-label="判断画面">
+        <!-- ===== 手前味噌タブ ===== -->
+        <main id="tab-judge" class="tabpage" aria-label="手前味噌画面">
           <div class="wrap">
             <section aria-label="現在地エリア選択">
               <div class="area-row">
@@ -200,6 +232,15 @@
                 <p class="town" id="gps-loc-town"></p>
                 <p class="zone" id="gps-loc-zone"></p>
               </div>
+            </section>
+
+            <section aria-label="手前味噌ダブル" class="card tm">
+              <p class="tm-title">手前味噌ダブル</p>
+              <p class="tm-desc">背骨の届け先を選ぶと、起点から届け先への軸に沿って「重ねて良い町」が分かります。</p>
+              <p class="tm-label">背骨の届け先エリア</p>
+              <div class="bb-grid" id="bb-grid" role="group" aria-label="背骨の届け先エリア"></div>
+              <div class="preset-row" id="preset-row" role="group" aria-label="よく使うルートのプリセット"></div>
+              <div id="tm-result" aria-live="polite"></div>
             </section>
 
             <section aria-label="今週サマリー" class="card summary">
@@ -452,6 +493,28 @@
       pts.push([pts[0][0], pts[0][1]]);
       return pts;
     }
+    // 経由OK帯のカプセル形状（区間±radiusM）。メートル平面で作図し緯度経度へ戻す
+    function capsulePolygon(a, b, radiusM) {
+      var ref = { lat: (a.lat + b.lat) / 2, lon: (a.lon + b.lon) / 2 };
+      var kx = 111320 * Math.cos(ref.lat * Math.PI / 180), ky = 110574;
+      var A = [(a.lon - ref.lon) * kx, (a.lat - ref.lat) * ky];
+      var B = [(b.lon - ref.lon) * kx, (b.lat - ref.lat) * ky];
+      var dx = B[0] - A[0], dy = B[1] - A[1];
+      var len = Math.sqrt(dx * dx + dy * dy);
+      if (len < 1) return circlePolygon(b.lat, b.lon, radiusM);
+      var px = -dy / len, py = dx / len;
+      var a0 = Math.atan2(py, px);
+      var pts = [];
+      function push(x, y) { pts.push([ref.lon + x / kx, ref.lat + y / ky]); }
+      var steps = 20, i, ang;
+      push(A[0] + px * radiusM, A[1] + py * radiusM);
+      push(B[0] + px * radiusM, B[1] + py * radiusM);
+      for (i = 1; i <= steps; i++) { ang = a0 - Math.PI * (i / steps); push(B[0] + Math.cos(ang) * radiusM, B[1] + Math.sin(ang) * radiusM); }
+      push(A[0] - px * radiusM, A[1] - py * radiusM);
+      for (i = 1; i <= steps; i++) { ang = a0 + Math.PI - Math.PI * (i / steps); push(A[0] + Math.cos(ang) * radiusM, A[1] + Math.sin(ang) * radiusM); }
+      pts.push([pts[0][0], pts[0][1]]);
+      return pts;
+    }
 
     // ===== 判定 =====
     function fmtYen(n) { return "¥" + Math.round(n).toLocaleString("ja-JP"); }
@@ -475,6 +538,7 @@
     var mapZoomMode = "rings";
     var mapGps = null;
     var mapHandle = null;
+    var backboneId = null;
 
     function el(id) { return document.getElementById(id); }
     function esc(s) {
@@ -498,7 +562,7 @@
       for (var i = 0; i < btns.length; i++) {
         btns[i].addEventListener("click", function () {
           currentAreaId = this.getAttribute("data-area");
-          renderAreaChips(); renderSpot(); renderHeat();
+          renderAreaChips(); renderSpot(); renderHeat(); renderTemamiso();
         });
       }
     }
@@ -620,12 +684,162 @@
             setGpsStatus("GPS判定：エリア外と判定しました。復帰先エリアの待機スポットを表示します。");
           }
         }
-        renderAreaChips(); renderSpot(); renderHeat();
+        renderAreaChips(); renderSpot(); renderHeat(); renderTemamiso();
       }, function () {
         btn.disabled = false; btn.textContent = "GPS";
         setGpsStatus("位置情報を取得できませんでした。手動で選択してください。");
       }, { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 });
     });
+
+    // ===== 手前味噌ダブル（背骨の軸に沿った重ねOKゾーン） =====
+    var TM_BAND_HALF_M = 500;
+    var TM_LAND_RADIUS_M = 1200;
+    var TM_PRESETS = [
+      { from: "ogikubo", to: "asagaya", label: "荻窪→阿佐ヶ谷" },
+      { from: "kichijoji", to: "ogikubo", label: "吉祥寺→荻窪" },
+      { from: "mitaka", to: "ogikubo", label: "三鷹→荻窪" }
+    ];
+    // 起点：GPS取得済みなら現在地、未取得なら選択中エリアの中心（駅座標）
+    function spineStart() {
+      if (mapGps) return { lat: mapGps.lat, lon: mapGps.lon, gps: true, label: "現在地" };
+      var a = areaById(currentAreaId);
+      if (a.lat == null || a.lon == null) a = areaById("ogikubo");
+      return { lat: a.lat, lon: a.lon, gps: false, label: a.label };
+    }
+    // ローカル平面（メートル）への射影。基準点まわりで cos を固定する
+    function toXY(lat, lon, ref) {
+      return [
+        (lon - ref.lon) * 111320 * Math.cos(ref.lat * Math.PI / 180),
+        (lat - ref.lat) * 110574
+      ];
+    }
+    function ptSegDistM(p, a, b) {
+      var dx = b[0] - a[0], dy = b[1] - a[1];
+      var len2 = dx * dx + dy * dy;
+      var t = len2 > 0 ? Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / len2)) : 0;
+      var ex = p[0] - (a[0] + dx * t), ey = p[1] - (a[1] + dy * t);
+      return Math.sqrt(ex * ex + ey * ey);
+    }
+    function segCross(p1, p2, p3, p4) {
+      function cr(o, a, b) { return (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]); }
+      var d1 = cr(p3, p4, p1), d2 = cr(p3, p4, p2), d3 = cr(p1, p2, p3), d4 = cr(p1, p2, p4);
+      return ((d1 > 0) !== (d2 > 0)) && ((d3 > 0) !== (d4 > 0));
+    }
+    function segSegDistM(p1, p2, p3, p4) {
+      if (segCross(p1, p2, p3, p4)) return 0;
+      return Math.min(
+        ptSegDistM(p1, p3, p4), ptSegDistM(p2, p3, p4),
+        ptSegDistM(p3, p1, p2), ptSegDistM(p4, p1, p2)
+      );
+    }
+    // 町ポリゴン（面）と帯・円の幾何学的な交差判定。
+    // 帯：ポリゴンの全辺と背骨区間の最小距離が500m以内、または区間の端点がポリゴン内。
+    // 円：ポリゴンの全辺と中心の最小距離が1.2km以内、または中心がポリゴン内。
+    function computeTemamiso() {
+      if (!backboneId) return null;
+      var dest = areaById(backboneId);
+      if (dest.lat == null || dest.lon == null) return null;
+      var start = spineStart();
+      var distKm = haversineKm(start.lat, start.lon, dest.lat, dest.lon);
+      var samePoint = distKm < 0.1;
+      var ref = { lat: (start.lat + dest.lat) / 2, lon: (start.lon + dest.lon) / 2 };
+      var A = toXY(start.lat, start.lon, ref);
+      var B = toXY(dest.lat, dest.lon, ref);
+      var band = [], land = [];
+      var polys = window.TOWN_ZONE_POLYGONS || [];
+      for (var i = 0; i < polys.length; i++) {
+        var poly = polys[i];
+        var ringXY = [];
+        for (var j = 0; j < poly.ring.length; j++) ringXY.push(toXY(poly.ring[j][1], poly.ring[j][0], ref));
+        var minSeg = Infinity, minPt = Infinity;
+        for (var k = 0; k < ringXY.length - 1; k++) {
+          var dS = segSegDistM(ringXY[k], ringXY[k + 1], A, B);
+          if (dS < minSeg) minSeg = dS;
+          var dP = ptSegDistM(B, ringXY[k], ringXY[k + 1]);
+          if (dP < minPt) minPt = dP;
+        }
+        var startIn = pointInRing(start.lon, start.lat, poly.ring);
+        var endIn = pointInRing(dest.lon, dest.lat, poly.ring);
+        if (!samePoint && (minSeg <= TM_BAND_HALF_M || startIn || endIn)) {
+          band.push({ city: poly.city, town: poly.town, d: minSeg });
+        }
+        if (minPt <= TM_LAND_RADIUS_M || endIn) {
+          land.push({ city: poly.city, town: poly.town, d: minPt });
+        }
+      }
+      band.sort(function (x, y) { return x.d - y.d; });
+      land.sort(function (x, y) { return x.d - y.d; });
+      return { start: start, dest: dest, distKm: distKm, samePoint: samePoint, band: band, land: land };
+    }
+    function townChipsHtml(list) {
+      var html = "";
+      list.forEach(function (t) { html += '<span class="town-chip">' + esc(t.city) + " " + esc(t.town) + "</span>"; });
+      return html;
+    }
+    function renderTemamiso() {
+      // 背骨チップ（現在地チップと同じ12エリア・同じ見た目）
+      var bbHtml = "";
+      AREAS.forEach(function (a) {
+        if (a.id === "outside") return;
+        var active = backboneId === a.id;
+        var ease = EASE_META[easeLevel(a.id, bandIdx)];
+        bbHtml += '<button type="button" class="chip' + (active ? " active" : "") +
+          '" aria-label="背骨の届け先を' + esc(a.label) + 'にする" aria-pressed="' + active + '" data-bb="' + a.id + '">' +
+          esc(a.short) + '<span class="ease" style="color:' + ease.color + '">' + ease.symbol + "</span></button>";
+      });
+      el("bb-grid").innerHTML = bbHtml;
+      var bbBtns = el("bb-grid").querySelectorAll("button[data-bb]");
+      for (var i = 0; i < bbBtns.length; i++) {
+        bbBtns[i].addEventListener("click", function () {
+          backboneId = this.getAttribute("data-bb");
+          renderTemamiso();
+          if (tab === "map") { renderMapControls(); mountCorridorMap(); }
+        });
+      }
+      // プリセット（起点エリア＋背骨を同時セット）
+      var prHtml = "";
+      TM_PRESETS.forEach(function (p, idx) {
+        var active = currentAreaId === p.from && backboneId === p.to;
+        prHtml += '<button type="button" class="preset-btn' + (active ? " active" : "") +
+          '" data-preset="' + idx + '" aria-pressed="' + active + '" aria-label="起点を' + esc(areaById(p.from).label) +
+          '、背骨の届け先を' + esc(areaById(p.to).label) + 'にセットする">' + esc(p.label) + "</button>";
+      });
+      el("preset-row").innerHTML = prHtml;
+      var prBtns = el("preset-row").querySelectorAll("button[data-preset]");
+      for (var j = 0; j < prBtns.length; j++) {
+        prBtns[j].addEventListener("click", function () {
+          var p = TM_PRESETS[Number(this.getAttribute("data-preset"))];
+          currentAreaId = p.from;
+          backboneId = p.to;
+          renderAreaChips(); renderSpot(); renderHeat(); renderTemamiso();
+          if (tab === "map") { renderMapControls(); mountCorridorMap(); }
+        });
+      }
+      // 結果表示
+      var box = el("tm-result");
+      var res = computeTemamiso();
+      if (!res) {
+        box.innerHTML = '<p class="tm-prompt">背骨の届け先エリアを選ぶと、経由OK・着地OKの町を表示します。</p>';
+        return;
+      }
+      var html = '<p class="tm-route">' +
+        (res.start.gps ? '起点：<span class="from-gps">現在地（GPS）</span>' : "起点：" + esc(res.start.label)) +
+        " → 背骨：" + esc(res.dest.label) + "</p>" +
+        '<p class="tm-how">帯の中の町でピックアップし、着地OK範囲内へ届ける案件なら重ねて良い。</p>';
+      if (res.samePoint) {
+        html += '<p class="tm-note">起点と背骨の届け先がほぼ同じ地点のため、経由OK帯は成立しません。着地OK圏のみで判断してください。</p>';
+      } else {
+        html += '<h3 class="tm-h band-h">経由OK <span class="cnt">帯（軸±500m）・' + res.band.length + '町</span></h3>';
+        html += res.band.length
+          ? '<div class="tm-chips">' + townChipsHtml(res.band) + "</div>"
+          : '<p class="tm-empty">帯に重なる町はありません。</p>';
+      }
+      html += '<h3 class="tm-h land-h">着地OK <span class="cnt">届け先から1.2km・' + res.land.length + '町</span></h3>';
+      html += res.land.length
+        ? '<div class="tm-chips">' + townChipsHtml(res.land) + "</div>"
+        : '<p class="tm-empty">着地OK圏に重なる町はありません。</p>';
+      box.innerHTML = html;
+    }
 
     // ===== ヒートマップ =====
     function renderHeat() {
@@ -924,6 +1138,10 @@
         '<span class="sep">／</span><span style="color:#38bdf8">━</span> 走りやすい幹線（青梅街道・五日市街道・井ノ頭通り・人見街道・中杉通り・吉祥寺通り）' +
         '<span class="sep">／</span><span style="color:#a855f7">━</span> 町丁の区切り線（町名は漢字ラベル）' +
         '<span class="sep">／</span><span class="cap"></span> 捕捉範囲1.2km（重ね案件の目安）' +
+        (backboneId
+          ? '<span class="sep">／</span><span class="band-sw"></span> 経由OK帯（背骨の軸±500m）' +
+            '<span class="sep">／</span><span class="land-sw"></span> 着地OK圏（届け先から1.2km）'
+          : "") +
         '<span class="sep">／</span><span style="color:#ffffff">━</span> 釣り経路（現在地→最寄りスポット、GPS取得時に表示）';
       renderFishNav();
     }
@@ -1029,6 +1247,62 @@
           }
         ]
       };
+      // ===== 手前味噌の経由OK帯・着地OK圏（背骨の届け先を選んだときのみ） =====
+      // 帯＝黄色の半透明カプセル、着地円＝シアンの実線。捕捉円（ピンク破線）・
+      // 範囲円（緑/橙）・釣り経路（白）とは色と塗りで区別する
+      var tmOverlay = null;
+      if (backboneId) {
+        var tmDest = areaById(backboneId);
+        var tmStart = spineStart();
+        if (tmDest.lat != null && tmDest.lon != null) {
+          var tmSame = haversineKm(tmStart.lat, tmStart.lon, tmDest.lat, tmDest.lon) < 0.1;
+          var tmFeatures = [];
+          if (!tmSame) {
+            tmFeatures.push({ type: "Feature", properties: { kind: "band" }, geometry: { type: "Polygon", coordinates: [capsulePolygon(tmStart, tmDest, TM_BAND_HALF_M)] } });
+            tmFeatures.push({ type: "Feature", properties: { kind: "band", label: "経由OK帯" }, geometry: { type: "Point", coordinates: [(tmStart.lon + tmDest.lon) / 2, (tmStart.lat + tmDest.lat) / 2] } });
+          }
+          tmFeatures.push({ type: "Feature", properties: { kind: "land" }, geometry: { type: "Polygon", coordinates: [circlePolygon(tmDest.lat, tmDest.lon, TM_LAND_RADIUS_M)] } });
+          tmFeatures.push({ type: "Feature", properties: { kind: "land", label: "着地OK圏" }, geometry: { type: "Point", coordinates: [tmDest.lon, tmDest.lat + TM_LAND_RADIUS_M / 110574] } });
+          tmOverlay = {
+            id: "temamiso",
+            data: { type: "FeatureCollection", features: tmFeatures },
+            layers: [
+              {
+                id: "tm-fill", type: "fill", source: "temamiso",
+                filter: ["==", ["geometry-type"], "Polygon"],
+                paint: {
+                  "fill-color": ["match", ["get", "kind"], "band", "#facc15", "#22d3ee"],
+                  "fill-opacity": ["match", ["get", "kind"], "band", 0.16, 0.10]
+                }
+              },
+              {
+                id: "tm-line", type: "line", source: "temamiso",
+                filter: ["==", ["geometry-type"], "Polygon"],
+                layout: { "line-join": "round" },
+                paint: {
+                  "line-color": ["match", ["get", "kind"], "band", "#facc15", "#22d3ee"],
+                  "line-width": ["match", ["get", "kind"], "band", 2.5, 3],
+                  "line-opacity": 0.95
+                }
+              },
+              {
+                id: "tm-label", type: "symbol", source: "temamiso",
+                filter: ["has", "label"],
+                layout: {
+                  "text-field": ["get", "label"],
+                  "text-font": ["Optimistic-SemiBold", "NotoSans-Kurrent-Regular"],
+                  "text-size": 12, "text-anchor": "left", "text-offset": [0.4, 0],
+                  "text-allow-overlap": true, "text-optional": true
+                },
+                paint: {
+                  "text-color": ["match", ["get", "kind"], "band", "#facc15", "#22d3ee"],
+                  "text-halo-color": "#0b0f14", "text-halo-width": 1.5
+                }
+              }
+            ]
+          };
+        }
+      }
       // ===== 釣り経路（GPS取得時のみ。白の実線太線で幹線・円・境界と区別） =====
       var routeOverlay = null;
       if (mapGps) {
@@ -1116,6 +1390,7 @@
               ]
             },
             captureOverlay,
+            ...(tmOverlay ? [tmOverlay] : []),
             ...(routeOverlay ? [routeOverlay] : []),
             {
               id: "towns",
@@ -1153,7 +1428,7 @@
 
     // ===== 下部タブ =====
     var TABS = [
-      { id: "judge", label: "判断" },
+      { id: "judge", label: "手前味噌" },
       { id: "heat", label: "ヒートマップ" },
       { id: "quick", label: "早見" },
       { id: "map", label: "マップ" }
@@ -1186,6 +1461,7 @@
     renderAreaChips();
     renderSummary();
     renderSpot();
+    renderTemamiso();
     renderHeat();
     renderQuick();
     renderTabbar();
@@ -1195,7 +1471,7 @@
       var b = bandIndexForHour(new Date().getHours());
       if (b !== bandIdx) {
         bandIdx = b;
-        renderAreaChips(); renderSpot(); renderHeat();
+        renderAreaChips(); renderSpot(); renderHeat(); renderTemamiso();
       }
     }, 60000);
     </script>
