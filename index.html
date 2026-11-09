@@ -102,59 +102,6 @@
         background: var(--accent); padding: 0 12px; font-size: 12px; font-weight: 900; color: #06280f; text-decoration: none;
       }
 
-      .judge { padding: 6px 8px; flex-shrink: 0; }
-      .judge .head { margin: 0; white-space: nowrap; font-size: 12px; font-weight: 900; }
-      .judge .head .svc { margin-left: 6px; font-weight: 700; color: var(--dim); }
-      .judge .formula { margin: 2px 0 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 10px; color: var(--dim); }
-      .kind-row { margin-top: 6px; display: flex; gap: 6px; }
-      .kind-btn {
-        min-height: 48px; flex: 1; white-space: nowrap; border-radius: var(--radius); border: 1px solid var(--border);
-        background: var(--surface2); color: var(--dim); padding: 0 8px; font-size: 16px; font-weight: 900;
-      }
-      .kind-btn .sub { margin-left: 6px; font-size: 12px; font-weight: 700; opacity: 0.7; }
-      .kind-btn.active { border-color: var(--accent); background: rgba(46,230,107,0.14); color: var(--text); }
-      .amount-row { margin-top: 6px; display: grid; grid-template-columns: minmax(0,1fr) 104px; gap: 6px; }
-      .amount-box, .dist-box { min-width: 0; border-radius: var(--radius); background: var(--surface2); padding: 4px 8px; }
-      .amount-box .lbl, .dist-box .lbl { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 10px; font-weight: 600; color: var(--dim); }
-      .stepper { display: flex; align-items: center; gap: 6px; }
-      .step-btn {
-        display: flex; min-height: 48px; width: 48px; flex-shrink: 0; align-items: center; justify-content: center;
-        border-radius: var(--radius); border: 1px solid var(--border); background: var(--surface);
-        font-size: 24px; font-weight: 900; color: var(--text);
-      }
-      .amount-val { margin: 0; min-width: 0; flex: 1; text-align: center; font-size: 30px; font-weight: 900; line-height: 1.25; }
-      .dist-input {
-        width: 100%; background: transparent; border: none; outline: none; color: var(--text);
-        font-size: 30px; font-weight: 900; line-height: 1.25; padding: 0;
-        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-        font-variant-numeric: tabular-nums; letter-spacing: -0.01em;
-      }
-      .dist-input::placeholder { color: #3d4754; }
-      .chip-row { margin-top: 6px; display: flex; gap: 4px; }
-      .amt-chip {
-        min-height: 44px; flex: 1; overflow: hidden; white-space: nowrap; border-radius: var(--radius);
-        border: 1px solid var(--border); background: var(--surface); color: var(--dim);
-        padding: 0; font-size: 14px; font-weight: 700;
-      }
-      .dist-chip {
-        min-height: 48px; flex: 1; overflow: hidden; white-space: nowrap; border-radius: var(--radius);
-        border: 1px solid var(--border); background: var(--surface2); color: var(--dim);
-        padding: 0; font-size: 14px; font-weight: 900;
-      }
-      .dist-chip .unit { margin-left: 2px; font-size: 9px; font-weight: 700; opacity: 0.7; }
-      .amt-chip.active, .dist-chip.active { border-color: var(--accent); background: rgba(46,230,107,0.14); color: var(--text); }
-      .verdict {
-        margin-top: 6px; border-radius: var(--radius); border: 2px solid var(--border);
-        background: var(--surface2); padding: 8px 12px;
-      }
-      .verdict .vrow { display: flex; align-items: flex-end; justify-content: space-between; gap: 8px; }
-      .verdict .vlabel { margin: 0; white-space: nowrap; font-size: 36px; font-weight: 900; line-height: 1; }
-      .verdict .vper { margin: 0; white-space: nowrap; font-size: 36px; font-weight: 900; line-height: 1; }
-      .verdict .vper .unit { margin-left: 4px; font-size: 14px; font-weight: 700; color: var(--dim); }
-      .verdict .vsub { margin: 6px 0 0; font-size: 11px; line-height: 1.5; color: var(--dim); }
-      .verdict .vhint { margin: 0; font-size: 14px; font-weight: 700; line-height: 1.45; color: var(--dim); }
-      .verdict .vhint2 { margin: 4px 0 0; font-size: 11px; line-height: 1.5; color: var(--dim); }
-      .verdict .vhint2 b { color: var(--text); }
 
       /* ===== ヒートマップタブ ===== */
       #tab-heat .wrap { padding: 16px 16px 24px; }
@@ -206,6 +153,13 @@
       .map-legend { margin: 4px 0 0; font-size: 11px; line-height: 1.6; color: var(--dim); }
       .map-legend b { color: var(--text); font-weight: 700; }
       .map-legend .sep { margin: 0 6px; }
+      .map-legend .cap { display: inline-block; width: 16px; border-top: 3px dashed #f472b6; vertical-align: middle; }
+      .fish-note { margin: 6px 0 0; font-size: 10px; line-height: 1.5; color: var(--dim); }
+      .fish-nav-btn {
+        margin-top: 4px; display: flex; min-height: 44px; align-items: center; justify-content: center;
+        border-radius: var(--radius); background: #ffffff; color: #0b0f14;
+        font-size: 13px; font-weight: 900; text-decoration: none;
+      }
       .map-host { margin-top: 8px; min-height: 0; flex: 1; position: relative; }
       .map-host > div { height: 100%; width: 100%; }
       .map-fallback { display: flex; height: 100%; flex-direction: column; justify-content: center; padding: 24px 16px; overflow-y: auto; }
@@ -262,32 +216,6 @@
 
             <section aria-label="推奨待機スポット" class="card spot" id="spot-card"></section>
 
-            <section aria-label="案件判定" class="card judge">
-              <p class="head">案件判定<span class="svc">ロケットナウ</span></p>
-              <p class="formula num">所要 = 距離×4分 ＋ 待ち（シングル5分／ダブル7分）</p>
-
-              <div class="kind-row" role="group" aria-label="案件の組み方" id="kind-row"></div>
-
-              <div class="amount-row">
-                <div class="amount-box">
-                  <span class="lbl" id="amount-label">2件の合計金額（円）</span>
-                  <div class="stepper">
-                    <button type="button" class="step-btn" id="amt-minus" aria-label="金額を50円減らす">−</button>
-                    <p class="amount-val num" id="amount-val" aria-live="polite">400</p>
-                    <button type="button" class="step-btn" id="amt-plus" aria-label="金額を50円増やす">＋</button>
-                  </div>
-                </div>
-                <div class="dist-box">
-                  <label class="lbl" for="judge-distance">距離（km）</label>
-                  <input id="judge-distance" class="dist-input" type="number" inputmode="decimal" step="0.1" min="0" placeholder="2.4" />
-                </div>
-              </div>
-
-              <div class="chip-row" role="group" aria-label="金額クイックチップ" id="amt-chips"></div>
-              <div class="chip-row" role="group" aria-label="距離クイック選択" id="dist-chips"></div>
-
-              <div class="verdict" id="verdict" aria-live="polite"></div>
-            </section>
           </div>
         </main>
 
@@ -350,6 +278,7 @@
                 <button type="button" class="zoom-btn" id="zoom-read" aria-label="番地まで読めるズームにする">番地ズーム</button>
                 <button type="button" class="zoom-btn" id="zoom-rings" aria-label="範囲円全体が見えるズームにする">全円</button>
               </div>
+              <div id="fish-nav" hidden></div>
               <p class="map-legend" id="map-legend"></p>
             </div>
             <div class="map-host" id="map-host"></div>
@@ -526,12 +455,6 @@
 
     // ===== 判定 =====
     function fmtYen(n) { return "¥" + Math.round(n).toLocaleString("ja-JP"); }
-    function verdictFor(perMin) {
-      if (perMin >= 33) return { label: "優良", symbol: "◎", color: "var(--take)", bg: "rgba(46,230,107,0.13)" };
-      if (perMin >= 25) return { label: "合格", symbol: "○", color: "var(--cond)", bg: "rgba(255,192,46,0.12)" };
-      if (perMin >= 20) return { label: "合格未満", symbol: "△", color: "var(--weak)", bg: "rgba(255,122,26,0.12)" };
-      return { label: "見送り", symbol: "×", color: "var(--skip)", bg: "rgba(255,59,48,0.12)" };
-    }
     var PASS_LINE_ROWS = [
       { km: 1, single: 225, double: 275 },
       { km: 1.5, single: 275, double: 325 },
@@ -546,9 +469,6 @@
 
     // ===== 状態 =====
     var tab = "judge";
-    var groupKind = "double";
-    var amountVal = 400;
-    var distanceStr = "";
     var currentAreaId = "ogikubo";
     var bandIdx = bandIndexForHour(new Date().getHours());
     var mapCenterId = "ogikubo";
@@ -669,6 +589,7 @@
         btn.disabled = false; btn.textContent = "GPS";
         var latitude = pos.coords.latitude, longitude = pos.coords.longitude;
         var from = { lat: latitude, lon: longitude };
+        mapGps = { lat: latitude, lon: longitude };
         var town = townZoneAt(latitude, longitude);
         if (town) {
           showGpsLoc(town.city + " " + town.town, ZONE_LABELS[town.zone] || "エリア外", town.zone);
@@ -704,104 +625,6 @@
         btn.disabled = false; btn.textContent = "GPS";
         setGpsStatus("位置情報を取得できませんでした。手動で選択してください。");
       }, { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 });
-    });
-
-    // ===== 案件判定 =====
-    function renderKindRow() {
-      var kinds = [
-        { id: "single", label: "シングル", sub: "1件・待ち5分" },
-        { id: "double", label: "ダブル", sub: "2件・待ち7分" }
-      ];
-      var html = "";
-      kinds.forEach(function (g) {
-        html += '<button type="button" class="kind-btn' + (groupKind === g.id ? " active" : "") +
-          '" aria-label="案件の組み方 ' + g.label + '" aria-pressed="' + (groupKind === g.id) + '" data-kind="' + g.id + '">' +
-          g.label + '<span class="sub">' + g.sub + "</span></button>";
-      });
-      el("kind-row").innerHTML = html;
-      var btns = el("kind-row").querySelectorAll("button[data-kind]");
-      for (var i = 0; i < btns.length; i++) {
-        btns[i].addEventListener("click", function () {
-          groupKind = this.getAttribute("data-kind");
-          renderKindRow(); renderJudge();
-        });
-      }
-    }
-    function renderAmtChips() {
-      var vals = [300, 350, 400, 450, 500, 550, 600];
-      var html = "";
-      vals.forEach(function (v) {
-        html += '<button type="button" class="amt-chip num' + (amountVal === v ? " active" : "") +
-          '" aria-label="金額を' + v + '円に設定" aria-pressed="' + (amountVal === v) + '" data-amt="' + v + '">' + v + "</button>";
-      });
-      el("amt-chips").innerHTML = html;
-      var btns = el("amt-chips").querySelectorAll("button[data-amt]");
-      for (var i = 0; i < btns.length; i++) {
-        btns[i].addEventListener("click", function () {
-          amountVal = parseInt(this.getAttribute("data-amt"), 10);
-          renderAmtChips(); renderJudge();
-        });
-      }
-    }
-    function renderDistChips() {
-      var kms = [0.5, 1, 1.5, 2, 2.5, 3, 4];
-      var distanceKm = parseFloat(distanceStr);
-      var html = "";
-      kms.forEach(function (km) {
-        html += '<button type="button" class="dist-chip num' + (distanceKm === km ? " active" : "") +
-          '" aria-label="距離を' + km + 'kmに設定" aria-pressed="' + (distanceKm === km) + '" data-km="' + km + '">' +
-          km + '<span class="unit">km</span></button>';
-      });
-      el("dist-chips").innerHTML = html;
-      var btns = el("dist-chips").querySelectorAll("button[data-km]");
-      for (var i = 0; i < btns.length; i++) {
-        btns[i].addEventListener("click", function () {
-          distanceStr = this.getAttribute("data-km");
-          el("judge-distance").value = distanceStr;
-          renderDistChips(); renderJudge();
-        });
-      }
-    }
-    function renderJudge() {
-      el("amount-label").textContent = groupKind === "double" ? "2件の合計金額（円）" : "表示金額（円）";
-      el("amount-val").textContent = amountVal.toLocaleString("ja-JP");
-      var distanceKm = parseFloat(distanceStr);
-      var hasDistance = isFinite(distanceKm) && distanceKm > 0;
-      var hasAmount = hasDistance && amountVal > 0;
-      var wait = groupKind === "double" ? 7 : 5;
-      var travelMin = hasDistance ? distanceKm * 4 : 0;
-      var totalMin = travelMin + wait;
-      var perMin = hasAmount && totalMin > 0 ? amountVal / totalMin : 0;
-      var verdict = verdictFor(perMin);
-      var passLineYen = hasDistance ? Math.round(distanceKm * 100) + (groupKind === "double" ? 175 : 125) : null;
-      var box = el("verdict");
-      if (hasAmount) {
-        box.style.borderColor = verdict.color;
-        box.style.background = verdict.bg;
-        box.innerHTML =
-          '<div class="vrow"><p class="vlabel" style="color:' + verdict.color + '">' + verdict.symbol + " " + verdict.label + "</p>" +
-          '<p class="vper num">' + perMin.toFixed(1) + '<span class="unit">円/分</span></p></div>' +
-          '<p class="vsub num">' + fmtYen(amountVal) + " ÷ 約" + Math.round(totalMin) + "分（走行" + Math.round(travelMin) + "分＋待ち" + wait + "分）・ 時給換算 " + fmtYen(perMin * 60) +
-          (passLineYen != null ? " ／ 合格ライン " + fmtYen(passLineYen) : "") + "</p>";
-      } else {
-        box.style.borderColor = "var(--border)";
-        box.style.background = "var(--surface2)";
-        box.innerHTML =
-          '<p class="vhint">距離を選ぶと判定が出ます（金額はボタンで調整。33円/分◎優良 ・ 25円/分○合格 ・ 20円/分△合格未満）</p>' +
-          '<p class="vhint2 num">合格ライン目安：シングル km×100+125円 ／ ダブル km×100+175円</p>';
-      }
-    }
-    el("amt-minus").addEventListener("click", function () {
-      amountVal = Math.max(0, amountVal - 50);
-      renderAmtChips(); renderJudge();
-    });
-    el("amt-plus").addEventListener("click", function () {
-      amountVal = Math.max(0, amountVal + 50);
-      renderAmtChips(); renderJudge();
-    });
-    el("judge-distance").addEventListener("input", function () {
-      distanceStr = this.value;
-      renderDistChips(); renderJudge();
     });
 
     // ===== ヒートマップ =====
@@ -844,6 +667,215 @@
         rhtml += '<tr><th scope="row">' + r.km + 'km</th><td>' + r.yen + "円</td></tr>";
       });
       el("rocket-pass-rows").innerHTML = rhtml;
+    }
+
+    // ===== 釣り経路（現在地→最寄りスポット、幹線沿いの模式経路） =====
+    // 幹線ジオメトリ（assets/roads.js）をグラフ化し、最短路を辿ることで
+    // 住宅街を直線で突っ切らない折れ線を作る。実ナビはAppleマップ側が担う。
+    var roadGraphCache = null;
+    var routeCache = { key: null, coords: null };
+    function fishingTarget(from) {
+      var id = nearestAreaIdIn(AREAS, from);
+      if (!id) return null;
+      var area = areaById(id);
+      var spot = spotForArea(id, bandIdx);
+      if (!area || !spot || area.lat == null || area.lon == null) return null;
+      return { area: area, spot: spot };
+    }
+    function roadGraph() {
+      if (roadGraphCache) return roadGraphCache;
+      var nodes = {};
+      function keyOf(lon, lat) { return lon.toFixed(5) + "," + lat.toFixed(5); }
+      function addNode(lon, lat) {
+        var k = keyOf(lon, lat);
+        if (!nodes[k]) nodes[k] = { lon: lon, lat: lat, adj: {} };
+        return k;
+      }
+      function addEdge(a, b) {
+        if (a === b) return;
+        var na = nodes[a], nb = nodes[b];
+        var d = haversineKm(na.lat, na.lon, nb.lat, nb.lon);
+        if (na.adj[b] == null || d < na.adj[b]) { na.adj[b] = d; nb.adj[a] = d; }
+      }
+      var gj = window.ARTERIAL_ROADS_GEOJSON;
+      if (gj && gj.features) {
+        gj.features.forEach(function (f) {
+          var g = f.geometry;
+          if (!g) return;
+          var lines = g.type === "MultiLineString" ? g.coordinates : (g.type === "LineString" ? [g.coordinates] : []);
+          lines.forEach(function (line) {
+            var prev = null;
+            line.forEach(function (p) {
+              var k = addNode(p[0], p[1]);
+              if (prev) addEdge(prev, k);
+              prev = k;
+            });
+          });
+        });
+      }
+      var keys = Object.keys(nodes);
+      // 交差点で頂点を共有しない幹線同士を、近接ノード（35m以内）で接続する
+      var cell = 0.00045;
+      var buckets = {};
+      keys.forEach(function (k) {
+        var n = nodes[k];
+        var b = Math.floor(n.lon / cell) + ":" + Math.floor(n.lat / cell);
+        if (!buckets[b]) buckets[b] = [];
+        buckets[b].push(k);
+      });
+      keys.forEach(function (k) {
+        var n = nodes[k];
+        var bx = Math.floor(n.lon / cell), by = Math.floor(n.lat / cell);
+        for (var dx = -1; dx <= 1; dx++) {
+          for (var dy = -1; dy <= 1; dy++) {
+            var arr = buckets[(bx + dx) + ":" + (by + dy)] || [];
+            for (var i = 0; i < arr.length; i++) {
+              var k2 = arr[i];
+              if (k2 <= k) continue;
+              var m = nodes[k2];
+              if (haversineKm(n.lat, n.lon, m.lat, m.lon) <= 0.035) addEdge(k, k2);
+            }
+          }
+        }
+      });
+      // 最大の連結成分だけを使う（断片に吸着して経路が途切れるのを防ぐ）
+      var comp = {}, compId = 0, bestComp = 0, bestSize = 0, seen = {};
+      keys.forEach(function (k) {
+        if (seen[k]) return;
+        compId++;
+        var size = 0, stack = [k];
+        seen[k] = compId; comp[k] = compId;
+        while (stack.length) {
+          var cur = stack.pop();
+          size++;
+          for (var nb in nodes[cur].adj) {
+            if (!seen[nb]) { seen[nb] = compId; comp[nb] = compId; stack.push(nb); }
+          }
+        }
+        if (size > bestSize) { bestSize = size; bestComp = compId; }
+      });
+      var mainKeys = keys.filter(function (k) { return comp[k] === bestComp; });
+      roadGraphCache = { nodes: nodes, mainKeys: mainKeys };
+      return roadGraphCache;
+    }
+    function nearestNodeKey(g, lat, lon) {
+      var best = null, bestKm = Infinity;
+      for (var i = 0; i < g.mainKeys.length; i++) {
+        var n = g.nodes[g.mainKeys[i]];
+        var d = haversineKm(lat, lon, n.lat, n.lon);
+        if (d < bestKm) { bestKm = d; best = g.mainKeys[i]; }
+      }
+      return best;
+    }
+    function shortestPathKeys(g, startKey, goalKey) {
+      var dist = {}, prev = {}, done = {};
+      dist[startKey] = 0;
+      while (true) {
+        var u = null, du = Infinity;
+        for (var k in dist) {
+          if (!done[k] && dist[k] < du) { du = dist[k]; u = k; }
+        }
+        if (u === null) return null;
+        if (u === goalKey) break;
+        done[u] = true;
+        var adj = g.nodes[u].adj;
+        for (var v in adj) {
+          var nd = du + adj[v];
+          if (dist[v] == null || nd < dist[v]) { dist[v] = nd; prev[v] = u; }
+        }
+      }
+      var path = [], cur = goalKey;
+      while (cur) {
+        path.push(cur);
+        if (cur === startKey) break;
+        cur = prev[cur];
+      }
+      if (path[path.length - 1] !== startKey) return null;
+      return path.reverse();
+    }
+    // 点と線分（現在地→行き先）の距離（km）。経由点が回廊から外れすぎないよう絞るために使う
+    function distToSegmentKm(lat, lon, a, b) {
+      var kx = 111.32 * Math.cos(a.lat * Math.PI / 180), ky = 110.57;
+      var px = (lon - a.lon) * kx, py = (lat - a.lat) * ky;
+      var bx = (b.lon - a.lon) * kx, by = (b.lat - a.lat) * ky;
+      var len2 = bx * bx + by * by;
+      var t = len2 > 0 ? Math.max(0, Math.min(1, (px * bx + py * by) / len2)) : 0;
+      var dx = px - bx * t, dy = py - by * t;
+      return Math.sqrt(dx * dx + dy * dy);
+    }
+    function fishingRouteCoords(from) {
+      var target = fishingTarget(from);
+      if (!target) return null;
+      var dest = { lat: target.area.lat, lon: target.area.lon };
+      var cacheKey = from.lat.toFixed(4) + "," + from.lon.toFixed(4) + ">" + target.area.id;
+      if (routeCache.key === cacheKey) return routeCache.coords;
+      var coords = computeFishingRoute(from, dest);
+      routeCache = { key: cacheKey, coords: coords };
+      return coords;
+    }
+    function computeFishingRoute(from, dest) {
+      var direct = haversineKm(from.lat, from.lon, dest.lat, dest.lon);
+      var g = roadGraph();
+      if (!g.mainKeys.length) return null;
+      var sk = nearestNodeKey(g, from.lat, from.lon);
+      var gk = nearestNodeKey(g, dest.lat, dest.lon);
+      if (sk && gk) {
+        if (sk === gk) {
+          var n0 = g.nodes[sk];
+          return [[from.lon, from.lat], [n0.lon, n0.lat], [dest.lon, dest.lat]];
+        }
+        var path = shortestPathKeys(g, sk, gk);
+        if (path) {
+          var pathLen = haversineKm(from.lat, from.lon, g.nodes[sk].lat, g.nodes[sk].lon) +
+            haversineKm(g.nodes[gk].lat, g.nodes[gk].lon, dest.lat, dest.lon);
+          for (var i = 1; i < path.length; i++) {
+            var pn = g.nodes[path[i]], pp = g.nodes[path[i - 1]];
+            pathLen += haversineKm(pp.lat, pp.lon, pn.lat, pn.lon);
+          }
+          // 幹線沿いでも大回りになる場合は採用しない（データの断片で遠回りするケースの歯止め）
+          if (pathLen <= Math.max(2.6 * direct, direct + 1.1)) {
+            var coords = [[from.lon, from.lat]];
+            path.forEach(function (k) {
+              var n = g.nodes[k];
+              coords.push([n.lon, n.lat]);
+            });
+            coords.push([dest.lon, dest.lat]);
+            return coords;
+          }
+        }
+      }
+      // フォールバック：現在地→行き先の回廊近くにある幹線上の頂点を経由点にする
+      var corridorLimits = [0.65, 1.2];
+      for (var ci = 0; ci < corridorLimits.length; ci++) {
+        var bestP = null, bestSum = Infinity;
+        for (var j = 0; j < g.mainKeys.length; j++) {
+          var cand = g.nodes[g.mainKeys[j]];
+          if (distToSegmentKm(cand.lat, cand.lon, from, dest) > corridorLimits[ci]) continue;
+          var sum = haversineKm(from.lat, from.lon, cand.lat, cand.lon) + haversineKm(cand.lat, cand.lon, dest.lat, dest.lon);
+          if (sum < bestSum) { bestSum = sum; bestP = cand; }
+        }
+        if (bestP && bestSum <= Math.max(2.2 * direct, direct + 1.2)) {
+          return [[from.lon, from.lat], [bestP.lon, bestP.lat], [dest.lon, dest.lat]];
+        }
+      }
+      return null;
+    }
+    // 釣り経路の行き先スポットへのAppleマップ実案内ボタン（模式経路とは別物）
+    function renderFishNav() {
+      var box = el("fish-nav");
+      if (!box) return;
+      if (!mapGps) { box.innerHTML = ""; box.hidden = true; return; }
+      var target = fishingTarget(mapGps);
+      if (!target) { box.innerHTML = ""; box.hidden = true; return; }
+      // 模式経路が引けない場所（幹線データの範囲外）ではボタンも出さない
+      if (!fishingRouteCoords(mapGps)) { box.innerHTML = ""; box.hidden = true; return; }
+      var url = "https://maps.apple.com/?saddr=" + encodeURIComponent("Current Location") +
+        "&daddr=" + encodeURIComponent(target.spot.daddr) + "&dirflg=b";
+      box.hidden = false;
+      box.innerHTML =
+        '<p class="fish-note">釣り経路の行き先：' + esc(target.spot.name) + '（白線は幹線沿いの目安。実際の経路案内はAppleマップ）</p>' +
+        '<a class="fish-nav-btn" href="' + url + '" target="_blank" rel="noopener" aria-label="' +
+        esc(target.spot.name) + 'へAppleマップで経路案内を開始する">Appleマップで経路案内</a>';
     }
 
     // ===== マップ =====
@@ -890,7 +922,10 @@
         '<span class="sep">／</span><span style="color:var(--take)">━</span> 1.5km ショート境界' +
         '<span class="sep">／</span><span style="color:var(--weak)">━</span> 2.5km ロング境界' +
         '<span class="sep">／</span><span style="color:#38bdf8">━</span> 走りやすい幹線（青梅街道・五日市街道・井ノ頭通り・人見街道・中杉通り・吉祥寺通り）' +
-        '<span class="sep">／</span><span style="color:#a855f7">━</span> 町丁の区切り線（町名は漢字ラベル）';
+        '<span class="sep">／</span><span style="color:#a855f7">━</span> 町丁の区切り線（町名は漢字ラベル）' +
+        '<span class="sep">／</span><span class="cap"></span> 捕捉範囲1.2km（重ね案件の目安）' +
+        '<span class="sep">／</span><span style="color:#ffffff">━</span> 釣り経路（現在地→最寄りスポット、GPS取得時に表示）';
+      renderFishNav();
     }
     function setMapGpsStatus(msg) {
       var p = el("map-gps-status");
@@ -928,7 +963,7 @@
         '<div class="map-fallback" role="img" aria-label="回廊マップ（地図を表示できないため一覧で代替）">' +
         '<p class="ft">地図を表示できませんでした。一覧で代替します。</p>' +
         '<p class="fh">駅・ランドマーク</p><ul>' + items + "</ul>" +
-        '<p class="fnote">範囲の目安：中心から緑の円（1.5km）内がショート、橙の円（2.5km）までがミドル圏。幹線は青梅街道・五日市街道・井ノ頭通り・人見街道・中杉通り・吉祥寺通り。</p></div>';
+        '<p class="fnote">範囲の目安：中心から緑の円（1.5km）内がショート、橙の円（2.5km）までがミドル圏。ピンク破線の円（半径1.2km）が重ね案件の捕捉範囲の目安。幹線は青梅街道・五日市街道・井ノ頭通り・人見街道・中杉通り・吉祥寺通り。</p></div>';
     }
     function mountCorridorMap() {
       var host = el("map-host");
@@ -936,7 +971,7 @@
       host.innerHTML = "";
       var inner = document.createElement("div");
       inner.setAttribute("role", "img");
-      inner.setAttribute("aria-label", "回廊マップ（漢字の町名ラベルと町丁境界線、中心から1.5kmと2.5kmの範囲円、幹線、駅とランドマーク）");
+      inner.setAttribute("aria-label", "回廊マップ（漢字の町名ラベルと町丁境界線、中心から1.5kmと2.5kmの範囲円、1.2kmの捕捉範囲円、幹線、駅とランドマーク。GPS取得時は現在地から最寄りスポットへの釣り経路）");
       host.appendChild(inner);
       var c = mapCenterInfo();
       var northLat = function (m) { return c.lat + m / 110574; };
@@ -951,6 +986,87 @@
       MAP_LANDMARKS.forEach(function (l) { places.push({ label: l.label, lat: l.lat, lng: l.lon }); });
       var isNwCenter = false;
       NW_AREAS.forEach(function (a) { if (a.id === mapCenterId) isNwCenter = true; });
+      // ===== 手前味噌の捕捉範囲円（半径1.2km、ピンク破線） =====
+      // 中心（選択中エリアの駅座標。中心が現在地ならGPS位置）に加え、
+      // GPS取得時は現在地にもう1つ（中心と重なる場合は1つだけ）表示する
+      var captureCenters = [{ lat: c.lat, lon: c.lon }];
+      if (mapGps && haversineKm(mapGps.lat, mapGps.lon, c.lat, c.lon) > 0.01) {
+        captureCenters.push({ lat: mapGps.lat, lon: mapGps.lon });
+      }
+      var captureFeatures = [];
+      captureCenters.forEach(function (cc) {
+        captureFeatures.push({ type: "Feature", properties: { kind: "capture" }, geometry: { type: "Polygon", coordinates: [circlePolygon(cc.lat, cc.lon, 1200)] } });
+        captureFeatures.push({ type: "Feature", properties: { kind: "capture", label: "捕捉範囲1.2km" }, geometry: { type: "Point", coordinates: [cc.lon, cc.lat + 1200 / 110574] } });
+      });
+      var captureOverlay = {
+        id: "capture",
+        data: { type: "FeatureCollection", features: captureFeatures },
+        layers: [
+          {
+            id: "capture-fill", type: "fill", source: "capture",
+            filter: ["==", ["geometry-type"], "Polygon"],
+            paint: { "fill-color": "#f472b6", "fill-opacity": 0.05 }
+          },
+          {
+            id: "capture-line", type: "line", source: "capture",
+            filter: ["==", ["geometry-type"], "Polygon"],
+            layout: { "line-join": "round" },
+            paint: { "line-color": "#f472b6", "line-width": 2, "line-opacity": 0.95, "line-dasharray": [2, 1.6] }
+          },
+          {
+            id: "capture-label", type: "symbol", source: "capture",
+            filter: ["has", "label"],
+            layout: {
+              "text-field": ["get", "label"],
+              "text-font": ["Optimistic-SemiBold", "NotoSans-Kurrent-Regular"],
+              "text-size": 12, "text-anchor": "left", "text-offset": [0.4, 0],
+              "text-allow-overlap": true, "text-optional": true
+            },
+            paint: {
+              "text-color": "#f472b6",
+              "text-halo-color": "#0b0f14", "text-halo-width": 1.5
+            }
+          }
+        ]
+      };
+      // ===== 釣り経路（GPS取得時のみ。白の実線太線で幹線・円・境界と区別） =====
+      var routeOverlay = null;
+      if (mapGps) {
+        var routeCoords = fishingRouteCoords(mapGps);
+        var routeTarget = fishingTarget(mapGps);
+        if (routeCoords && routeCoords.length > 1 && routeTarget) {
+          routeOverlay = {
+            id: "tsuri-route",
+            data: {
+              type: "FeatureCollection",
+              features: [
+                { type: "Feature", properties: { kind: "route" }, geometry: { type: "LineString", coordinates: routeCoords } },
+                { type: "Feature", properties: { kind: "route-pt" }, geometry: { type: "Point", coordinates: [mapGps.lon, mapGps.lat] } },
+                { type: "Feature", properties: { kind: "route-pt" }, geometry: { type: "Point", coordinates: [routeTarget.area.lon, routeTarget.area.lat] } }
+              ]
+            },
+            layers: [
+              {
+                id: "route-casing", type: "line", source: "tsuri-route",
+                filter: ["==", ["get", "kind"], "route"],
+                layout: { "line-cap": "round", "line-join": "round" },
+                paint: { "line-color": "#0b0f14", "line-width": 8, "line-opacity": 0.55 }
+              },
+              {
+                id: "route-line", type: "line", source: "tsuri-route",
+                filter: ["==", ["get", "kind"], "route"],
+                layout: { "line-cap": "round", "line-join": "round" },
+                paint: { "line-color": "#ffffff", "line-width": 4.5, "line-opacity": 0.98 }
+              },
+              {
+                id: "route-pt", type: "circle", source: "tsuri-route",
+                filter: ["==", ["get", "kind"], "route-pt"],
+                paint: { "circle-radius": 6, "circle-color": "#ffffff", "circle-stroke-color": "#0b0f14", "circle-stroke-width": 2.5 }
+              }
+            ]
+          };
+        }
+      }
       try {
         mapHandle = mountMapHelper(inner, {
           center: { lat: c.lat, lng: c.lon },
@@ -999,6 +1115,8 @@
                 }
               ]
             },
+            captureOverlay,
+            ...(routeOverlay ? [routeOverlay] : []),
             {
               id: "towns",
               data: window.TOWN_BOUNDARIES_GEOJSON,
@@ -1068,10 +1186,6 @@
     renderAreaChips();
     renderSummary();
     renderSpot();
-    renderKindRow();
-    renderAmtChips();
-    renderDistChips();
-    renderJudge();
     renderHeat();
     renderQuick();
     renderTabbar();
