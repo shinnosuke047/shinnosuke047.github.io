@@ -504,22 +504,36 @@
       return pts;
     }
 
-    // ドロップ後の脚：最終ドロップ地点→推奨待機スポット。
+    // ドロップ後の脚：最終ドロップ地点→次に向かう推奨待機スポット。
     // ドロップ1へ向かう途中で拾い、ドロップ2が待機スポット寄りに収まる案件も
     // 手前味噌として成立させるため、この脚も「重ねて良い軸」に含める。
+    // 終点はドロップと同一エリアのスポットでは脚にならない（駅座標＝エリア中心で
+    // 距離ゼロになり帯も圏も描けない）ため、別エリアのスポットから選ぶ：
+    // ドロップ地から1〜4km圏内で、現在帯の出やすさが最上位、その中で最寄り。
     function postLegInfo() {
       var fd = finalDropId();
       if (!fd) return null;
-      var spot = spotForArea(fd, bandIdx);
-      if (!spot) return null;
-      var st = null;
-      for (var i = 0; i < MAP_STATIONS.length; i++) if (MAP_STATIONS[i].id === spot.areaId) st = MAP_STATIONS[i];
-      if (!st) return null;
       var from = areaById(fd);
+      var best = null, bestEase = -1, bestKm = Infinity;
+      for (var i = 0; i < WAIT_SPOTS.length; i++) {
+        var s = WAIT_SPOTS[i];
+        if (s.areaId === fd) continue;
+        var st = null;
+        for (var j = 0; j < MAP_STATIONS.length; j++) if (MAP_STATIONS[j].id === s.areaId) st = MAP_STATIONS[j];
+        if (!st) continue;
+        var d = haversineKm(from.lat, from.lon, st.lat, st.lon);
+        if (d < 1.0 || d > 4.0) continue;
+        var e = s.easeByBand[bandIdx] || 0;
+        if (e > bestEase || (e === bestEase && d < bestKm)) {
+          best = { spot: s, st: st };
+          bestEase = e; bestKm = d;
+        }
+      }
+      if (!best) return null;
       return {
         from: { lat: from.lat, lon: from.lon, id: from.id, label: from.label },
-        to: { lat: st.lat, lon: st.lon, id: spot.areaId, label: spot.name },
-        spot: spot
+        to: { lat: best.st.lat, lon: best.st.lon, id: best.spot.areaId, label: best.spot.name },
+        spot: best.spot
       };
     }
 
@@ -635,8 +649,8 @@
       var inBand = {}, inLand = {};
       band.forEach(function (t) { inBand[t.town] = true; });
       land.forEach(function (t) { inLand[t.town] = true; });
-      postBand = postBand.filter(function (t) { return !inBand[t.town]; });
-      postLand = postLand.filter(function (t) { return !inLand[t.town]; });
+      postBand = postBand.filter(function (t) { return !inBand[t.town] && !inLand[t.town]; });
+      postLand = postLand.filter(function (t) { return !inBand[t.town] && !inLand[t.town]; });
       return { pts: pts, band: band, land: land, postBand: postBand, postLand: postLand, post: postSeg ? post : null };
     }
     // 候補エリア中心の、ルート軸からの距離と最終ドロップからの距離、遠回り概算
