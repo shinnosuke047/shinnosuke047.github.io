@@ -609,6 +609,8 @@
     var DROP_MARKS = ["①", "②", "③", "④"];
     var drops = [null]; // ドロップ枠のエリアid（1〜4件、必要な分だけ増やす）
     var candId = null; // 候補ドロップのエリアid
+    var dropAddrs = [""]; // ドロップ枠ごとの住所テキスト（枠ごとに独立保持し、切り替えで混ざらない）
+    var candAddr = ""; // 候補ドロップの住所テキスト
     var activeSlot = 0; // 入力中スロット 0〜drops.length-1=ドロップ枠、drops.length=候補ドロップ
     var tmState = null; // 候補町リストの表示状態 {cats, active, page, pageSize}
 
@@ -628,13 +630,30 @@
     // 確定済みの値を保持し、入力中は積まない。入力の区切り（フォーカスを
     // 外した時／他の操作の直前）で、変わっていれば開始前の状態を1つだけ積む
     var committedFieldVal = { "pick-input": "", "addr-input": "" };
+    // 住所テキストはスロットごとに独立保持する。表示中の住所欄は選択中
+    // スロット分だけを映し、切り替え時はそのスロット自身の値だけを出す
+    function slotAddr(i) { return i < drops.length ? (dropAddrs[i] || "") : candAddr; }
+    function setSlotAddr(i, v) {
+      if (i < drops.length) {
+        while (dropAddrs.length < drops.length) dropAddrs.push("");
+        dropAddrs[i] = v;
+      } else candAddr = v;
+    }
     function commitTextField(id) {
       var f = el(id);
       if (!f || f.value === committedFieldVal[id]) return false;
       var prev = snapshotObj();
-      prev[id === "pick-input" ? "pick" : "drop"] = committedFieldVal[id];
+      if (id === "pick-input") {
+        prev.pick = committedFieldVal[id];
+      } else {
+        // 巻き戻し対象は選択中スロットの住所だけ（他枠の住所は触らない）
+        if (activeSlot < drops.length) prev.da[activeSlot] = committedFieldVal[id];
+        else prev.ca = committedFieldVal[id];
+        prev.drop = committedFieldVal[id];
+      }
       pushSnapshot(JSON.stringify(prev));
       committedFieldVal[id] = f.value;
+      if (id === "addr-input") setSlotAddr(activeSlot, f.value);
       return true;
     }
     function commitPendingText() {
@@ -648,6 +667,7 @@
     function snapshotObj() {
       return {
         d: drops.slice(), c: candId,
+        da: dropAddrs.slice(), ca: candAddr,
         pick: el("pick-input").value, drop: el("addr-input").value
       };
     }
@@ -666,9 +686,17 @@
       var o = JSON.parse(s);
       drops = (o.d && o.d.length) ? o.d.slice(0, MAX_DROPS) : [null];
       candId = o.c;
-      el("pick-input").value = o.pick || "";
-      el("addr-input").value = o.drop || "";
+      if (o.da && o.da.length) {
+        dropAddrs = o.da.slice(0, MAX_DROPS);
+        while (dropAddrs.length < drops.length) dropAddrs.push("");
+      } else {
+        dropAddrs = drops.map(function () { return ""; });
+        if (o.drop) dropAddrs[0] = o.drop;
+      }
+      candAddr = o.ca != null ? o.ca : "";
       if (activeSlot > drops.length) activeSlot = drops.length;
+      el("pick-input").value = o.pick || "";
+      el("addr-input").value = slotAddr(activeSlot);
       committedFieldVal["pick-input"] = el("pick-input").value;
       committedFieldVal["addr-input"] = el("addr-input").value;
       syncAddrLinks();
@@ -911,6 +939,7 @@
       pushHistory();
       var wasCand = activeSlot >= drops.length;
       drops.push(null);
+      dropAddrs.push(""); // 新規枠の住所は空（前の枠の住所は引き継がない）
       activeSlot = wasCand ? drops.length : drops.length - 1;
       refresh();
     }
@@ -956,7 +985,11 @@
       var sbtns = el("slot-row").querySelectorAll("button[data-slot]");
       for (var bi = 0; bi < sbtns.length; bi++) {
         sbtns[bi].addEventListener("click", function () {
-          activeSlot = parseInt(this.getAttribute("data-slot"), 10);
+          var next = parseInt(this.getAttribute("data-slot"), 10);
+          if (next === activeSlot) return;
+          commitPendingText(); // 切替前の入力を旧スロット分として確定させてから移る
+          setSlotAddr(activeSlot, el("addr-input").value);
+          activeSlot = next;
           renderInputs();
         });
       }
@@ -966,6 +999,10 @@
       // テキスト欄の見出しと入力対象の表示を選択中スロットに追随させる
       el("addr-label").innerHTML = esc(addrTargetLabel()) + ' <span class="req">町名＋番号、または住所をコピペ</span>';
       el("addr-input").setAttribute("aria-label", addrTargetLabel() + "の住所または町名");
+      // 住所欄には選択中スロット自身に保存された住所だけを表示する
+      var slotText = slotAddr(activeSlot);
+      if (el("addr-input").value !== slotText) el("addr-input").value = slotText;
+      committedFieldVal["addr-input"] = slotText;
       syncAddrLinks();
       el("slot-grid").innerHTML = areaGridHtml(slotValue(activeSlot), slotDef(activeSlot).cls, true);
       bindGrid("slot-grid", function (v) { setSlotValue(activeSlot, v); refresh(); });
@@ -1078,6 +1115,7 @@
     ["addr-input", "pick-input"].forEach(function (id) {
       var f = el(id);
       f.addEventListener("input", function () {
+        if (id === "addr-input") setSlotAddr(activeSlot, f.value); // 入力はその場で選択中スロット分として保持
         syncAddrLinks();
         updateUndoBtn();
       });
@@ -1096,7 +1134,7 @@
     el("addr-clear").addEventListener("click", function () {
       if (!el("addr-input").value) return;
       pushHistory();
-      el("addr-input").value = ""; committedFieldVal["addr-input"] = ""; syncAddrLinks();
+      el("addr-input").value = ""; setSlotAddr(activeSlot, ""); committedFieldVal["addr-input"] = ""; syncAddrLinks();
     });
     el("pick-clear").addEventListener("click", function () {
       if (!el("pick-input").value) return;
@@ -1173,6 +1211,8 @@
       pushHistory();
       drops = [null];
       candId = null;
+      dropAddrs = [""];
+      candAddr = "";
       activeSlot = 0;
       el("addr-input").value = "";
       el("pick-input").value = "";
