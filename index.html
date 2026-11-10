@@ -100,11 +100,10 @@
       /* ===== マップ内オーバーレイ ===== */
       .ov-controls { position: absolute; top: 8px; left: 8px; right: 8px; z-index: 6; display: flex; flex-direction: column; gap: 4px; pointer-events: none; }
       .ov-controls .center-row { pointer-events: auto; align-self: flex-end; }
-      .ov-status {
-        margin: 0; pointer-events: auto; align-self: flex-end; max-width: 100%;
-        border-radius: 8px; border: 1px solid var(--border); background: rgba(11, 15, 20, 0.88);
-        padding: 6px 8px; font-size: 11px; line-height: 1.5; color: var(--text);
-      }
+      /* 上部の通知帯は廃止（2026-11-10 指定）：GPS取得の通知は帯で出さず、
+         町名は現在地マーカー脇のラベルと下部オーバーレイに出す。
+         帯の要素自体も二重に表示不能にしておく */
+      .ov-status { display: none !important; }
       /* ===== 現在地の前面表示（「現在地」タップで町名＋ゾーンを大きく出す） ===== */
       .ov-gps {
         position: absolute; left: 8px; right: 8px; bottom: 66px; z-index: 6;
@@ -1832,12 +1831,12 @@
       var line = el("heat-gps-line"), btn = el("heat-gps-btn");
       if (!line || !btn) return;
       if (mapGps) {
-        var town = townZoneAt(mapGps.lat, mapGps.lon);
+        var town = townInfoAt(mapGps.lat, mapGps.lon);
         var a = areaById(currentAreaId);
         var meta = EASE_META[easeLevel(a.id, heatBandIdx)];
         line.className = "heat-gps-line";
-        line.innerHTML = "現在地：" + esc(town ? town.city + " " + town.town : "判定範囲外") +
-          "（" + esc(town ? (GPS_ZONE_LABELS[town.zone] || "エリア外") : "エリア外") + "）｜" +
+        line.innerHTML = "現在地：" + esc(town ? gpsTownLabel(town) : "判定範囲外") +
+          "（" + esc(town && !town.nearest ? (GPS_ZONE_LABELS[town.zone] || "エリア外") : "エリア外") + "）｜" +
           esc(a.label) + "エリア／" + TIME_BANDS[heatBandIdx] + "時台 " +
           '<span style="color:' + meta.color + '">' + meta.symbol + " " + esc(meta.label) + "</span>";
         btn.textContent = "再取得";
@@ -2004,9 +2003,12 @@
     }
 
     // ===== GPS =====
+    // 上部の通知帯は廃止：この関数は後方互換のため残すが、引数によらず
+    // 常に帯を隠すだけ（成功・失敗どちらの文言も帯には出さない）。
+    // GPSの成否と町名は、下部オーバーレイとマーカー脇ラベルで伝える
     function setMapStatus(msg) {
       var p = el("map-status");
-      if (msg) { p.textContent = msg; p.hidden = false; } else { p.hidden = true; }
+      if (p) { p.hidden = true; p.textContent = ""; }
     }
     function townZoneAt(lat, lon) {
       var polys = window.TOWN_ZONE_POLYGONS || [];
@@ -2014,6 +2016,44 @@
         if (pointInRing(lon, lat, polys[i].ring)) return polys[i];
       }
       return null;
+    }
+    // 判定範囲外でも町名を出すための最寄り町ポリゴン探索：
+    // 点から各ポリゴンの全辺までの最短距離が最小の町を「最寄りの町」とする
+    function nearestTownPolygon(lat, lon) {
+      var polys = window.TOWN_ZONE_POLYGONS || [];
+      if (!polys.length) return null;
+      var ref = { lat: lat, lon: lon };
+      var P = [0, 0]; // 基準点自身は射影の原点
+      var best = null, bestD = Infinity;
+      for (var i = 0; i < polys.length; i++) {
+        var ring = polys[i].ring;
+        var ringXY = [];
+        for (var j = 0; j < ring.length; j++) ringXY.push(toXY(ring[j][1], ring[j][0], ref));
+        var minD = Infinity;
+        for (var k = 0; k < ringXY.length - 1; k++) {
+          var d = ptSegDistM(P, ringXY[k], ringXY[k + 1]);
+          if (d < minD) minD = d;
+        }
+        if (minD < bestD) { bestD = minD; best = polys[i]; }
+      }
+      return best ? { poly: best, distM: bestD } : null;
+    }
+    // 現在地の町情報：ポリゴン内ならその町（nearest=false）。
+    // 範囲外なら最寄りの町を nearest=true で返し、ゾーンは「エリア外」
+    // として扱う（最寄りの町のゾーンを自分のゾーンとは言わない）。
+    // 町が本当に引けない（ポリゴンデータ自体が無い）時だけ null
+    function townInfoAt(lat, lon) {
+      var hit = townZoneAt(lat, lon);
+      if (hit) return { city: hit.city, town: hit.town, zone: hit.zone, nearest: false, distM: 0 };
+      var near = nearestTownPolygon(lat, lon);
+      if (near) return { city: near.poly.city, town: near.poly.town, zone: "outside", nearest: true, distM: near.distM };
+      return null;
+    }
+    // マーカー脇ラベル／オーバーレイ見出し用の町名表記。
+    // 最寄り推定の時は「最寄り：」を付けて実測の町名と区別する
+    function gpsTownLabel(info) {
+      if (!info) return null;
+      return (info.nearest ? "最寄り：" : "") + info.city + " " + info.town;
     }
     // ===== 現在地の前面表示（町名＋ゾーン判定をマップ下端に大きく出す） =====
     var gpsPlaceWanted = false; // 「現在地」チップが押されたら前面表示を出す
@@ -2034,12 +2074,14 @@
     function showGpsPlaceOk() {
       var box = el("gps-place");
       if (!mapGps) { showGpsPlaceError(); return; }
-      var town = townZoneAt(mapGps.lat, mapGps.lon);
+      // 見出しは町名（範囲外でも最寄りの町名を出す）。「判定範囲外」が
+      // 見出しになるのは町が本当に引けない場合だけ
+      var town = townInfoAt(mapGps.lat, mapGps.lon);
       box.hidden = false;
       box.className = "ov-gps ok";
       box.innerHTML = '<p class="ov-gps-kicker">現在地</p>' +
-        '<p class="ov-gps-town">' + esc(town ? town.city + " " + town.town : "判定範囲外") + "</p>" +
-        '<p class="ov-gps-zone">' + esc(town ? (GPS_ZONE_LABELS[town.zone] || "エリア外") : "エリア外") +
+        '<p class="ov-gps-town">' + esc(town ? gpsTownLabel(town) : "判定範囲外") + "</p>" +
+        '<p class="ov-gps-zone">' + esc(town && !town.nearest ? (GPS_ZONE_LABELS[town.zone] || "エリア外") : "エリア外") +
         "｜最寄りエリア：" + esc(areaById(currentAreaId).label) + "</p>";
     }
     function showGpsPlaceError() {
@@ -2054,33 +2096,26 @@
     function acquireGps(done) {
       if (!("geolocation" in navigator)) {
         gpsStatus = "error";
-        // 失敗表示は下部オーバーレイ（前面表示）1本に統一する：前面表示が
-        // 求められている時は上部の状態行へ重複文言を残さない
-        if (gpsPlaceWanted) setMapStatus(null);
-        else setMapStatus("この端末ではGPSが使えません。起点はエリア中心の仮判定になります。");
+        // 失敗表示は下部オーバーレイ（前面表示）1本に統一する。
+        // 上部の帯は成功・失敗とも一切出さない
+        setMapStatus(null);
         if (gpsPlaceWanted) showGpsPlaceError();
         if (done) done(false);
         return;
       }
       gpsStatus = "loading";
-      setMapStatus(gpsPlaceWanted ? null : "位置情報を取得中…");
+      setMapStatus(null);
       navigator.geolocation.getCurrentPosition(function (pos) {
         gpsStatus = "ok";
         var latitude = pos.coords.latitude, longitude = pos.coords.longitude;
         mapGps = { lat: latitude, lon: longitude };
         var from = { lat: latitude, lon: longitude };
-        var town = townZoneAt(latitude, longitude);
         var nearId = nearestAreaIdIn(AREAS, from);
         if (nearId) currentAreaId = nearId;
-        // 成功時も前面表示（町名＋ゾーン＋最寄りエリア）が情報の置き場。
-        // 上部の状態行は前面表示が無い時（ヒート画面からの取得）だけに使い、
-        // 前面表示がある時は旧メッセージを残さないよう消しておく
-        if (!gpsPlaceWanted) {
-          setMapStatus("GPS取得：" + (town ? town.city + " " + town.town : "エリア中心の最寄り判定") +
-            "。起点は現在地、エリアは「" + areaById(currentAreaId).label + "」に合わせました。");
-        } else {
-          setMapStatus(null);
-        }
+        // 起点・エリアが現在地へ切り替わる挙動は維持するが、通知の帯は
+        // 出さない。成功情報の置き場はマーカー脇の町名ラベル（再描画で
+        // 出る）と、下部オーバーレイ（前面表示時）の2つ
+        setMapStatus(null);
         if (gpsPlaceWanted) showGpsPlaceOk();
         if (done) done(true);
         refresh();
@@ -2308,13 +2343,19 @@
       }
       // 現在地マーカー（GPS取得済みの時だけ）：ヒート画面の現在地ドットと
       // 同じ見た目（白フチの青ドット＋ハロー）。中心モードによらず現在地の
-      // 位置に残る（ドロップ地へ中心を切り替えても自分の位置は把握できる）
+      // 位置に残る（ドロップ地へ中心を切り替えても自分の位置は把握できる）。
+      // ドットの脇には町名ラベル（市区町村＋町丁・丁目。範囲外は
+      // 「最寄り：○○」）を付け、マーカーと一体で「今どの町か」が読める
+      // 形にする。ラベルはこのオーバーレイの最後のレイヤーとして描き、
+      // オーバーレイ自体も配列の最後尾＝最前面に置く
       var gpsMarkerOverlays = [];
       if (mapGps) {
+        var gpsInfo = townInfoAt(mapGps.lat, mapGps.lon);
+        var gpsLabel = gpsInfo ? gpsTownLabel(gpsInfo) : "現在地";
         gpsMarkerOverlays.push({
           id: "gps-pos",
           data: { type: "FeatureCollection", features: [
-            { type: "Feature", properties: {}, geometry: { type: "Point", coordinates: [mapGps.lon, mapGps.lat] } }
+            { type: "Feature", properties: { label: gpsLabel }, geometry: { type: "Point", coordinates: [mapGps.lon, mapGps.lat] } }
           ] },
           layers: [
             {
@@ -2327,6 +2368,17 @@
                 "circle-radius": 7.5, "circle-color": "#2b7fff",
                 "circle-stroke-color": "#ffffff", "circle-stroke-width": 3
               }
+            },
+            {
+              id: "gps-pos-label", type: "symbol", source: "gps-pos",
+              filter: ["has", "label"],
+              layout: {
+                "text-field": ["get", "label"],
+                "text-font": ["Optimistic-SemiBold", "NotoSans-Kurrent-Regular"],
+                "text-size": 13, "text-anchor": "left", "text-offset": [1.1, 0],
+                "text-allow-overlap": true, "text-ignore-placement": true, "text-optional": true
+              },
+              paint: { "text-color": "#ffffff", "text-halo-color": "#0b0f14", "text-halo-width": 2.4 }
             }
           ]
         });
