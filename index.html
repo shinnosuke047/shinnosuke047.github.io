@@ -311,7 +311,7 @@
             <input id="pick-input" type="text" autocomplete="off" placeholder="例：荻窪5丁目／店舗の住所" aria-label="ピックアップ地点の町名と番号または住所" />
             <button type="button" class="addr-clear" id="pick-clear">消す</button>
           </div>
-          <p class="d-label">ドロップ① <span class="req">町名＋番号、または住所をコピペ</span></p>
+          <p class="d-label" id="addr-label">ドロップ① <span class="req">町名＋番号、または住所をコピペ</span></p>
           <div class="addr-row">
             <input id="addr-input" type="text" autocomplete="off" placeholder="例：阿佐谷南1丁目／届け先の住所" aria-label="ドロップ先の住所または町名" />
             <button type="button" class="addr-clear" id="addr-clear">消す</button>
@@ -588,6 +588,26 @@
     }
     // ===== ワンタップ取消し用の履歴（入力状態のスナップショット） =====
     var historyStack = [];
+    // テキスト欄の履歴は「入力1回分」を1エントリに丸める：欄ごとに履歴へ
+    // 確定済みの値を保持し、入力中は積まない。入力の区切り（フォーカスを
+    // 外した時／他の操作の直前）で、変わっていれば開始前の状態を1つだけ積む
+    var committedFieldVal = { "pick-input": "", "addr-input": "" };
+    function commitTextField(id) {
+      var f = el(id);
+      if (!f || f.value === committedFieldVal[id]) return;
+      var prev = snapshotObj();
+      prev[id === "pick-input" ? "pick" : "drop"] = committedFieldVal[id];
+      pushSnapshot(JSON.stringify(prev));
+      committedFieldVal[id] = f.value;
+    }
+    function commitPendingText() {
+      commitTextField("pick-input");
+      commitTextField("addr-input");
+    }
+    function hasPendingText() {
+      return el("pick-input").value !== committedFieldVal["pick-input"] ||
+        el("addr-input").value !== committedFieldVal["addr-input"];
+    }
     function snapshotObj() {
       return {
         d: drops.slice(), c: candId,
@@ -601,7 +621,10 @@
       if (historyStack.length > 60) historyStack.shift();
       updateUndoBtn();
     }
-    function pushHistory() { pushSnapshot(snapshotState()); }
+    function pushHistory() {
+      commitPendingText(); // 未確定のテキスト入力があれば先に1エントリへ丸めてから積む
+      pushSnapshot(snapshotState());
+    }
     function restoreState(s) {
       var o = JSON.parse(s);
       drops = (o.d && o.d.length) ? o.d.slice(0, MAX_DROPS) : [null];
@@ -609,13 +632,13 @@
       el("pick-input").value = o.pick || "";
       el("addr-input").value = o.drop || "";
       if (activeSlot > drops.length) activeSlot = drops.length;
-      lastFieldVal["pick-input"] = el("pick-input").value;
-      lastFieldVal["addr-input"] = el("addr-input").value;
+      committedFieldVal["pick-input"] = el("pick-input").value;
+      committedFieldVal["addr-input"] = el("addr-input").value;
       syncAddrLinks();
     }
     function updateUndoBtn() {
       var b = el("undo-btn");
-      if (b) b.disabled = historyStack.length === 0;
+      if (b) b.disabled = historyStack.length === 0 && !hasPendingText();
     }
     // 起点：GPS取得済みなら現在地、未取得なら選択中エリアの中心（駅座標）
     function spineStart() {
@@ -903,6 +926,10 @@
       var addBtn = el("slot-add");
       if (addBtn) addBtn.addEventListener("click", addDropSlot);
       el("slot-desc").textContent = slotDef(activeSlot).desc;
+      // テキスト欄の見出しと入力対象の表示を選択中スロットに追随させる
+      el("addr-label").innerHTML = esc(addrTargetLabel()) + ' <span class="req">町名＋番号、または住所をコピペ</span>';
+      el("addr-input").setAttribute("aria-label", addrTargetLabel() + "の住所または町名");
+      syncAddrLinks();
       el("slot-grid").innerHTML = areaGridHtml(slotValue(activeSlot), slotDef(activeSlot).cls, true);
       bindGrid("slot-grid", function (v) { setSlotValue(activeSlot, v); refresh(); });
       // 起点表示
@@ -928,6 +955,10 @@
     // ===== ピックアップ／ドロップ①ショートカット（町名＋番号・住所→Appleマップ） =====
     // ドロップ①を入れた時だけナビショートカットが現れる。出発地はピックアップ欄が
     // 入っていればその地点、空なら現在地。
+    // テキスト欄の入力対象表示は、現在選択中のドロップ枠（または候補）に連動する
+    function addrTargetLabel() {
+      return activeSlot < drops.length ? "ドロップ" + DROP_MARKS[activeSlot] : "候補ドロップ";
+    }
     function syncAddrLinks() {
       var q = el("addr-input").value.trim();
       var pick = el("pick-input").value.trim();
@@ -938,23 +969,24 @@
         return;
       }
       row.hidden = false;
+      nav.textContent = addrTargetLabel() + "へナビ開始";
+      view.textContent = addrTargetLabel() + "を地図で見る";
       nav.href = pick
         ? "https://maps.apple.com/?saddr=" + encodeURIComponent(pick) + "&daddr=" + encodeURIComponent(q) + "&dirflg=b"
         : appleMapsNavUrl(q, true);
       view.href = "https://maps.apple.com/?q=" + encodeURIComponent(q);
     }
-    // テキスト欄は変更のたびに「変更直前の状態」を履歴へ積む。欄ごとに直前値を
-    // 保持するので、フォーカスの順序に依存せず「1つ戻る」でテキストも巻き戻る
-    var lastFieldVal = { "pick-input": "", "addr-input": "" };
+    // テキスト欄は入力中リンクだけを追随させ、履歴へは積まない。入力の
+    // 区切り（フォーカスを外した時）に commitTextField が「入力1回分」を
+    // 1エントリとして確定させるので、「1つ戻る」1タップで欄ごと戻る。
+    // 貼り付けもフォーカス中の1回の入力として同じ1エントリに丸まる
     ["addr-input", "pick-input"].forEach(function (id) {
       var f = el(id);
       f.addEventListener("input", function () {
-        var prev = snapshotObj();
-        prev[id === "pick-input" ? "pick" : "drop"] = lastFieldVal[id];
-        pushSnapshot(JSON.stringify(prev));
-        lastFieldVal[id] = f.value;
         syncAddrLinks();
+        updateUndoBtn();
       });
+      f.addEventListener("blur", function () { commitTextField(id); });
     });
     el("addr-input").addEventListener("keydown", function (e) {
       if (e.key === "Enter") {
@@ -966,17 +998,18 @@
     el("addr-clear").addEventListener("click", function () {
       if (!el("addr-input").value) return;
       pushHistory();
-      el("addr-input").value = ""; lastFieldVal["addr-input"] = ""; syncAddrLinks();
+      el("addr-input").value = ""; committedFieldVal["addr-input"] = ""; syncAddrLinks();
     });
     el("pick-clear").addEventListener("click", function () {
       if (!el("pick-input").value) return;
       pushHistory();
-      el("pick-input").value = ""; lastFieldVal["pick-input"] = ""; syncAddrLinks();
+      el("pick-input").value = ""; committedFieldVal["pick-input"] = ""; syncAddrLinks();
     });
     syncAddrLinks();
 
     // ===== ワンタップ取消し（1つ戻る／全て取消し） =====
     el("undo-btn").addEventListener("click", function () {
+      commitPendingText(); // 入力の途中でも、その入力1回分から戻れるようにする
       if (!historyStack.length) return;
       var s = historyStack.pop();
       restoreState(s);
@@ -990,8 +1023,8 @@
       activeSlot = 0;
       el("addr-input").value = "";
       el("pick-input").value = "";
-      lastFieldVal["addr-input"] = "";
-      lastFieldVal["pick-input"] = "";
+      committedFieldVal["addr-input"] = "";
+      committedFieldVal["pick-input"] = "";
       syncAddrLinks();
       refresh();
     });
@@ -1331,7 +1364,7 @@
         var w = host.clientWidth || 390;
         var h = host.clientHeight || 640;
         var avail = Math.min(w, h) * 0.94; // 縁が画面端に張り付かないよう少し余白を取る
-        var mpp = 5000 / avail; // 直径5kmを avail px に収めるのに必要な m/px
+        var mpp = 5750 / avail; // 可視短辺は約6.1km相当。直径5kmのロング円の両側に明確な余白を持たせる
         var z = Math.log(40075016.686 * Math.cos(lat * Math.PI / 180) / (512 * mpp)) / Math.LN2;
         return Math.max(10.5, Math.min(13.5, z));
       }
