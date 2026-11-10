@@ -2308,7 +2308,7 @@
         var a = areaById(currentAreaId);
         var meta = EASE_META[easeLevel(a.id, heatBandIdx)];
         line.className = "heat-gps-line";
-        line.innerHTML = "現在地：" + esc(town ? gpsTownLabel(town) : "判定範囲外") +
+        line.innerHTML = esc(town ? gpsTownLabel(town) : "現在地：判定範囲外") +
           "（" + esc(town && !town.nearest ? (GPS_ZONE_LABELS[town.zone] || "エリア外") : "エリア外") + "）｜" +
           esc(a.label) + "エリア／" + TIME_BANDS[heatBandIdx] + "時台 " +
           '<span style="color:' + meta.color + '">' + meta.symbol + " " + esc(meta.label) + "</span>";
@@ -2522,11 +2522,13 @@
       if (near) return { city: near.poly.city, town: near.poly.town, zone: "outside", nearest: true, distM: near.distM };
       return null;
     }
-    // マーカー脇ラベル／オーバーレイ見出し用の町名表記。
-    // 最寄り推定の時は「最寄り：」を付けて実測の町名と区別する
+    // マーカー脇ラベル／左上チップ用の町名表記。表示しているのは
+    // 現在地そのものなので接頭辞は常に「現在地：」。範囲外で最寄り
+    // ポリゴンから推定した場合も同じ表記にする（推定かどうかを
+    // 接頭辞で区別しない）
     function gpsTownLabel(info) {
       if (!info) return null;
-      return (info.nearest ? "最寄り：" : "") + info.city + " " + info.town;
+      return "現在地：" + info.city + " " + info.town;
     }
     // ===== 現在地の表示（左上チップに一本化） =====
     // マップ下部の前面表示オーバーレイ（町名＋ゾーン判定の黒帯）は
@@ -2545,7 +2547,7 @@
     };
     function showGpsPlaceLoading() { syncGpsTownChip(); }
     // 左上の即答チップ：現在地表示がアクティブでGPS取得済みの間だけ、
-    // 解決結果（町名／「最寄り：○○」）を主表示としてマップ左上
+    // 解決結果（「現在地：○○（町名）」）を主表示としてマップ左上
     // （ズームコントロールの右隣）に出し、その下段に最寄りエリアを
     // 小さく併記する（範囲内で町名が実名解決できている場合も出す）。
     // ドロップ地へ切り替えた時・取得中・取得失敗時は出さない
@@ -2819,8 +2821,8 @@
       // 現在地マーカー（GPS取得済みの時だけ）：ヒート画面の現在地ドットと
       // 同じ見た目（白フチの青ドット＋ハロー）。中心モードによらず現在地の
       // 位置に残る（ドロップ地へ中心を切り替えても自分の位置は把握できる）。
-      // ドットの脇には町名ラベル（市区町村＋町丁・丁目。範囲外は
-      // 「最寄り：○○」）を付け、マーカーと一体で「今どの町か」が読める
+      // ドットの脇には町名ラベル（「現在地：」＋市区町村＋町丁・丁目。
+      // 範囲外の推定でも同じ接頭辞）を付け、マーカーと一体で「今どの町か」が読める
       // 形にする。ラベルはこのオーバーレイの最後のレイヤーとして描き、
       // オーバーレイ自体も配列の最後尾＝最前面に置く
       var gpsMarkerOverlays = [];
