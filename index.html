@@ -77,17 +77,12 @@
       .map-stage { position: relative; flex: 1; min-height: 0; overflow: hidden; background: var(--surface); }
       .center-row { display: flex; gap: 4px; }
       .center-btn {
-        min-height: 48px; flex: 1; border-radius: var(--radius); border: 1px solid var(--border);
-        background: var(--surface2); color: var(--dim); padding: 0 8px; font-size: 14px; font-weight: 900;
+        min-height: 40px; border-radius: 999px; border: 1px solid var(--border);
+        background: rgba(11, 15, 20, 0.88); color: var(--dim); padding: 0 14px; font-size: 13px; font-weight: 900;
+        white-space: nowrap;
       }
-      .center-btn.active { border-color: var(--accent); background: rgba(46,230,107,0.14); color: var(--text); }
+      .center-btn.active { border-color: var(--accent); background: rgba(46,230,107,0.22); color: var(--text); }
       .center-btn:disabled { opacity: 0.5; }
-      .zoom-row { margin-top: 4px; display: flex; gap: 4px; }
-      .zoom-btn {
-        min-height: 36px; flex: 1; border-radius: var(--radius); border: 1px solid var(--border);
-        background: var(--surface2); color: var(--dim); font-size: 12px; font-weight: 900;
-      }
-      .zoom-btn.active { border-color: var(--accent); background: rgba(46,230,107,0.14); color: var(--text); }
       .map-host { position: absolute; inset: 0; }
       .map-host > div { height: 100%; width: 100%; }
       .map-fallback { display: flex; height: 100%; flex-direction: column; justify-content: center; padding: 24px 16px; overflow-y: auto; background: var(--surface); }
@@ -99,7 +94,7 @@
 
       /* ===== マップ内オーバーレイ ===== */
       .ov-controls { position: absolute; top: 8px; left: 8px; right: 8px; z-index: 6; display: flex; flex-direction: column; gap: 4px; pointer-events: none; }
-      .ov-controls .center-row, .ov-controls .zoom-row { pointer-events: auto; margin-top: 0; }
+      .ov-controls .center-row { pointer-events: auto; align-self: flex-end; }
       .ov-status {
         margin: 0; pointer-events: auto; align-self: flex-start; max-width: 100%;
         border-radius: 8px; border: 1px solid var(--border); background: rgba(11, 15, 20, 0.88);
@@ -147,9 +142,9 @@
       .start-line { margin: 10px 0 0; font-size: 12px; font-weight: 700; line-height: 1.5; color: var(--dim); }
       .start-line b { color: var(--text); }
       .start-line .from-gps { color: var(--accent); }
-      .drop-nav-row { margin-top: 10px; display: flex; gap: 4px; }
+      .drop-nav-row { margin-top: 10px; display: flex; gap: 4px; flex-wrap: wrap; }
       .drop-nav-btn {
-        display: flex; min-height: 48px; flex: 1; align-items: center; justify-content: center;
+        display: flex; min-height: 44px; flex: 1 1 30%; align-items: center; justify-content: center;
         border-radius: var(--radius); border: 1px solid var(--border); background: var(--surface2);
         font-size: 13px; font-weight: 900; color: var(--text); text-decoration: none; padding: 4px 6px; text-align: center; line-height: 1.3;
       }
@@ -253,6 +248,12 @@
         background: var(--surface2); color: var(--dim); font-size: 11px; font-weight: 900; line-height: 1.3; padding: 4px 2px; overflow-wrap: anywhere;
       }
       .slot-btn .slot-name { display: block; font-size: 15px; color: var(--text); margin-top: 2px; }
+      .slot-add {
+        min-height: 50px; flex: 0 0 46px; border-radius: var(--radius); border: 1px dashed var(--border);
+        background: transparent; color: var(--dim); font-size: 15px; font-weight: 900; line-height: 1.3; padding: 4px 2px;
+      }
+      .slot-add .slot-name { display: block; font-size: 11px; margin-top: 2px; }
+      .slot-add:active { border-color: var(--accent); color: var(--accent); }
       .slot-btn.active { border-color: var(--accent); background: rgba(46,230,107,0.14); }
       .slot-btn.active.d2 { border-color: var(--land); background: rgba(34,211,238,0.12); }
       .slot-btn.active.cand { border-color: var(--cond); background: rgba(255,192,46,0.12); }
@@ -293,13 +294,10 @@
           <div class="map-host" id="map-host"></div>
           <div class="ov-controls">
             <div class="center-row" role="group" aria-label="マップの中心">
-              <button type="button" class="center-btn" id="center-gps">現在地マップ</button>
-              <button type="button" class="center-btn" id="center-drop">ドロップ地マップ</button>
+              <button type="button" class="center-btn" id="center-gps">現在地</button>
+              <button type="button" class="center-btn" id="center-drop">ドロップ地</button>
             </div>
             <p class="ov-status" id="map-status" aria-live="polite" hidden></p>
-            <div class="zoom-row" role="group" aria-label="マップのズーム">
-              <button type="button" class="zoom-btn" id="zoom-rings">全円</button>
-            </div>
           </div>
           <button type="button" class="ov-verdict idle" id="map-verdict">ドロップ①を選ぶと判定が出ます</button>
         </div>
@@ -328,11 +326,7 @@
             <button type="button" class="undo-btn" id="undo-btn" disabled>↩ 1つ戻る</button>
             <button type="button" class="undo-btn" id="clear-all-btn">全て取消し</button>
           </div>
-          <div class="slot-row" role="group" aria-label="入力するドロップの切り替え">
-            <button type="button" class="slot-btn" id="slot-0"></button>
-            <button type="button" class="slot-btn" id="slot-1"></button>
-            <button type="button" class="slot-btn" id="slot-2"></button>
-          </div>
+          <div class="slot-row" id="slot-row" role="group" aria-label="入力するドロップの切り替え"></div>
           <p class="slot-desc" id="slot-desc"></p>
           <div class="d-grid" id="slot-grid" role="group" aria-label="エリア選択"></div>
           <p class="start-line" id="start-line"></p>
@@ -575,11 +569,11 @@
     var mapGps = null;
     var mapHandle = null;
     var centerMode = "gps"; // "gps" | "drop"
-    var mapZoomMode = "rings";
-    var mode = "single"; // 背骨の件数
-    var dropIds = [null, null]; // ドロップ①②のエリアid
+    var MAX_DROPS = 4; // ドロップ枠の上限（ダブルからダブルを受けるケースまで想定）
+    var DROP_MARKS = ["①", "②", "③", "④"];
+    var drops = [null]; // ドロップ枠のエリアid（1〜4件、必要な分だけ増やす）
     var candId = null; // 候補ドロップのエリアid
-    var activeSlot = 0; // 入力中スロット 0=ドロップ① 1=ドロップ② 2=候補ドロップ
+    var activeSlot = 0; // 入力中スロット 0〜drops.length-1=ドロップ枠、drops.length=候補ドロップ
     var tmState = null; // 候補町リストの表示状態 {cats, active, page, pageSize}
 
     function el(id) { return document.getElementById(id); }
@@ -589,29 +583,34 @@
       });
     }
     function finalDropId() {
-      if (mode === "double" && dropIds[1]) return dropIds[1];
-      return dropIds[0];
+      for (var i = drops.length - 1; i >= 0; i--) if (drops[i]) return drops[i];
+      return null;
     }
     // ===== ワンタップ取消し用の履歴（入力状態のスナップショット） =====
     var historyStack = [];
-    function snapshotState() {
-      return JSON.stringify({
-        d: dropIds.slice(), c: candId, m: mode,
+    function snapshotObj() {
+      return {
+        d: drops.slice(), c: candId,
         pick: el("pick-input").value, drop: el("addr-input").value
-      });
+      };
     }
+    function snapshotState() { return JSON.stringify(snapshotObj()); }
     function pushSnapshot(s) {
       if (historyStack[historyStack.length - 1] === s) return;
       historyStack.push(s);
-      if (historyStack.length > 30) historyStack.shift();
+      if (historyStack.length > 60) historyStack.shift();
       updateUndoBtn();
     }
     function pushHistory() { pushSnapshot(snapshotState()); }
     function restoreState(s) {
       var o = JSON.parse(s);
-      dropIds = o.d; candId = o.c; mode = o.m;
+      drops = (o.d && o.d.length) ? o.d.slice(0, MAX_DROPS) : [null];
+      candId = o.c;
       el("pick-input").value = o.pick || "";
       el("addr-input").value = o.drop || "";
+      if (activeSlot > drops.length) activeSlot = drops.length;
+      lastFieldVal["pick-input"] = el("pick-input").value;
+      lastFieldVal["addr-input"] = el("addr-input").value;
       syncAddrLinks();
     }
     function updateUndoBtn() {
@@ -624,21 +623,20 @@
       var a = areaById(currentAreaId);
       return { lat: a.lat, lon: a.lon, gps: false, label: a.label };
     }
-    // ルート点列：起点→ドロップ①→（ドロップ②）。ドロップ未入力なら null
+    // ルート点列：起点→ドロップ①→②→…（入力済みの枠を順に）。ドロップ未入力なら null
     function routePoints() {
-      if (!dropIds[0]) return null;
+      if (!finalDropId()) return null;
       var pts = [spineStart()];
-      var d1 = areaById(dropIds[0]);
-      pts.push({ lat: d1.lat, lon: d1.lon, id: d1.id, label: d1.label });
-      if (mode === "double" && dropIds[1]) {
-        var d2 = areaById(dropIds[1]);
-        pts.push({ lat: d2.lat, lon: d2.lon, id: d2.id, label: d2.label });
-      }
+      drops.forEach(function (id) {
+        if (!id) return;
+        var a = areaById(id);
+        pts.push({ lat: a.lat, lon: a.lon, id: a.id, label: a.label });
+      });
       return pts;
     }
 
     // ドロップ後の脚：最終ドロップ地点→次に向かう推奨待機スポット。
-    // ドロップ1へ向かう途中で拾い、ドロップ2が待機スポット寄りに収まる案件も
+    // 途中のドロップへ向かう途中で拾い、最終ドロップが待機スポット寄りに収まる案件も
     // 手前味噌として成立させるため、この脚も「重ねて良い軸」に含める。
     // 終点はドロップと同一エリアのスポットでは脚にならない（駅座標＝エリア中心で
     // 距離ゼロになり帯も圏も描けない）ため、別エリアのスポットから選ぶ：
@@ -813,7 +811,7 @@
         dPostRoute = ptSegDistM(C, PA, PB) / 1000;
         dSpot = haversineKm(cand.lat, cand.lon, post.to.lat, post.to.lon);
       }
-      // 遠回り概算：起点→候補→最終 の迂回量（ダブル時は最終基準の概算）
+      // 遠回り概算：起点→候補→最終 の迂回量（複数ドロップ時も最終基準の概算）
       var start = pts[0];
       var direct = haversineKm(start.lat, start.lon, finalPt.lat, finalPt.lon);
       var via = haversineKm(start.lat, start.lon, cand.lat, cand.lon) + haversineKm(cand.lat, cand.lon, finalPt.lat, finalPt.lon);
@@ -828,19 +826,33 @@
       return { cand: cand, dFinal: dFinal, dRoute: dRoute, detourKm: detour, dPostRoute: dPostRoute, dSpot: dSpot, postDetourKm: postDetour, post: post };
     }
 
-    // ===== ドロップ入力UI（スロット式：①②候補をタップで切り替え、グリッドは1つを使い回す） =====
-    var SLOT_DEFS = [
-      { label: "ドロップ①", desc: "背骨の届け先。ここが軸の終点になります", cls: "" },
-      { label: "ドロップ②", desc: "背骨ダブルの2件目。選ぶと自動でダブル扱い、「なし」でシングルに戻ります", cls: "d2" },
-      { label: "候補ドロップ", desc: "来た案件の届け先。入れると取れる／取らないを即判定します", cls: "cand" }
-    ];
-    function slotValue(i) { return i === 0 ? dropIds[0] : i === 1 ? dropIds[1] : candId; }
+    // ===== ドロップ入力UI（スロット式：枠をタップで切り替え、グリッドは1つを使い回す） =====
+    // 枠は固定ではなく「＋追加」で最大4件まで増える。最後のタブは常に候補ドロップ。
+    function slotDef(i) {
+      if (i < drops.length) {
+        return {
+          label: "ドロップ" + DROP_MARKS[i],
+          desc: i === 0
+            ? "1件目の届け先。背骨の軸はここから始まります"
+            : "重ねて持つ届け先。最後に入ったドロップが判定の着地基準になります",
+          cls: i === 0 ? "" : "d2"
+        };
+      }
+      return { label: "候補ドロップ", desc: "来た案件の届け先。入れると取れる／取らないを即判定します", cls: "cand" };
+    }
+    function slotValue(i) { return i < drops.length ? drops[i] : candId; }
     function setSlotValue(i, v) {
       pushHistory();
-      if (i === 0) dropIds[0] = v;
-      else if (i === 1) dropIds[1] = v;
+      if (i < drops.length) drops[i] = v;
       else candId = v;
-      mode = dropIds[1] ? "double" : "single";
+    }
+    function addDropSlot() {
+      if (drops.length >= MAX_DROPS) return;
+      pushHistory();
+      var wasCand = activeSlot >= drops.length;
+      drops.push(null);
+      activeSlot = wasCand ? drops.length : drops.length - 1;
+      refresh();
     }
     function areaGridHtml(selectedId, activeClass, includeNone) {
       var html = "";
@@ -867,44 +879,50 @@
       }
     }
     function renderInputs() {
-      // スロットタブ（現在の選択エリア名をタブ自身に表示する）
-      for (var s = 0; s < 3; s++) {
-        var btn = el("slot-" + s);
+      // スロットタブ（ドロップ枠＋候補＋追加ボタン。現在の選択エリア名をタブ自身に表示する）
+      var rowHtml = "";
+      var total = drops.length + 1;
+      for (var s = 0; s < total; s++) {
+        var def = slotDef(s);
         var v = slotValue(s);
-        btn.className = "slot-btn" + (activeSlot === s ? " active " + SLOT_DEFS[s].cls : "");
-        btn.setAttribute("aria-pressed", activeSlot === s);
-        btn.innerHTML = esc(SLOT_DEFS[s].label) + '<span class="slot-name">' + (v ? esc(areaById(v).short) : "未選択") + "</span>";
+        rowHtml += '<button type="button" class="slot-btn' + (activeSlot === s ? " active " + def.cls : "") +
+          '" data-slot="' + s + '" aria-pressed="' + (activeSlot === s) + '">' +
+          esc(def.label) + '<span class="slot-name">' + (v ? esc(areaById(v).short) : "未選択") + "</span></button>";
       }
-      el("slot-desc").textContent = SLOT_DEFS[activeSlot].desc;
-      el("slot-grid").innerHTML = areaGridHtml(slotValue(activeSlot), SLOT_DEFS[activeSlot].cls, true);
+      if (drops.length < MAX_DROPS) {
+        rowHtml += '<button type="button" class="slot-add" id="slot-add" aria-label="ドロップ枠を追加">＋<span class="slot-name">追加</span></button>';
+      }
+      el("slot-row").innerHTML = rowHtml;
+      var sbtns = el("slot-row").querySelectorAll("button[data-slot]");
+      for (var bi = 0; bi < sbtns.length; bi++) {
+        sbtns[bi].addEventListener("click", function () {
+          activeSlot = parseInt(this.getAttribute("data-slot"), 10);
+          renderInputs();
+        });
+      }
+      var addBtn = el("slot-add");
+      if (addBtn) addBtn.addEventListener("click", addDropSlot);
+      el("slot-desc").textContent = slotDef(activeSlot).desc;
+      el("slot-grid").innerHTML = areaGridHtml(slotValue(activeSlot), slotDef(activeSlot).cls, true);
       bindGrid("slot-grid", function (v) { setSlotValue(activeSlot, v); refresh(); });
       // 起点表示
       var start = spineStart();
       el("start-line").innerHTML = "起点：" + (start.gps
         ? '<span class="from-gps">現在地（GPS）</span>'
-        : "<b>" + esc(start.label) + "</b>（GPS未取得のためエリア中心で仮判定。「現在地マップ」でGPS取得）");
-      // ドロップへのナビボタン
+        : "<b>" + esc(start.label) + "</b>（GPS未取得のためエリア中心で仮判定。「現在地」でGPS取得）");
+      // ドロップへのナビボタン（入力済みの全枠分＋候補）
       var navHtml = "";
-      if (dropIds[0]) {
-        navHtml += '<a class="drop-nav-btn" href="' + appleMapsNavUrl(stationLabel(dropIds[0]), true) +
-          '" target="_blank" rel="noopener">ドロップ① ' + esc(areaById(dropIds[0]).label) + "へナビ</a>";
-      }
-      if (mode === "double" && dropIds[1]) {
-        navHtml += '<a class="drop-nav-btn" href="' + appleMapsNavUrl(stationLabel(dropIds[1]), true) +
-          '" target="_blank" rel="noopener">ドロップ② ' + esc(areaById(dropIds[1]).label) + "へナビ</a>";
-      }
+      drops.forEach(function (id, i) {
+        if (!id) return;
+        navHtml += '<a class="drop-nav-btn" href="' + appleMapsNavUrl(stationLabel(id), true) +
+          '" target="_blank" rel="noopener">ドロップ' + DROP_MARKS[i] + " " + esc(areaById(id).label) + "へナビ</a>";
+      });
       if (candId) {
         navHtml += '<a class="drop-nav-btn" href="' + appleMapsNavUrl(stationLabel(candId), true) +
           '" target="_blank" rel="noopener">候補 ' + esc(areaById(candId).label) + "へナビ</a>";
       }
       el("drop-nav-row").innerHTML = navHtml;
       el("drop-nav-row").style.display = navHtml ? "flex" : "none";
-    }
-    // スロット切替（再描画は入力画面内だけ・全体refreshは不要）
-    for (var si = 0; si < 3; si++) {
-      (function (idx) {
-        el("slot-" + idx).addEventListener("click", function () { activeSlot = idx; renderInputs(); });
-      })(si);
     }
 
     // ===== ピックアップ／ドロップ①ショートカット（町名＋番号・住所→Appleマップ） =====
@@ -925,16 +943,18 @@
         : appleMapsNavUrl(q, true);
       view.href = "https://maps.apple.com/?q=" + encodeURIComponent(q);
     }
-    // テキスト欄は「編集を始める前の状態」を1回だけ履歴に積み、1つ戻るで編集前に戻せるようにする
-    var focusSnap = null;
+    // テキスト欄は変更のたびに「変更直前の状態」を履歴へ積む。欄ごとに直前値を
+    // 保持するので、フォーカスの順序に依存せず「1つ戻る」でテキストも巻き戻る
+    var lastFieldVal = { "pick-input": "", "addr-input": "" };
     ["addr-input", "pick-input"].forEach(function (id) {
       var f = el(id);
-      f.addEventListener("focus", function () { focusSnap = snapshotState(); });
       f.addEventListener("input", function () {
-        if (focusSnap !== null) { pushSnapshot(focusSnap); focusSnap = null; }
+        var prev = snapshotObj();
+        prev[id === "pick-input" ? "pick" : "drop"] = lastFieldVal[id];
+        pushSnapshot(JSON.stringify(prev));
+        lastFieldVal[id] = f.value;
         syncAddrLinks();
       });
-      f.addEventListener("blur", function () { focusSnap = null; });
     });
     el("addr-input").addEventListener("keydown", function (e) {
       if (e.key === "Enter") {
@@ -946,12 +966,12 @@
     el("addr-clear").addEventListener("click", function () {
       if (!el("addr-input").value) return;
       pushHistory();
-      el("addr-input").value = ""; syncAddrLinks();
+      el("addr-input").value = ""; lastFieldVal["addr-input"] = ""; syncAddrLinks();
     });
     el("pick-clear").addEventListener("click", function () {
       if (!el("pick-input").value) return;
       pushHistory();
-      el("pick-input").value = ""; syncAddrLinks();
+      el("pick-input").value = ""; lastFieldVal["pick-input"] = ""; syncAddrLinks();
     });
     syncAddrLinks();
 
@@ -965,12 +985,13 @@
     });
     el("clear-all-btn").addEventListener("click", function () {
       pushHistory();
-      dropIds = [null, null];
+      drops = [null];
       candId = null;
-      mode = "single";
       activeSlot = 0;
       el("addr-input").value = "";
       el("pick-input").value = "";
+      lastFieldVal["addr-input"] = "";
+      lastFieldVal["pick-input"] = "";
       syncAddrLinks();
       refresh();
     });
@@ -989,7 +1010,7 @@
       if (!res) {
         box.className = "card verdict idle";
         box.innerHTML = '<p class="v-title">ドロップ①を選ぶと、重ねて良い町と候補の可否が即出ます</p>' +
-          '<p class="v-sub">入力は「入力」画面でドロップ地だけ。背骨がダブルなら②も、来た案件の届け先は「候補ドロップ」へ。</p>';
+          '<p class="v-sub">入力は「入力」画面でドロップ地だけ。重ねて持つ分は「＋追加」で枠を増やし、来た案件の届け先は「候補ドロップ」へ。</p>';
         setMapVerdict("idle", "ドロップ①を選ぶと判定が出ます");
         tmState = null;
         renderTowns();
@@ -1263,9 +1284,7 @@
       g.setAttribute("aria-pressed", centerMode === "gps");
       d.className = "center-btn" + (centerMode === "drop" ? " active" : "");
       d.setAttribute("aria-pressed", centerMode === "drop");
-      d.textContent = finalDropId() ? "ドロップ地マップ（" + areaById(finalDropId()).label + "）" : "ドロップ地マップ";
-      el("zoom-rings").className = "zoom-btn" + (mapZoomMode === "rings" ? " active" : "");
-      el("zoom-rings").setAttribute("aria-pressed", mapZoomMode === "rings");
+      d.textContent = finalDropId() ? "ドロップ地（" + areaById(finalDropId()).label + "）" : "ドロップ地";
     }
     el("center-gps").addEventListener("click", function () {
       centerMode = "gps";
@@ -1275,9 +1294,6 @@
     el("center-drop").addEventListener("click", function () {
       centerMode = "drop";
       renderMapControls(); mountCorridorMap();
-    });
-    el("zoom-rings").addEventListener("click", function () {
-      mapZoomMode = "rings"; renderMapControls(); mountCorridorMap();
     });
     function showMapFallback(host) {
       var items = "";
@@ -1308,8 +1324,17 @@
       var places = [];
       MAP_STATIONS.forEach(function (s) { places.push({ label: s.label, lat: s.lat, lng: s.lon }); });
       MAP_LANDMARKS.forEach(function (l) { places.push({ label: l.label, lat: l.lat, lng: l.lon }); });
-      var isNwCenter = false;
-      NW_AREAS.forEach(function (a) { if (Math.abs(a.lat - c.lat) < 0.001 && Math.abs(a.lon - c.lon) < 0.001) isNwCenter = true; });
+      // ロング円（半径2.5km＝直径5km）が表示領域に全部収まるズームを、短い辺から
+      // 算出する。固定ズームだと端末の画面サイズ次第で円がはみ出すため、毎回実寸で決める
+      function ringFitZoom(lat) {
+        var host = el("map-host");
+        var w = host.clientWidth || 390;
+        var h = host.clientHeight || 640;
+        var avail = Math.min(w, h) * 0.94; // 縁が画面端に張り付かないよう少し余白を取る
+        var mpp = 5000 / avail; // 直径5kmを avail px に収めるのに必要な m/px
+        var z = Math.log(40075016.686 * Math.cos(lat * Math.PI / 180) / (512 * mpp)) / Math.LN2;
+        return Math.max(10.5, Math.min(13.5, z));
+      }
       // 捕捉範囲円（半径1.2km、ピンク破線）：中心＋GPS位置（離れていれば）
       var captureCenters = [{ lat: c.lat, lon: c.lon }];
       if (mapGps && haversineKm(mapGps.lat, mapGps.lon, c.lat, c.lon) > 0.01) {
@@ -1411,7 +1436,7 @@
       try {
         mapHandle = mountMapHelper(inner, {
           center: { lat: c.lat, lng: c.lon },
-          zoom: mapZoomMode === "read" ? 16 : (isNwCenter ? 12 : 13),
+          zoom: ringFitZoom(c.lat),
           baseStyle: "dark",
           places: places,
           overlays: [
