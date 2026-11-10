@@ -103,15 +103,26 @@
       .ov-top-row .center-row { pointer-events: auto; margin-left: auto; flex-shrink: 0; }
       /* 現在地の即答チップ（マップ左上）：「現在地」がアクティブでGPS
          取得済みの間だけ、ズームコントロール（左端・マージン込みで
-         約39px幅）の右隣に町名だけを出す。詳細（ゾーン判定・最寄り
-         エリア）は下部オーバーレイが担う役割分担。幅が足りない端末では
-         末尾を省略してチップ行（現在地／ドロップ地）と重ねない */
+         約39px幅）の右隣に出す。主表示は町名（大）、副表示として
+         最寄りエリアを下段に小さく併記する（範囲内で町名が実名解決
+         できている場合も出す）。詳細（ゾーン判定）は下部オーバーレイ
+         が担う。幅が足りない端末では各行の末尾を省略してチップ行
+         （現在地／ドロップ地）と重ねない */
       .gps-town-chip {
-        margin-left: 46px; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
-        border-radius: 999px; border: 1px solid var(--border);
+        margin-left: 46px; min-width: 0; flex: 0 1 auto; overflow: hidden;
+        display: flex; flex-direction: column;
+        border-radius: 10px; border: 1px solid var(--border);
         background: rgba(11, 15, 20, 0.92); color: var(--text);
-        padding: 6px 10px; font-size: 12px; font-weight: 900; line-height: 1.3;
+        padding: 5px 10px 6px; line-height: 1.3;
         pointer-events: none;
+      }
+      .gps-town-chip .gps-town-main {
+        font-size: 12px; font-weight: 900; color: var(--text);
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      }
+      .gps-town-chip .gps-town-near {
+        margin-top: 1px; font-size: 10px; font-weight: 700; color: var(--dim);
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
       }
       .gps-town-chip[hidden] { display: none; }
       /* 上部の通知帯は廃止（2026-11-10 指定）：GPS取得の通知は帯で出さず、
@@ -2548,14 +2559,22 @@
     }
     // 左上の即答チップ：現在地表示がアクティブでGPS取得済みの間だけ、
     // 下部オーバーレイ見出しと同じ解決結果（町名／「最寄り：○○」）を
-    // マップ左上（ズームコントロールの右隣）に出す。ドロップ地へ切り
-    // 替えた時・取得中・取得失敗時は出さない（失敗表示は下部のみ）
+    // 主表示としてマップ左上（ズームコントロールの右隣）に大きく出し、
+    // その下段に最寄りエリアを小さく併記する（範囲内で町名が実名
+    // 解決できている場合も出す）。ドロップ地へ切り替えた時・取得中・
+    // 取得失敗時は出さない（失敗表示は下部のみ）
     function syncGpsTownChip() {
       var chip = el("gps-town-chip");
       if (!chip) return;
       if (centerMode === "gps" && gpsPlaceWanted && gpsStatus === "ok" && mapGps) {
         var town = townInfoAt(mapGps.lat, mapGps.lon);
-        if (town) { chip.textContent = gpsTownLabel(town); chip.hidden = false; return; }
+        if (town) {
+          var nearId = nearestAreaIdIn(AREAS, mapGps);
+          var nearLabel = areaById(nearId || currentAreaId).label;
+          chip.innerHTML = '<span class="gps-town-main">' + esc(gpsTownLabel(town)) + "</span>" +
+            '<span class="gps-town-near">最寄りエリア：' + esc(nearLabel) + "</span>";
+          chip.hidden = false; return;
+        }
       }
       chip.hidden = true;
     }
