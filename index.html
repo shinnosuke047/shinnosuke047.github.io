@@ -386,8 +386,10 @@
       /* ===== 候補画面：リスト／地図の表示切替 =====
          リスト表示の寸法（1画面収まり）は変えない：切替は候補ブロック
          右上に重ねる浮動セグメントとし、見出し・注記・空メッセージには
-         右側の余白を確保して文字と重ねない。地図はリストと同じ箱
-         （top:48〜bottom:28）へ絶対配置で広げ、切替で相互に差し替える */
+         右側の余白を確保して文字と重ねない。地図モードでは切替トグルが
+         地図の右上端に重なって見えたため、地図の箱はトグルの帯（46〜74px）
+         の下（top:78px）から広げ、トグルと地図操作（ズーム等）が視覚的に
+         干渉しない配置にする。リスト側の箱（top:48）は従来どおり */
       .tm-view-toggle {
         position: absolute; top: 46px; right: 10px; z-index: 8; display: flex;
         border-radius: 999px; border: 1px solid var(--border);
@@ -398,10 +400,20 @@
       }
       .tm-view-toggle button.active { background: rgba(46, 230, 107, 0.2); color: var(--text); }
       .tm-map-stage {
-        position: absolute; top: 48px; right: 10px; bottom: 28px; left: 10px;
+        position: absolute; top: 78px; right: 10px; bottom: 28px; left: 10px;
         border-radius: 8px; overflow: hidden; background: var(--surface2);
       }
       .tm-map-stage[hidden] { display: none; }
+      /* 地図モードの空表示：選択中カテゴリの候補が0件のとき、リスト側の
+         「対象の町はありません」と同じ文言を地図の中央に出す */
+      .tm-map-empty {
+        position: absolute; left: 50%; top: 50%; z-index: 5; transform: translate(-50%, -50%);
+        width: max-content; max-width: 86%;
+        border-radius: 10px; border: 1px solid var(--border); background: rgba(11, 15, 20, 0.93);
+        padding: 12px 16px; font-size: 14px; font-weight: 900; line-height: 1.5; text-align: center; color: var(--text);
+      }
+      .tm-map-empty[hidden] { display: none; }
+      .tm-map-empty .tme-sub { display: block; margin-top: 2px; font-size: 11px; font-weight: 700; color: var(--dim); }
       #tm-chips[hidden] { display: none; }
       #tm-chips .tm-h, #tm-chips .tm-catnote, #tm-chips .tm-empty { padding-right: 106px; }
 
@@ -528,6 +540,7 @@
           <div class="tm-scroll" id="tm-chips"></div>
           <div class="tm-map-stage" id="tm-map-stage" hidden>
             <div class="map-host" id="tm-map-host"></div>
+            <div class="tm-map-empty" id="tm-map-empty" role="status" hidden></div>
           </div>
           <p class="tm-note">町名タップでAppleマップの自転車ナビがその町へ開きます。</p>
         </div>
@@ -1782,7 +1795,25 @@
       var z = Math.log(40075016.686 * Math.cos(cLat * Math.PI / 180) / (512 * mpp)) / Math.LN2;
       return { lat: cLat, lon: cLon, zoom: Math.max(10.6, Math.min(15, z)) };
     }
+    // 地図モードの空表示：選択中カテゴリの候補が0件なら、リスト側と
+    // 同じ文言を地図の中央に出す。候補がある／地図が代替表示の時は隠す
+    function syncTmMapEmpty(cat) {
+      var box = el("tm-map-empty");
+      if (!box) return;
+      if (!cat) {
+        box.innerHTML = "ドロップ地を選ぶと候補の町が地図に出ます";
+        box.hidden = false;
+        return;
+      }
+      if (cat.list.length) { box.hidden = true; return; }
+      box.innerHTML = esc(cat.label) + "：対象の町はありません" +
+        ((cat.key === "pband" || cat.key === "pland")
+          ? '<span class="tme-sub">背骨側と重なる町は背骨側のリストに表示</span>' : "");
+      box.hidden = false;
+    }
     function showTownsMapFallback(host, cat) {
+      var empty = el("tm-map-empty");
+      if (empty) empty.hidden = true; // 代替表示（町名一覧）が空表示を兼ねる
       var names = cat ? cat.list.map(function (t) { return t.town; }).join("、") : "";
       host.innerHTML =
         '<div class="map-fallback" role="img" aria-label="候補地図を表示できないため町名一覧で代替">' +
@@ -1796,6 +1827,7 @@
       if (tmMapHandle) { try { tmMapHandle.destroy(); } catch (e) { /* noop */ } tmMapHandle = null; }
       host.innerHTML = "";
       var cat = tmActiveCategory();
+      syncTmMapEmpty(cat);
       var inner = document.createElement("div");
       inner.setAttribute("role", "img");
       inner.setAttribute("aria-label", cat
@@ -1914,6 +1946,10 @@
           ]
         });
         if (data.bounds) view = tmFitView(data.bounds);
+        // 文脈ラベル（候補でない町も含む全町ラベル）：候補ラベルと混同
+        // しないよう、候補地図では小さく・沈んだ色に落とす。さらに
+        // text-ignore-placement で候補ラベルの配置を阻害しない
+        // （文脈ラベル同士の衝突回避は従来どおり効く）
         overlays.push({
           id: "towns-labels",
           data: window.TOWN_BOUNDARIES_GEOJSON,
@@ -1924,16 +1960,24 @@
               layout: {
                 "text-field": ["get", "name"],
                 "text-font": ["Optimistic-SemiBold", "NotoSans-Kurrent-Regular"],
-                "text-size": 13, "text-anchor": "center",
-                "text-allow-overlap": false, "text-optional": true
+                "text-size": 11.5, "text-anchor": "center",
+                "text-allow-overlap": false, "text-optional": true, "text-ignore-placement": true
               },
-              paint: { "text-color": "#f2f6fa", "text-halo-color": "#0b0f14", "text-halo-width": 1.8 }
+              paint: { "text-color": "#aeb9c4", "text-halo-color": "#0b0f14", "text-halo-width": 1.4 }
             }
           ]
         });
         // 候補の町名ラベル（丁目までのフル表記）は最前面レイヤーで描く。
-        // 密集時はベースマップの地名と同じ衝突回避（間引き）で構わない
-        // ため allow-overlap は切る：ズームすればその地域の町名が読める
+        // 【判別要素】候補ラベルは「カテゴリ色の太い縁（halo）で囲んだ
+        // 濃色文字」のチップとして描く：白文字＋細い黒縁の文脈ラベルとは
+        // 色でも形でも混同しない。ベース側の地名ラベルはスタイル差し替え
+        // で全て非表示のため、画面に出る町名はこの2種だけ。
+        // 【間引きの方針】ラベルデータは候補全件分（町ごとに1点、
+        // candidateMapData がリストと同数・同集合で生成する。データ側の
+        // 欠落はない）。描画は allow-overlap を切った衝突回避のため、
+        // 密集する低倍率では候補同士で一時的に隠れるものが出るが、
+        // ズームインすれば当該町のチップが読める。文脈ラベルは
+        // ignore-placement で候補を押し出さない
         overlays.push({
           id: "tm-cand-labels",
           data: { type: "FeatureCollection", features: data.labelFeatures },
@@ -1944,10 +1988,13 @@
               layout: {
                 "text-field": ["get", "label"],
                 "text-font": ["Optimistic-SemiBold", "NotoSans-Kurrent-Regular"],
-                "text-size": 13, "text-anchor": "center",
-                "text-allow-overlap": false, "text-optional": true, "text-padding": 2
+                "text-size": 12.5, "text-anchor": "center",
+                "text-allow-overlap": false, "text-optional": true, "text-padding": 1.5
               },
-              paint: { "text-color": data.color, "text-halo-color": "#0b0f14", "text-halo-width": 2 }
+              paint: {
+                "text-color": "#101318", "text-halo-color": data.color,
+                "text-halo-width": 3.5, "text-halo-blur": 0.3
+              }
             }
           ]
         });
@@ -1962,10 +2009,10 @@
               layout: {
                 "text-field": ["get", "name"],
                 "text-font": ["Optimistic-SemiBold", "NotoSans-Kurrent-Regular"],
-                "text-size": 13, "text-anchor": "center",
-                "text-allow-overlap": false, "text-optional": true
+                "text-size": 11.5, "text-anchor": "center",
+                "text-allow-overlap": false, "text-optional": true, "text-ignore-placement": true
               },
-              paint: { "text-color": "#f2f6fa", "text-halo-color": "#0b0f14", "text-halo-width": 1.8 }
+              paint: { "text-color": "#aeb9c4", "text-halo-color": "#0b0f14", "text-halo-width": 1.4 }
             }
           ]
         });
