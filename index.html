@@ -158,6 +158,12 @@
         font-size: 12px; font-weight: 900; color: var(--text); text-decoration: none; padding: 2px 4px; text-align: center; line-height: 1.3;
       }
 
+      /* ===== 一括ルートナビ（全ドロップを入力順で経由） ===== */
+      .bulk-row { margin-top: 4px; display: flex; }
+      .bulk-row .addr-btn { flex: 1; }
+      .bulk-note { margin: 3px 0 0; font-size: 11px; font-weight: 700; line-height: 1.4; color: var(--cond); }
+      .bulk-note[hidden] { display: none; }
+
       /* ===== 判定バナー ===== */
       .verdict { padding: 12px; border: 1px solid var(--border); }
       .verdict .v-title { margin: 0; font-size: 20px; font-weight: 900; line-height: 1.3; }
@@ -263,7 +269,7 @@
       .pick-chip {
         min-height: 26px; overflow: hidden; white-space: nowrap; border-radius: 8px;
         border: 1px solid var(--border); background: var(--surface2); color: var(--dim);
-        padding: 0 1px; font-size: 10px; font-weight: 900; line-height: 1.2; letter-spacing: -0.05em;
+        padding: 0 1px; font-size: 9.5px; font-weight: 900; line-height: 1.2; letter-spacing: -0.05em;
       }
       .pick-chip.active { border-color: var(--accent); background: rgba(46,230,107,0.16); color: var(--text); }
       /* 駅が選択済みの時は選択中の駅と「変更」だけを残して1行に畳み、
@@ -380,6 +386,10 @@
             <p class="start-line" id="start-line"></p>
             <div class="drop-nav-row" id="drop-nav-row"></div>
           </div>
+          <div class="bulk-row">
+            <a class="addr-btn primary disabled" id="bulk-route" target="_blank" rel="noopener">一括ルートナビ（ドロップ2件から）</a>
+          </div>
+          <p class="bulk-note" id="bulk-note" hidden></p>
           <div class="in-towns" id="in-towns">
             <div class="tm-scroll in-chips" id="in-chips"></div>
           </div>
@@ -1060,6 +1070,7 @@
         pView.href = "https://maps.apple.com/?q=" + encodeURIComponent(pick);
       }
       syncPickChips();
+      updateBulkRoute();
       if (!q) {
         row.hidden = true;
         nav.removeAttribute("href"); view.removeAttribute("href");
@@ -1072,6 +1083,61 @@
         ? "https://maps.apple.com/?saddr=" + encodeURIComponent(pick) + "&daddr=" + encodeURIComponent(q) + "&dirflg=b"
         : appleMapsNavUrl(q, true);
       view.href = "https://maps.apple.com/?q=" + encodeURIComponent(q);
+    }
+    // ===== 一括ルートナビ（全ドロップを入力順のまま経由するAppleマップURL） =====
+    // ロケットのマルチ配達はアプリ指定順が固定のため、並べ替えは一切しない：
+    // 起点（ピックアップ欄が入っていればその地点、空なら現在地）→ドロップ
+    // ①→②→③→④（入力した枠の順序そのまま）→ドロップ後の待機スポット。
+    // 各枠は住所が入っていればその住所、エリアだけならエリア中心（駅名）を使う。
+    // 地点が定まった枠が2件未満の間はボタンは押せない
+    var ROUTE_MAX_STOPS = 9; // Appleマップのルートに載せられる地点数の上限
+    function bulkRouteStops() {
+      var stops = [];
+      var n = 0;
+      drops.forEach(function (id, i) {
+        var addr = (dropAddrs[i] || "").trim();
+        if (addr) { stops.push(addr); n++; }
+        else if (id) { stops.push(stationLabel(id)); n++; }
+      });
+      if (n < 2) return null;
+      var pick = el("pick-input").value.trim();
+      stops.unshift(pick || "Current Location");
+      // 最後に付ける待機スポットは、ドロップ後の脚として選ばれているスポット
+      // （無ければ最終ドロップのエリアのスポット＝最適帰路ナビと同じ先）
+      var post = postLegInfo();
+      var spot = post ? post.spot : spotForArea(finalDropId(), bandIdx);
+      if (spot) stops.push(spot.daddr);
+      return { stops: stops, dropCount: n };
+    }
+    function updateBulkRoute() {
+      var a = el("bulk-route"), note = el("bulk-note");
+      if (!a || !note) return;
+      var r = bulkRouteStops();
+      if (!r) {
+        a.removeAttribute("href");
+        a.classList.add("disabled");
+        a.textContent = "一括ルートナビ（ドロップ2件から）";
+        note.hidden = true;
+        note.textContent = "";
+        return;
+      }
+      var stops = r.stops;
+      var truncated = stops.length > ROUTE_MAX_STOPS;
+      if (truncated) stops = stops.slice(0, ROUTE_MAX_STOPS); // 先頭から上限までで生成する
+      var url = "https://maps.apple.com/?saddr=" + encodeURIComponent(stops[0]) +
+        "&daddr=" + encodeURIComponent(stops[stops.length - 1]) + "&dirflg=b";
+      if (stops.length > 2) {
+        url = "https://maps.apple.com/?saddr=" + encodeURIComponent(stops[0]) +
+          "&waypoints=" + stops.slice(1, stops.length - 1).map(function (s) { return encodeURIComponent(s); }).join("|") +
+          "&daddr=" + encodeURIComponent(stops[stops.length - 1]) + "&dirflg=b";
+      }
+      a.href = url;
+      a.classList.remove("disabled");
+      a.textContent = "一括ルートナビ（ドロップ" + r.dropCount + "件・入力順）";
+      note.hidden = !truncated;
+      note.textContent = truncated
+        ? "地点数がAppleマップの上限を超えるため、先頭から" + ROUTE_MAX_STOPS + "地点で作成しています"
+        : "";
     }
     // ===== 住所・町名テキスト→背骨スロットの解決 =====
     // 住所入力だけでも候補が出るよう、確定したテキストをエリアへ変換する：
@@ -1168,7 +1234,9 @@
       { label: "久我山駅", short: "久我山" },
       { label: "武蔵関駅", short: "武蔵関" },
       { label: "上石神井駅", short: "上石神井" },
-      { label: "石神井公園駅", short: "石神井" },
+      // 石神井（西武新宿線）と石神井公園（西武池袋線）は別駅として両方置く
+      { label: "石神井駅", short: "石神井" },
+      { label: "石神井公園駅", short: "石神井公園" },
       { label: "大泉学園駅", short: "大泉学園" },
       { label: "田無駅", short: "田無" },
       { label: "花小金井駅", short: "花小金井" }
