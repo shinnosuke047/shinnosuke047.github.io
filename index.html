@@ -85,6 +85,11 @@
       .center-btn:disabled { opacity: 0.5; }
       .map-host { position: absolute; inset: 0; }
       .map-host > div { height: 100%; width: 100%; }
+      /* ズーム／方位コントロールは左上へ（右上の中心切替チップと重ねない）。
+         ライブラリ指定（navigationControlPosition）が効けばこの指定は無害、
+         効かない場合はこちらで右上コンテナごと左上へ逃がす */
+      .map-host .maplibregl-ctrl-top-right { left: 0; right: auto; }
+      .map-host .maplibregl-ctrl-top-right .maplibregl-ctrl { float: left; margin: 10px 0 0 10px; }
       .map-fallback { display: flex; height: 100%; flex-direction: column; justify-content: center; padding: 24px 16px; overflow-y: auto; background: var(--surface); }
       .map-fallback .ft { margin: 0; font-size: 14px; font-weight: 700; }
       .map-fallback .fh { margin: 12px 0 0; font-size: 12px; font-weight: 700; color: var(--dim); }
@@ -96,7 +101,7 @@
       .ov-controls { position: absolute; top: 8px; left: 8px; right: 8px; z-index: 6; display: flex; flex-direction: column; gap: 4px; pointer-events: none; }
       .ov-controls .center-row { pointer-events: auto; align-self: flex-end; }
       .ov-status {
-        margin: 0; pointer-events: auto; align-self: flex-start; max-width: 100%;
+        margin: 0; pointer-events: auto; align-self: flex-end; max-width: 100%;
         border-radius: 8px; border: 1px solid var(--border); background: rgba(11, 15, 20, 0.88);
         padding: 6px 8px; font-size: 11px; line-height: 1.5; color: var(--text);
       }
@@ -120,14 +125,14 @@
       }
 
       /* ===== ドロップ入力 ===== */
-      .drop-sec { padding: 10px; }
+      .drop-sec { padding: 8px; }
       .mode-row { display: flex; gap: 4px; }
       .mode-btn {
         min-height: 48px; flex: 1; border-radius: var(--radius); border: 1px solid var(--border);
         background: var(--surface2); color: var(--dim); font-size: 15px; font-weight: 900;
       }
       .mode-btn.active { border-color: var(--accent); background: rgba(46,230,107,0.14); color: var(--text); }
-      .d-label { margin: 12px 0 0; font-size: 13px; font-weight: 900; color: var(--dim); }
+      .d-label { margin: 8px 0 0; font-size: 13px; font-weight: 900; color: var(--dim); }
       .d-label .req { color: var(--accent); }
       .d-grid { margin-top: 6px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
       .chip {
@@ -139,14 +144,14 @@
       .chip.active { border-color: var(--accent); background: rgba(46,230,107,0.16); color: var(--text); }
       .chip.active.d2 { border-color: var(--land); background: rgba(34,211,238,0.14); }
       .chip.active.cand { border-color: var(--cond); background: rgba(255,192,46,0.14); }
-      .start-line { margin: 10px 0 0; font-size: 12px; font-weight: 700; line-height: 1.5; color: var(--dim); }
+      .start-line { margin: 6px 0 0; font-size: 12px; font-weight: 700; line-height: 1.5; color: var(--dim); }
       .start-line b { color: var(--text); }
       .start-line .from-gps { color: var(--accent); }
-      .drop-nav-row { margin-top: 10px; display: flex; gap: 4px; flex-wrap: wrap; }
+      .drop-nav-row { margin-top: 6px; display: flex; gap: 4px; flex-wrap: wrap; }
       .drop-nav-btn {
-        display: flex; min-height: 44px; flex: 1 1 30%; align-items: center; justify-content: center;
+        display: flex; min-height: 36px; flex: 1 1 20%; align-items: center; justify-content: center;
         border-radius: var(--radius); border: 1px solid var(--border); background: var(--surface2);
-        font-size: 13px; font-weight: 900; color: var(--text); text-decoration: none; padding: 4px 6px; text-align: center; line-height: 1.3;
+        font-size: 12px; font-weight: 900; color: var(--text); text-decoration: none; padding: 2px 4px; text-align: center; line-height: 1.3;
       }
 
       /* ===== 判定バナー ===== */
@@ -211,31 +216,51 @@
       .heat-legend { margin-top: 8px; display: flex; flex-wrap: wrap; column-gap: 16px; row-gap: 4px; font-size: 11px; font-weight: 700; color: var(--dim); }
 
       /* ===== 住所ショートカット（コピペ／町名入力→Appleマップ） ===== */
-      .addr-sec { padding: 10px; flex-shrink: 0; }
-      .addr-row { margin-top: 6px; display: flex; gap: 4px; }
+      .addr-sec { padding: 8px; flex-shrink: 0; }
+      .addr-row { margin-top: 4px; display: flex; gap: 4px; }
       #addr-input, #pick-input {
-        flex: 1; min-width: 0; min-height: 46px; border-radius: var(--radius); border: 1px solid var(--border);
+        flex: 1; min-width: 0; min-height: 40px; border-radius: var(--radius); border: 1px solid var(--border);
         background: var(--surface2); color: var(--text); font-size: 16px; padding: 0 12px;
       }
       #addr-input::placeholder, #pick-input::placeholder { color: var(--dim); font-size: 13px; }
       .addr-clear {
-        min-height: 46px; min-width: 56px; border-radius: var(--radius); border: 1px solid var(--border);
+        min-height: 40px; min-width: 56px; border-radius: var(--radius); border: 1px solid var(--border);
         background: var(--surface2); color: var(--dim); font-size: 13px; font-weight: 900;
       }
-      .addr-actions { margin-top: 6px; display: flex; gap: 4px; }
+      .addr-actions { margin-top: 4px; display: flex; gap: 4px; }
       .addr-actions[hidden] { display: none; }
       .addr-btn {
-        display: flex; min-height: 46px; flex: 1; align-items: center; justify-content: center;
+        display: flex; min-height: 42px; flex: 1; align-items: center; justify-content: center;
         border-radius: var(--radius); border: 1px solid var(--border); background: var(--surface2);
         font-size: 14px; font-weight: 900; color: var(--text); text-decoration: none; padding: 4px 6px; text-align: center; line-height: 1.3;
       }
-      .addr-btn.primary { background: var(--accent); border-color: var(--accent); color: #06280f; min-height: 54px; font-size: 16px; }
+      .addr-btn.primary { background: var(--accent); border-color: var(--accent); color: #06280f; min-height: 48px; font-size: 16px; }
       .addr-btn.disabled { opacity: 0.45; pointer-events: none; }
+
+      /* ===== ピックアップ駅チップ（タップ1回で駅名が入る） ===== */
+      .pick-chips { margin-top: 6px; display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+      .pick-chip {
+        min-height: 28px; overflow: hidden; white-space: nowrap; border-radius: 8px;
+        border: 1px solid var(--border); background: var(--surface2); color: var(--dim);
+        padding: 0 1px; font-size: 10px; font-weight: 900; line-height: 1.2; letter-spacing: -0.05em;
+      }
+      .pick-chip.active { border-color: var(--accent); background: rgba(46,230,107,0.16); color: var(--text); }
+
+      /* ===== 入力画面内の候補地点（背骨が入ったらその場に出る） ===== */
+      .in-towns { margin-top: 6px; flex: 1; min-height: 0; display: flex; flex-direction: column; border-top: 1px solid var(--border); padding-top: 4px; }
+      .in-towns .tm-catnote { display: none; }
+      .in-tabs { display: flex; gap: 4px; }
+      .in-tabs .tm-tab { flex: 1; min-height: 30px; font-size: 11px; padding: 2px; }
+      .in-tabs .tm-tab .cnt { font-size: 10px; }
+      .in-chips { margin-top: 6px; }
+      .in-chips .town-chip { min-height: 36px; padding: 5px 4px; font-size: 12px; }
+      .in-pager { margin-top: 6px; }
+      .in-pager .pager-btn { min-height: 36px; font-size: 13px; }
 
       /* ===== ワンタップ取消し（1つ戻る／全て取消し） ===== */
       .undo-row { display: flex; gap: 4px; margin-bottom: 8px; }
       .undo-btn {
-        min-height: 44px; flex: 1; border-radius: var(--radius); border: 1px solid var(--border);
+        min-height: 38px; flex: 1; border-radius: var(--radius); border: 1px solid var(--border);
         background: var(--surface2); color: var(--text); font-size: 14px; font-weight: 900;
       }
       .undo-btn:disabled { opacity: 0.4; }
@@ -244,12 +269,12 @@
       #scr-input .drop-sec { flex: 1; min-height: 0; display: flex; flex-direction: column; }
       .slot-row { display: flex; gap: 4px; }
       .slot-btn {
-        min-height: 50px; flex: 1; min-width: 0; border-radius: var(--radius); border: 1px solid var(--border);
+        min-height: 42px; flex: 1; min-width: 0; border-radius: var(--radius); border: 1px solid var(--border);
         background: var(--surface2); color: var(--dim); font-size: 11px; font-weight: 900; line-height: 1.3; padding: 4px 2px; overflow-wrap: anywhere;
       }
-      .slot-btn .slot-name { display: block; font-size: 15px; color: var(--text); margin-top: 2px; }
+      .slot-btn .slot-name { display: block; font-size: 14px; color: var(--text); margin-top: 2px; }
       .slot-add {
-        min-height: 50px; flex: 0 0 46px; border-radius: var(--radius); border: 1px dashed var(--border);
+        min-height: 42px; flex: 0 0 46px; border-radius: var(--radius); border: 1px dashed var(--border);
         background: transparent; color: var(--dim); font-size: 15px; font-weight: 900; line-height: 1.3; padding: 4px 2px;
       }
       .slot-add .slot-name { display: block; font-size: 11px; margin-top: 2px; }
@@ -257,9 +282,9 @@
       .slot-btn.active { border-color: var(--accent); background: rgba(46,230,107,0.14); }
       .slot-btn.active.d2 { border-color: var(--land); background: rgba(34,211,238,0.12); }
       .slot-btn.active.cand { border-color: var(--cond); background: rgba(255,192,46,0.12); }
-      .slot-desc { margin: 8px 0 0; font-size: 12px; font-weight: 700; line-height: 1.5; color: var(--dim); }
-      #slot-grid { margin-top: 6px; }
-      #scr-input .chip { min-height: 40px; }
+      .slot-desc { margin: 4px 0 0; font-size: 12px; font-weight: 700; line-height: 1.5; color: var(--dim); }
+      #slot-grid { margin-top: 4px; grid-template-columns: repeat(5, 1fr); }
+      #scr-input .chip { min-height: 28px; }
 
       /* ===== 候補（カテゴリ切替＋ページ送り・スクロールなし） ===== */
       #scr-towns .towns-sec { flex: 1; min-height: 0; display: flex; flex-direction: column; }
@@ -306,10 +331,15 @@
       <!-- ===== 入力画面（住所ショートカット＋スロット式ドロップ入力） ===== -->
       <section class="screen" id="scr-input" aria-label="ドロップ地入力">
         <div class="card addr-sec">
-          <p class="d-label" style="margin-top:0">ピックアップ <span class="req">町名＋番号、または住所</span></p>
+          <p class="d-label" style="margin-top:0">ピックアップ <span class="req">駅名タップ、または町名＋番号・住所</span></p>
+          <div class="pick-chips" id="pick-chips" role="group" aria-label="ピックアップの駅を選ぶ"></div>
           <div class="addr-row">
             <input id="pick-input" type="text" autocomplete="off" placeholder="例：荻窪5丁目／店舗の住所" aria-label="ピックアップ地点の町名と番号または住所" />
             <button type="button" class="addr-clear" id="pick-clear">消す</button>
+          </div>
+          <div class="addr-actions" id="pick-actions" hidden>
+            <a class="addr-btn" id="pick-nav" target="_blank" rel="noopener">ピックアップへナビ開始</a>
+            <a class="addr-btn" id="pick-view" target="_blank" rel="noopener">ピックアップを地図で見る</a>
           </div>
           <p class="d-label" id="addr-label">ドロップ① <span class="req">町名＋番号、または住所をコピペ</span></p>
           <div class="addr-row">
@@ -331,6 +361,12 @@
           <div class="d-grid" id="slot-grid" role="group" aria-label="エリア選択"></div>
           <p class="start-line" id="start-line"></p>
           <div class="drop-nav-row" id="drop-nav-row"></div>
+          <div class="in-towns" id="in-towns">
+            <div class="in-tabs" id="in-tabs" role="group" aria-label="候補リストの切り替え（入力画面内）"></div>
+            <p class="tm-catnote" id="in-catnote"></p>
+            <div class="tm-chips in-chips" id="in-chips"></div>
+            <div class="tm-pager in-pager" id="in-pager"></div>
+          </div>
         </div>
       </section>
 
@@ -594,11 +630,12 @@
     var committedFieldVal = { "pick-input": "", "addr-input": "" };
     function commitTextField(id) {
       var f = el(id);
-      if (!f || f.value === committedFieldVal[id]) return;
+      if (!f || f.value === committedFieldVal[id]) return false;
       var prev = snapshotObj();
       prev[id === "pick-input" ? "pick" : "drop"] = committedFieldVal[id];
       pushSnapshot(JSON.stringify(prev));
       committedFieldVal[id] = f.value;
+      return true;
     }
     function commitPendingText() {
       commitTextField("pick-input");
@@ -857,11 +894,11 @@
           label: "ドロップ" + DROP_MARKS[i],
           desc: i === 0
             ? "1件目の届け先。背骨の軸はここから始まります"
-            : "重ねて持つ届け先。最後に入ったドロップが判定の着地基準になります",
+            : "重ね取りの届け先。最後の枠が着地基準",
           cls: i === 0 ? "" : "d2"
         };
       }
-      return { label: "候補ドロップ", desc: "来た案件の届け先。入れると取れる／取らないを即判定します", cls: "cand" };
+      return { label: "候補ドロップ", desc: "来た案件の届け先。即判定します", cls: "cand" };
     }
     function slotValue(i) { return i < drops.length ? drops[i] : candId; }
     function setSlotValue(i, v) {
@@ -936,7 +973,7 @@
       var start = spineStart();
       el("start-line").innerHTML = "起点：" + (start.gps
         ? '<span class="from-gps">現在地（GPS）</span>'
-        : "<b>" + esc(start.label) + "</b>（GPS未取得のためエリア中心で仮判定。「現在地」でGPS取得）");
+        : "<b>" + esc(start.label) + "</b>（エリア中心で仮判定）");
       // ドロップへのナビボタン（入力済みの全枠分＋候補）
       var navHtml = "";
       drops.forEach(function (id, i) {
@@ -963,6 +1000,17 @@
       var q = el("addr-input").value.trim();
       var pick = el("pick-input").value.trim();
       var nav = el("addr-nav"), view = el("addr-view"), row = el("addr-actions");
+      // ピックアップ欄にも専用のマップショートカットを出す（入力が入った時だけ）
+      var pNav = el("pick-nav"), pView = el("pick-view"), pRow = el("pick-actions");
+      if (!pick) {
+        pRow.hidden = true;
+        pNav.removeAttribute("href"); pView.removeAttribute("href");
+      } else {
+        pRow.hidden = false;
+        pNav.href = appleMapsNavUrl(pick, true);
+        pView.href = "https://maps.apple.com/?q=" + encodeURIComponent(pick);
+      }
+      syncPickChips();
       if (!q) {
         row.hidden = true;
         nav.removeAttribute("href"); view.removeAttribute("href");
@@ -976,6 +1024,53 @@
         : appleMapsNavUrl(q, true);
       view.href = "https://maps.apple.com/?q=" + encodeURIComponent(q);
     }
+    // ===== 住所・町名テキスト→背骨スロットの解決 =====
+    // 住所入力だけでも候補が出るよう、確定したテキストをエリアへ変換する：
+    // エリア名が含まれればそのエリア、町名が含まれればその丁目ポリゴンの
+    // 重心から最寄りエリア。丁目は漢数字表記（阿佐谷南一丁目）に合わせて変換する
+    function kanjiDigits(s) {
+      var map = { "0": "〇", "1": "一", "2": "二", "3": "三", "4": "四", "5": "五", "6": "六", "7": "七", "8": "八", "9": "九" };
+      return s.replace(/[０-９]/g, function (c) { return String.fromCharCode(c.charCodeAt(0) - 0xFEE0); })
+        .replace(/[0-9]/g, function (d) { return map[d]; });
+    }
+    function resolveDropAreaFromText(text) {
+      var t = (text || "").trim();
+      if (!t) return null;
+      for (var i = 0; i < AREAS.length; i++) {
+        if (t.indexOf(AREAS[i].label) >= 0) return AREAS[i].id;
+      }
+      var norm = kanjiDigits(t);
+      var polys = window.TOWN_ZONE_POLYGONS || [];
+      var hit = null;
+      for (var j = 0; j < polys.length; j++) {
+        if (norm.indexOf(polys[j].town) >= 0 || norm.indexOf(polys[j].city + polys[j].town) >= 0) { hit = polys[j]; break; }
+      }
+      if (!hit) {
+        // 「阿佐谷南」のような丁目なし入力は町名の前方一致で拾う
+        var base = norm.replace(/丁目$/, "").replace(/[一二三四五六七八九]$/, "");
+        var cities = {};
+        polys.forEach(function (p) { cities[p.city] = true; });
+        Object.keys(cities).forEach(function (c) { if (base.indexOf(c) === 0) base = base.slice(c.length); });
+        if (base.length >= 2) {
+          for (var m = 0; m < polys.length; m++) {
+            if (polys[m].town.indexOf(base) === 0) { hit = polys[m]; break; }
+          }
+        }
+      }
+      if (!hit) return null;
+      var ring = hit.ring, slat = 0, slon = 0, n = Math.max(1, ring.length - 1);
+      for (var k = 0; k < n; k++) { slon += ring[k][0]; slat += ring[k][1]; }
+      return nearestAreaIdIn(AREAS, { lat: slat / n, lon: slon / n });
+    }
+    function resolveAddrToSlot() {
+      var id = resolveDropAreaFromText(el("addr-input").value);
+      if (!id || slotValue(activeSlot) === id) return;
+      // 履歴は直前の commitTextField が確定前の状態を積み済み（テキスト＋エリアを
+      // 1回の「1つ戻る」で一緒に巻き戻せるよう、ここでは追加で積まない）
+      if (activeSlot < drops.length) drops[activeSlot] = id;
+      else candId = id;
+      refresh();
+    }
     // テキスト欄は入力中リンクだけを追随させ、履歴へは積まない。入力の
     // 区切り（フォーカスを外した時）に commitTextField が「入力1回分」を
     // 1エントリとして確定させるので、「1つ戻る」1タップで欄ごと戻る。
@@ -986,7 +1081,10 @@
         syncAddrLinks();
         updateUndoBtn();
       });
-      f.addEventListener("blur", function () { commitTextField(id); });
+      f.addEventListener("blur", function () {
+        // 住所・町名が確定したら、その入力だけで背骨も決まるよう対象スロットへ反映する
+        if (commitTextField(id) && id === "addr-input") resolveAddrToSlot();
+      });
     });
     el("addr-input").addEventListener("keydown", function (e) {
       if (e.key === "Enter") {
@@ -1005,6 +1103,61 @@
       pushHistory();
       el("pick-input").value = ""; committedFieldVal["pick-input"] = ""; syncAddrLinks();
     });
+
+    // ===== ピックアップ駅チップ（回廊の駅＋待機スポットで使う駅） =====
+    // タップ1回で駅名がピックアップ欄に入り確定する。同じ駅をもう一度
+    // タップすると解除。選択はテキスト入力と同じく履歴（1つ戻る）の対象。
+    var PICK_STATIONS = [
+      { label: "武蔵境駅", short: "武蔵境" },
+      { label: "三鷹駅", short: "三鷹" },
+      { label: "吉祥寺駅", short: "吉祥寺" },
+      { label: "西荻窪駅", short: "西荻窪" },
+      { label: "荻窪駅", short: "荻窪" },
+      { label: "阿佐ヶ谷駅", short: "阿佐ヶ谷" },
+      { label: "高円寺駅", short: "高円寺" },
+      { label: "久我山駅", short: "久我山" },
+      { label: "武蔵関駅", short: "武蔵関" },
+      { label: "上石神井駅", short: "上石神井" },
+      { label: "石神井公園駅", short: "石神井" },
+      { label: "大泉学園駅", short: "大泉学園" },
+      { label: "田無駅", short: "田無" },
+      { label: "花小金井駅", short: "花小金井" }
+    ];
+    function renderPickChips() {
+      var html = "";
+      PICK_STATIONS.forEach(function (s) {
+        html += '<button type="button" class="pick-chip" data-pick="' + esc(s.label) +
+          '" aria-pressed="false" aria-label="ピックアップを' + esc(s.label) + 'にする">' + esc(s.short) + "</button>";
+      });
+      el("pick-chips").innerHTML = html;
+      var btns = el("pick-chips").querySelectorAll("button[data-pick]");
+      for (var i = 0; i < btns.length; i++) {
+        btns[i].addEventListener("click", function () {
+          var v = this.getAttribute("data-pick");
+          var f = el("pick-input");
+          var next = f.value.trim() === v ? "" : v; // 同じ駅の再タップで解除
+          if (f.value === next) return;
+          pushHistory();
+          f.value = next;
+          committedFieldVal["pick-input"] = next;
+          syncAddrLinks();
+          updateUndoBtn();
+        });
+      }
+      syncPickChips();
+    }
+    function syncPickChips() {
+      var box = el("pick-chips");
+      if (!box) return;
+      var cur = el("pick-input").value.trim();
+      var btns = box.querySelectorAll("button[data-pick]");
+      for (var i = 0; i < btns.length; i++) {
+        var on = btns[i].getAttribute("data-pick") === cur && cur !== "";
+        btns[i].classList.toggle("active", on);
+        btns[i].setAttribute("aria-pressed", on);
+      }
+    }
+    renderPickChips();
     syncAddrLinks();
 
     // ===== ワンタップ取消し（1つ戻る／全て取消し） =====
@@ -1047,6 +1200,7 @@
         setMapVerdict("idle", "ドロップ①を選ぶと判定が出ます");
         tmState = null;
         renderTowns();
+        renderInlineTowns();
         return;
       }
       var routeLabel = res.pts.map(function (p) { return p.label; }).join(" → ");
@@ -1103,6 +1257,7 @@
       cats.forEach(function (c) { if (c.key === keepActive) exists = true; });
       tmState = { cats: cats, active: exists ? keepActive : "band", page: exists ? keepPage : 0, pageSize: keepSize };
       renderTowns();
+      renderInlineTowns();
     }
     // 候補町リスト表示：カテゴリはタブ切替、長いリストはページ送り（スクロールなし・全てタップ）
     var TM_PAGE_DEFAULT = 12;
@@ -1171,6 +1326,99 @@
           '<button type="button" class="pager-btn" id="tm-next"' + (tmState.page >= pages - 1 ? " disabled" : "") + ">次 ›</button>";
         el("tm-prev").addEventListener("click", function () { if (tmState.page > 0) { tmState.page--; renderTowns(); } });
         el("tm-next").addEventListener("click", function () { tmState.page++; renderTowns(); });
+      } else {
+        pager.innerHTML = "";
+      }
+    }
+
+    // ===== 入力画面内の候補地点（候補画面と同じ計算結果をその場で表示） =====
+    // 背骨のドロップが入れば、画面を移らずに入力画面の下部へ候補が出る。
+    // カテゴリはタブ、長いリストはページ送り（スクロールなし・全てタップ）。
+    var inState = null; // {active, page, pageSize}
+    var IN_PAGE_DEFAULT = 6;
+    function renderInlineTowns() {
+      var tabs = el("in-tabs"), chipsBox = el("in-chips"), pager = el("in-pager"), note = el("in-catnote");
+      if (!tabs) return;
+      if (!tmState) {
+        tabs.innerHTML = "";
+        note.textContent = "";
+        chipsBox.innerHTML = '<p class="tm-empty">背骨のドロップを選ぶと、経由OK・着地OKの候補がここに出ます。</p>';
+        pager.innerHTML = "";
+        inState = null;
+        return;
+      }
+      if (!inState) inState = { active: "band", page: 0, pageSize: 0 };
+      var exists = false;
+      tmState.cats.forEach(function (c) { if (c.key === inState.active) exists = true; });
+      if (!exists) { inState.active = "band"; inState.page = 0; }
+      var cat = null;
+      tmState.cats.forEach(function (c) { if (c.key === inState.active) cat = c; });
+      if (!cat) cat = tmState.cats[0];
+      // 入力画面内ではタブのラベルを短くし、1行に収める
+      var shortLabel = { band: "経由OK", land: "着地OK", pband: "経由（後）", pland: "着地（待機）" };
+      var th = "";
+      tmState.cats.forEach(function (c) {
+        th += '<button type="button" class="tm-tab ' + c.key + (c.key === cat.key ? " active" : "") +
+          '" data-icat="' + c.key + '" aria-pressed="' + (c.key === cat.key) + '">' +
+          esc(shortLabel[c.key] || c.label) + ' <span class="cnt">' + c.list.length + '町</span></button>';
+      });
+      tabs.innerHTML = th;
+      var tbs = tabs.querySelectorAll("button[data-icat]");
+      for (var i = 0; i < tbs.length; i++) {
+        tbs[i].addEventListener("click", function () {
+          inState.active = this.getAttribute("data-icat");
+          inState.page = 0;
+          renderInlineTowns();
+        });
+      }
+      note.textContent = cat.note;
+      // 高さは in-towns 全体（＝親のflexで決まり、子要素の有無に左右されない）から
+      // 決定的に算出する。ページャ分の42pxを差し引いてもチップ1行（36px）が
+      // 残る時だけページャを出し、それ以外はチップ表示を優先してページャを畳む
+      var pageSize = inState.pageSize || IN_PAGE_DEFAULT;
+      var totalH = el("in-towns").clientHeight;
+      if (totalH > 0) {
+        var availAll = totalH - 40; // 上padding4＋タブ30＋チップ上margin6
+        var withPager = availAll - 42; // ページャ（margin6＋36px）
+        if (withPager >= 36) {
+          pageSize = Math.max(3, Math.min(15, Math.floor((withPager + 6) / 42) * 3));
+          inState.usePager = true;
+        } else {
+          pageSize = Math.max(3, Math.min(15, Math.floor((availAll + 6) / 42) * 3));
+          inState.usePager = false;
+        }
+        inState.pageSize = pageSize;
+      }
+      var pages = Math.max(1, Math.ceil(cat.list.length / pageSize));
+      if (inState.page >= pages) inState.page = pages - 1;
+      if (inState.page < 0) inState.page = 0;
+      var slice = cat.list.slice(inState.page * pageSize, inState.page * pageSize + pageSize);
+      if (!slice.length) {
+        var emptyMsg = cat.note + "に重なる町はありません" +
+          ((cat.key === "pband" || cat.key === "pland") ? "（背骨側と重なる町は背骨側のリストに表示）。" : "。");
+        chipsBox.innerHTML = '<p class="tm-empty">' + esc(emptyMsg) + "</p>";
+      } else {
+        var html = "";
+        slice.forEach(function (t) {
+          html += '<button type="button" class="town-chip" data-itown="' + esc(t.town) + '" data-icity="' + esc(t.city) +
+            '" aria-label="' + esc(t.city + " " + t.town) + 'へAppleマップでナビする">' + esc(t.town) + '<span class="nav-mark">ナビ›</span></button>';
+        });
+        chipsBox.innerHTML = html;
+        var cbtns = chipsBox.querySelectorAll("button[data-itown]");
+        for (var j = 0; j < cbtns.length; j++) {
+          cbtns[j].addEventListener("click", function () {
+            var dest = this.getAttribute("data-icity") + this.getAttribute("data-itown");
+            window.open(appleMapsNavUrl(dest, true), "_blank", "noopener");
+          });
+        }
+      }
+      if (pages > 1 && inState.usePager !== false) {
+        pager.innerHTML =
+          '<button type="button" class="pager-btn" id="in-prev"' + (inState.page === 0 ? " disabled" : "") + ">‹ 前</button>" +
+          '<span class="pager-info num">' + (inState.page + 1) + " / " + pages + "</span>" +
+          '<button type="button" class="pager-btn" id="in-next"' + (inState.page >= pages - 1 ? " disabled" : "") + ">次 ›</button>";
+        el("in-prev").addEventListener("click", function () { if (inState.page > 0) { inState.page--; renderInlineTowns(); } });
+        el("in-next").addEventListener("click", function () { inState.page++; renderInlineTowns(); });
       } else {
         pager.innerHTML = "";
       }
@@ -1471,6 +1719,8 @@
           center: { lat: c.lat, lng: c.lon },
           zoom: ringFitZoom(c.lat),
           baseStyle: "dark",
+          // ズーム／方位コントロールは左上へ逃がす（右上の中心切替チップと重ねない）
+          navigationControlPosition: "top-left",
           places: places,
           overlays: [
             {
@@ -1566,6 +1816,7 @@
       for (var j = 0; j < btns.length; j++) btns[j].classList.toggle("active", btns[j].getAttribute("data-screen") === id);
       if (id === "scr-map") mountCorridorMap(); // 表示されてから描き直す（容器サイズ確定後）
       if (id === "scr-towns") renderTowns(); // ページサイズを実表示高さで再計算
+      if (id === "scr-input") renderInlineTowns(); // 入力画面内候補のページサイズも実表示高さで再計算
     }
     (function () {
       var btns = document.querySelectorAll(".tabbar button[data-screen]");
