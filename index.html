@@ -383,6 +383,28 @@
         min-height: 30px; padding: 2px; font-size: 12px; line-height: 1.2; border-radius: 6px;
       }
 
+      /* ===== 候補画面：リスト／地図の表示切替 =====
+         リスト表示の寸法（1画面収まり）は変えない：切替は候補ブロック
+         右上に重ねる浮動セグメントとし、見出し・注記・空メッセージには
+         右側の余白を確保して文字と重ねない。地図はリストと同じ箱
+         （top:48〜bottom:28）へ絶対配置で広げ、切替で相互に差し替える */
+      .tm-view-toggle {
+        position: absolute; top: 46px; right: 10px; z-index: 8; display: flex;
+        border-radius: 999px; border: 1px solid var(--border);
+        background: rgba(11, 15, 20, 0.9); overflow: hidden;
+      }
+      .tm-view-toggle button {
+        min-height: 26px; padding: 0 13px; font-size: 12px; font-weight: 900; color: var(--dim); line-height: 1.2;
+      }
+      .tm-view-toggle button.active { background: rgba(46, 230, 107, 0.2); color: var(--text); }
+      .tm-map-stage {
+        position: absolute; top: 48px; right: 10px; bottom: 28px; left: 10px;
+        border-radius: 8px; overflow: hidden; background: var(--surface2);
+      }
+      .tm-map-stage[hidden] { display: none; }
+      #tm-chips[hidden] { display: none; }
+      #tm-chips .tm-h, #tm-chips .tm-catnote, #tm-chips .tm-empty { padding-right: 106px; }
+
       /* ===== カテゴリボタン（候補ブロック直上・常設） =====
          候補画面ではセクション切替、入力画面ではピックアップ内の位置ジャンプ。
          件数は判定結果と連動して更新される。4ボタン均等幅・同高・1行固定：
@@ -499,7 +521,14 @@
             <button type="button" class="jump-btn pband" data-jump="pband">経由・後 <span class="jc num" data-jc="pband">0</span></button>
             <button type="button" class="jump-btn pland" data-jump="pland">着地・待機 <span class="jc num" data-jc="pland">0</span></button>
           </div>
+          <div class="tm-view-toggle" role="group" aria-label="候補の表示方法">
+            <button type="button" data-tmview="list" class="active" aria-pressed="true">リスト</button>
+            <button type="button" data-tmview="map" aria-pressed="false">地図</button>
+          </div>
           <div class="tm-scroll" id="tm-chips"></div>
+          <div class="tm-map-stage" id="tm-map-stage" hidden>
+            <div class="map-host" id="tm-map-host"></div>
+          </div>
           <p class="tm-note">町名タップでAppleマップの自転車ナビがその町へ開きます。</p>
         </div>
       </section>
@@ -808,6 +837,10 @@
     var activeSlot = 0; // 入力中スロット 0〜drops.length-1=ドロップ枠、drops.length=候補ドロップ
     var tmState = null; // 候補町リストの状態 {cats}（4カテゴリ全件を保持）
     var tmActiveCat = "band"; // 候補画面で表示中のセクション（カテゴリボタンで切替）
+    var tmViewMode = "list"; // 候補画面の表示方法 "list" | "map"（地図はリストの置換ではなく追加モード）
+    var tmMapHandle = null; // 候補地図のマウントハンドル
+    // 候補地図のポリゴン色＝カテゴリボタンの色（--band/--land/--pband/--pland と一致）
+    var TM_CAT_COLORS = { band: "#facc15", land: "#22d3ee", pband: "#fb923c", pland: "#c084fc" };
 
     function el(id) { return document.getElementById(id); }
     function esc(s) {
@@ -1602,6 +1635,7 @@
         box.innerHTML = '<p class="tm-empty">ドロップ地を選ぶと、経由OK・着地OKの町名が並びます。</p>';
         updateJumpCounts();
         syncCatButtons();
+        syncTownsView();
         return;
       }
       var cat = null;
@@ -1612,6 +1646,7 @@
       box.scrollTop = 0;
       updateJumpCounts();
       syncCatButtons();
+      syncTownsView();
     }
 
     // ===== カテゴリボタン（候補ブロック直上） =====
@@ -1669,6 +1704,360 @@
     }
     bindCatBar();
     bindJumpBar("in-jump", "in-chips");
+
+    // ===== 候補画面：地図表示（候補ポリゴンを実際の位置にカテゴリ色で描く） =====
+    // 目的はリストの置換ではなく地理学習：リストで見た色と同じ色の塊が
+    // 実際の町位置にどう分布するかを見て、色の分布と地形の対応を覚える。
+    // ラベルは町名のフル表記（丁目まで。例「荻窪五丁目」）で、連番のような
+    // 新しい番号は振らない。カテゴリ切替はリストと同じ tmActiveCat を共有し、
+    // 地図に出るのは選択中カテゴリの色のポリゴンだけ。
+    function tmActiveCategory() {
+      if (!tmState) return null;
+      var cat = null;
+      tmState.cats.forEach(function (c) { if (c.key === tmActiveCat) cat = c; });
+      return cat || tmState.cats[0];
+    }
+    // 選択中カテゴリの候補町について、判定用ポリゴン（673丁目）から
+    // 描画用フィーチャ（面＋ラベル点）と、初期表示に収める範囲を作る。
+    // ラベル点は町ごとに1つ、全ポリゴン部の頂点重心に置く（ポリゴンが
+    // 分かれている町でも町の中心付近に来る）。ラベルの文字列は town
+    // そのもの＝丁目までのフル表記。
+    function candidateMapData(cat) {
+      var want = {};
+      cat.list.forEach(function (t) { want[t.city + "|" + t.town] = true; });
+      var polys = window.TOWN_ZONE_POLYGONS || [];
+      var polyFeatures = [];
+      var acc = {}; // town -> {slat, slon, n}（ラベル点の重心計算用）
+      var minLat = Infinity, maxLat = -Infinity, minLon = Infinity, maxLon = -Infinity;
+      function grow(lon, lat) {
+        if (lon < minLon) minLon = lon;
+        if (lon > maxLon) maxLon = lon;
+        if (lat < minLat) minLat = lat;
+        if (lat > maxLat) maxLat = lat;
+      }
+      polys.forEach(function (p) {
+        if (!want[p.city + "|" + p.town]) return;
+        polyFeatures.push({ type: "Feature", properties: {}, geometry: { type: "Polygon", coordinates: [p.ring] } });
+        var a = acc[p.town] || (acc[p.town] = { slat: 0, slon: 0, n: 0 });
+        var n = Math.max(1, p.ring.length - 1); // 閉じ点（先頭の複製）は数えない
+        for (var k = 0; k < n; k++) {
+          grow(p.ring[k][0], p.ring[k][1]);
+          a.slon += p.ring[k][0]; a.slat += p.ring[k][1]; a.n++;
+        }
+      });
+      var labelFeatures = [];
+      Object.keys(acc).forEach(function (town) {
+        var a = acc[town];
+        labelFeatures.push({
+          type: "Feature", properties: { label: town },
+          geometry: { type: "Point", coordinates: [a.slon / a.n, a.slat / a.n] }
+        });
+      });
+      // 背骨の軸（と、後・待機カテゴリではドロップ後の脚）も初期表示の
+      // 範囲に含める：候補の広がりと軸が一緒に画面へ収まるようにする
+      var pts = routePoints();
+      if (pts) pts.forEach(function (p) { grow(p.lon, p.lat); });
+      if (cat.key === "pband" || cat.key === "pland") {
+        var post = postLegInfo();
+        if (post) { grow(post.from.lon, post.from.lat); grow(post.to.lon, post.to.lat); }
+      }
+      return {
+        color: TM_CAT_COLORS[cat.key] || "#facc15",
+        polyFeatures: polyFeatures,
+        labelFeatures: labelFeatures,
+        candNames: cat.list.map(function (t) { return t.town; }),
+        bounds: isFinite(minLat) ? { minLat: minLat, maxLat: maxLat, minLon: minLon, maxLon: maxLon } : null
+      };
+    }
+    // 範囲全体がステージに収まる中心と倍率（候補ポリゴン＋軸。周囲に余白）
+    function tmFitView(bounds) {
+      var stage = el("tm-map-stage");
+      var w = (stage && stage.clientWidth) || 350;
+      var h = (stage && stage.clientHeight) || 420;
+      var cLat = (bounds.minLat + bounds.maxLat) / 2;
+      var cLon = (bounds.minLon + bounds.maxLon) / 2;
+      var wM = Math.max(320, (bounds.maxLon - bounds.minLon) * 111320 * Math.cos(cLat * Math.PI / 180) * 1.18);
+      var hM = Math.max(320, (bounds.maxLat - bounds.minLat) * 110574 * 1.18);
+      var mpp = Math.max(wM / w, hM / h);
+      var z = Math.log(40075016.686 * Math.cos(cLat * Math.PI / 180) / (512 * mpp)) / Math.LN2;
+      return { lat: cLat, lon: cLon, zoom: Math.max(10.6, Math.min(15, z)) };
+    }
+    function showTownsMapFallback(host, cat) {
+      var names = cat ? cat.list.map(function (t) { return t.town; }).join("、") : "";
+      host.innerHTML =
+        '<div class="map-fallback" role="img" aria-label="候補地図を表示できないため町名一覧で代替">' +
+        '<p class="ft">地図を表示できませんでした。町名一覧で代替します。</p>' +
+        (cat ? '<p class="fh">' + esc(cat.label) + " " + cat.list.length + '町</p><p class="fnote">' + esc(names) + "</p>" : "") +
+        "</div>";
+    }
+    function mountTownsMap() {
+      var host = el("tm-map-host");
+      if (!host) return;
+      if (tmMapHandle) { try { tmMapHandle.destroy(); } catch (e) { /* noop */ } tmMapHandle = null; }
+      host.innerHTML = "";
+      var cat = tmActiveCategory();
+      var inner = document.createElement("div");
+      inner.setAttribute("role", "img");
+      inner.setAttribute("aria-label", cat
+        ? "候補地図：" + cat.label + "の町（" + cat.list.length + "町）を実際の位置にカテゴリ色のポリゴンと町名ラベル（丁目まで）で表示"
+        : "候補地図：ドロップ地を選ぶと候補の町が実際の位置に色で表示されます");
+      host.appendChild(inner);
+      var places = [];
+      MAP_STATIONS.forEach(function (s) { places.push({ label: s.label, lat: s.lat, lng: s.lon }); });
+      MAP_LANDMARKS.forEach(function (l) { places.push({ label: l.label, lat: l.lat, lng: l.lon }); });
+      // 町境界（文脈）と全町ラベルは回廊マップと同じものを使う。
+      // 候補の町は全町ラベル（白）から除き、候補ラベル（カテゴリ色）を
+      // 最前面で描くことで二重表示を避ける
+      var townLabelFilter = ["==", ["get", "kind"], "town-label"];
+      var overlays = [
+        {
+          id: "towns",
+          data: window.TOWN_BOUNDARIES_GEOJSON,
+          layers: [
+            {
+              id: "towns-boundary", type: "line", source: "towns",
+              filter: ["==", ["get", "kind"], "town-boundary"],
+              layout: { "line-join": "round" },
+              paint: { "line-color": "#7d7392", "line-width": 1.25, "line-opacity": 0.55 }
+            }
+          ]
+        }
+      ];
+      var view = { lat: 35.7048, lon: 139.6202, zoom: 12 }; // 候補が無い時の既定（荻窪中心）
+      if (cat) {
+        var data = candidateMapData(cat);
+        if (data.candNames.length) {
+          townLabelFilter = ["all", ["==", ["get", "kind"], "town-label"],
+            ["!", ["in", ["get", "name"], ["literal", data.candNames]]]];
+        }
+        // 背骨の軸（白線＋端点ラベル）。後・待機カテゴリではドロップ後の
+        // 脚（最終ドロップ→待機スポット）も紫の線で重ねる
+        var axisFeatures = [];
+        var pts = routePoints();
+        if (pts && pts.length >= 2) {
+          axisFeatures.push({
+            type: "Feature", properties: { kind: "axis" },
+            geometry: { type: "LineString", coordinates: pts.map(function (p) { return [p.lon, p.lat]; }) }
+          });
+          axisFeatures.push({ type: "Feature", properties: { kind: "axis", label: pts[0].label }, geometry: { type: "Point", coordinates: [pts[0].lon, pts[0].lat] } });
+          var lastPt = pts[pts.length - 1];
+          axisFeatures.push({ type: "Feature", properties: { kind: "axis", label: lastPt.label }, geometry: { type: "Point", coordinates: [lastPt.lon, lastPt.lat] } });
+        }
+        if (cat.key === "pband" || cat.key === "pland") {
+          var post = postLegInfo();
+          if (post) {
+            axisFeatures.push({
+              type: "Feature", properties: { kind: "postaxis" },
+              geometry: { type: "LineString", coordinates: [[post.from.lon, post.from.lat], [post.to.lon, post.to.lat]] }
+            });
+            axisFeatures.push({ type: "Feature", properties: { kind: "postaxis", label: areaById(post.to.id).label }, geometry: { type: "Point", coordinates: [post.to.lon, post.to.lat] } });
+          }
+        }
+        if (axisFeatures.length) {
+          overlays.push({
+            id: "tm-axis",
+            data: { type: "FeatureCollection", features: axisFeatures },
+            layers: [
+              {
+                id: "tm-axis-line", type: "line", source: "tm-axis",
+                filter: ["==", ["geometry-type"], "LineString"],
+                layout: { "line-cap": "round", "line-join": "round" },
+                paint: {
+                  "line-color": ["match", ["get", "kind"], "postaxis", "#c084fc", "#e8edf2"],
+                  "line-width": 2.5, "line-opacity": 0.85
+                }
+              },
+              {
+                id: "tm-axis-dot", type: "circle", source: "tm-axis",
+                filter: ["==", ["geometry-type"], "Point"],
+                paint: {
+                  "circle-radius": 4.5, "circle-color": "#ffffff",
+                  "circle-stroke-color": "#0b0f14", "circle-stroke-width": 2
+                }
+              }
+            ]
+          });
+          overlays.push({
+            id: "tm-axis-labels",
+            data: { type: "FeatureCollection", features: axisFeatures },
+            layers: [
+              {
+                id: "tm-axis-label", type: "symbol", source: "tm-axis-labels",
+                filter: ["has", "label"],
+                layout: {
+                  "text-field": ["get", "label"],
+                  "text-font": ["Optimistic-SemiBold", "NotoSans-Kurrent-Regular"],
+                  "text-size": 11, "text-anchor": "left", "text-offset": [0.7, 0],
+                  "text-allow-overlap": true, "text-optional": true
+                },
+                paint: { "text-color": "#e8edf2", "text-halo-color": "#0b0f14", "text-halo-width": 1.6 }
+              }
+            ]
+          });
+        }
+        // 候補ポリゴン：実際の町位置にカテゴリ色で塗る
+        overlays.push({
+          id: "tm-cand",
+          data: { type: "FeatureCollection", features: data.polyFeatures },
+          layers: [
+            {
+              id: "tm-cand-fill", type: "fill", source: "tm-cand",
+              filter: ["==", ["geometry-type"], "Polygon"],
+              paint: { "fill-color": data.color, "fill-opacity": 0.42 }
+            },
+            {
+              id: "tm-cand-line", type: "line", source: "tm-cand",
+              filter: ["==", ["geometry-type"], "Polygon"],
+              layout: { "line-join": "round" },
+              paint: { "line-color": data.color, "line-width": 2, "line-opacity": 0.95 }
+            }
+          ]
+        });
+        if (data.bounds) view = tmFitView(data.bounds);
+        overlays.push({
+          id: "towns-labels",
+          data: window.TOWN_BOUNDARIES_GEOJSON,
+          layers: [
+            {
+              id: "towns-label", type: "symbol", source: "towns-labels",
+              filter: townLabelFilter,
+              layout: {
+                "text-field": ["get", "name"],
+                "text-font": ["Optimistic-SemiBold", "NotoSans-Kurrent-Regular"],
+                "text-size": 13, "text-anchor": "center",
+                "text-allow-overlap": false, "text-optional": true
+              },
+              paint: { "text-color": "#f2f6fa", "text-halo-color": "#0b0f14", "text-halo-width": 1.8 }
+            }
+          ]
+        });
+        // 候補の町名ラベル（丁目までのフル表記）は最前面レイヤーで描く。
+        // 密集時はベースマップの地名と同じ衝突回避（間引き）で構わない
+        // ため allow-overlap は切る：ズームすればその地域の町名が読める
+        overlays.push({
+          id: "tm-cand-labels",
+          data: { type: "FeatureCollection", features: data.labelFeatures },
+          layers: [
+            {
+              id: "tm-cand-label", type: "symbol", source: "tm-cand-labels",
+              filter: ["has", "label"],
+              layout: {
+                "text-field": ["get", "label"],
+                "text-font": ["Optimistic-SemiBold", "NotoSans-Kurrent-Regular"],
+                "text-size": 13, "text-anchor": "center",
+                "text-allow-overlap": false, "text-optional": true, "text-padding": 2
+              },
+              paint: { "text-color": data.color, "text-halo-color": "#0b0f14", "text-halo-width": 2 }
+            }
+          ]
+        });
+      } else {
+        overlays.push({
+          id: "towns-labels",
+          data: window.TOWN_BOUNDARIES_GEOJSON,
+          layers: [
+            {
+              id: "towns-label", type: "symbol", source: "towns-labels",
+              filter: townLabelFilter,
+              layout: {
+                "text-field": ["get", "name"],
+                "text-font": ["Optimistic-SemiBold", "NotoSans-Kurrent-Regular"],
+                "text-size": 13, "text-anchor": "center",
+                "text-allow-overlap": false, "text-optional": true
+              },
+              paint: { "text-color": "#f2f6fa", "text-halo-color": "#0b0f14", "text-halo-width": 1.8 }
+            }
+          ]
+        });
+      }
+      // 現在地マーカーは回廊マップと同じ見た目で重ねる（取得済みの時だけ。
+      // 初期表示の範囲計算には含めない：回廊外にいても候補が収まる倍率を保つ）
+      if (mapGps) {
+        var gpsInfo = townInfoAt(mapGps.lat, mapGps.lon);
+        var gpsLabel = gpsInfo ? gpsTownLabel(gpsInfo) : "現在地";
+        overlays.push({
+          id: "gps-pos",
+          data: { type: "FeatureCollection", features: [
+            { type: "Feature", properties: { label: gpsLabel }, geometry: { type: "Point", coordinates: [mapGps.lon, mapGps.lat] } }
+          ] },
+          layers: [
+            {
+              id: "gps-pos-halo", type: "circle", source: "gps-pos",
+              paint: { "circle-radius": 15, "circle-color": "#2b7fff", "circle-opacity": 0.3 }
+            },
+            {
+              id: "gps-pos-dot", type: "circle", source: "gps-pos",
+              paint: {
+                "circle-radius": 7.5, "circle-color": "#2b7fff",
+                "circle-stroke-color": "#ffffff", "circle-stroke-width": 3
+              }
+            },
+            {
+              id: "gps-pos-label", type: "symbol", source: "gps-pos",
+              filter: ["has", "label"],
+              layout: {
+                "text-field": ["get", "label"],
+                "text-font": ["Optimistic-SemiBold", "NotoSans-Kurrent-Regular"],
+                "text-size": 13, "text-anchor": "left", "text-offset": [1.1, 0],
+                "text-allow-overlap": true, "text-ignore-placement": true, "text-optional": true
+              },
+              paint: { "text-color": "#ffffff", "text-halo-color": "#0b0f14", "text-halo-width": 2.4 }
+            }
+          ]
+        });
+      }
+      try {
+        tmMapHandle = mountMapHelper(inner, {
+          center: { lat: view.lat, lng: view.lon },
+          zoom: view.zoom,
+          baseStyle: "dark",
+          navigationControlPosition: "top-left",
+          places: places,
+          overlays: overlays
+        }, function () { showTownsMapFallback(host, cat); });
+        if (!tmMapHandle) showTownsMapFallback(host, cat);
+      } catch (e) {
+        showTownsMapFallback(host, cat);
+      }
+    }
+    // リスト／地図の表示同期：モードに応じて箱を差し替え、地図モードで
+    // 候補画面が表示中の時だけ地図を組む（隠れた容器へは描かない）。
+    // カテゴリ切替・判定の再計算でも renderTowns 経由でここへ来るため、
+    // 地図表示中のカテゴリ色・範囲の切替は再マウントで追随する
+    function syncTownsView() {
+      var mapMode = tmViewMode === "map";
+      var chips = el("tm-chips"), stage = el("tm-map-stage");
+      if (chips) chips.hidden = mapMode;
+      if (stage) stage.hidden = !mapMode;
+      var btns = document.querySelectorAll("[data-tmview]");
+      for (var i = 0; i < btns.length; i++) {
+        var on = btns[i].getAttribute("data-tmview") === tmViewMode;
+        btns[i].classList.toggle("active", on);
+        btns[i].setAttribute("aria-pressed", on ? "true" : "false");
+      }
+      var note = document.querySelector("#scr-towns .tm-note");
+      if (note) {
+        note.textContent = mapMode
+          ? "候補の町を実際の位置にカテゴリ色で表示しています。町名は丁目まで。"
+          : "町名タップでAppleマップの自転車ナビがその町へ開きます。";
+      }
+      if (mapMode) {
+        if (el("scr-towns").classList.contains("active")) mountTownsMap();
+      } else if (tmMapHandle) {
+        try { tmMapHandle.destroy(); } catch (e) { /* noop */ }
+        tmMapHandle = null;
+      }
+    }
+    function bindTmViewToggle() {
+      var btns = document.querySelectorAll("[data-tmview]");
+      for (var i = 0; i < btns.length; i++) {
+        btns[i].addEventListener("click", function () {
+          tmViewMode = this.getAttribute("data-tmview");
+          syncTownsView();
+        });
+      }
+    }
+    bindTmViewToggle();
 
     // ===== 入力画面内の候補地点（ピックアップ表示） =====
     // 入力画面では全件は出さない：経由OK・着地OKの2カテゴリについて
