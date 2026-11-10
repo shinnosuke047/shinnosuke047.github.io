@@ -143,6 +143,10 @@
       .ov-verdict.cond { border-color: var(--cond); color: var(--cond); }
       .ov-verdict.skip { border-color: var(--skip); color: var(--skip); }
       .ov-verdict.idle { color: var(--dim); font-size: 13px; }
+      /* 帰宅モード中は判定ストリップを橙系に変えて通常と一目で区別する */
+      .ov-verdict.home { border-color: #fb923c; color: #fdba74; background: rgba(60, 32, 8, 0.92); }
+      .ov-verdict.homeover { border-color: var(--skip); color: #fff; background: rgba(120, 18, 12, 0.94); }
+      .center-btn.home-on { border-color: #fb923c; background: rgba(251,146,60,0.28); color: #fff; }
 
       /* ===== 帰路ナビ（大ボタン） ===== */
       .big-nav {
@@ -195,6 +199,10 @@
       .verdict { padding: 9px 12px; border: 1px solid var(--border); }
       .verdict .v-title { margin: 0; font-size: 20px; font-weight: 900; line-height: 1.3; }
       .verdict .v-sub { margin: 4px 0 0; font-size: 13px; font-weight: 700; line-height: 1.6; color: var(--dim); }
+      .verdict.home { border-color: #fb923c; background: rgba(251,146,60,0.12); }
+      .verdict.home .v-title { color: #fdba74; font-size: 17px; }
+      .verdict.homeover { border-color: var(--skip); background: rgba(255,59,48,0.16); }
+      .verdict.homeover .v-title { color: #ff8a80; font-size: 17px; }
       .verdict.take { border-color: var(--take); background: rgba(46,230,107,0.10); }
       .verdict.take .v-title { color: var(--take); }
       .verdict.cond { border-color: var(--cond); background: rgba(255,192,46,0.10); }
@@ -480,6 +488,7 @@
             <div class="ov-top-row">
               <span class="gps-town-chip" id="gps-town-chip" role="status" hidden></span>
               <div class="center-row" role="group" aria-label="マップの中心">
+                <button type="button" class="center-btn" id="home-toggle" aria-pressed="false">帰宅</button>
                 <button type="button" class="center-btn" id="center-gps">現在地</button>
                 <button type="button" class="center-btn" id="center-drop">ドロップ地</button>
               </div>
@@ -863,6 +872,88 @@
     var dropAddrs = [""]; // ドロップ枠ごとの住所テキスト（枠ごとに独立保持し、切り替えで混ざらない）
     var candAddr = ""; // 候補ドロップの住所テキスト
     var activeSlot = 0; // 入力中スロット 0〜drops.length-1=ドロップ枠、drops.length=候補ドロップ
+    // ===== 帰宅モード =====
+    // 自宅（三鷹市下連雀五丁目）の座標は同丁目ポリゴンの重心。帰宅モードは
+    // 手動トグルのみ（自動起動なし）。ON中は候補の軸を「現在地→自宅」へ
+    // 差し替え、帰路ナビは自宅行き（店舗街経由1点まで）になる
+    var HOME_POINT = { lat: 35.688, lon: 139.5712, label: "自宅", daddr: "三鷹市下連雀五丁目" };
+    var HOME_TARGET_MIN = 23 * 60; // 23:00帰宅
+    var homeMode = false;
+    // エリア別・直行帰宅の固定所要時間（分）。これ以外のエリアはエリア
+    // 中心→自宅の直線距離換算（候補計算と同系：1km≒4分）で推定する
+    var HOME_FIXED_MIN = { nerima: 36, ogikubo: 32, chitosekarasuyama: 20, sengawa: 14 };
+    var NERIMA_AREA_IDS = { sekimachi: true, kamishakujii: true, shakujii: true, oizumigakuen: true };
+    function kmToMin(km) { return Math.round(km * 4); }
+    function homeDirectMin(from) {
+      return kmToMin(haversineKm(from.lat, from.lon, HOME_POINT.lat, HOME_POINT.lon));
+    }
+    // 現在地が属する帰宅エリア区分と、その直行所要時間（分）
+    function homeAreaInfo() {
+      var from = mapGps || areaById(currentAreaId);
+      var areaId = mapGps ? (nearestAreaIdIn(AREAS, from) || currentAreaId) : currentAreaId;
+      var town = mapGps ? townInfoAt(mapGps.lat, mapGps.lon) : null;
+      if (town && town.town.indexOf("烏山") >= 0) return { key: "chitosekarasuyama", label: "千歳烏山", min: HOME_FIXED_MIN.chitosekarasuyama };
+      if (town && town.town.indexOf("仙川") >= 0) return { key: "sengawa", label: "仙川", min: HOME_FIXED_MIN.sengawa };
+      if (NERIMA_AREA_IDS[areaId] || (town && town.zone === "nerima")) return { key: "nerima", label: "練馬", min: HOME_FIXED_MIN.nerima };
+      if (areaId === "ogikubo") return { key: "ogikubo", label: "荻窪", min: HOME_FIXED_MIN.ogikubo };
+      var a = areaById(areaId);
+      return { key: areaId, label: a.label, min: homeDirectMin(a) };
+    }
+    function homeDeadlineMin() { return HOME_TARGET_MIN - homeAreaInfo().min; }
+    function fmtClock(minOfDay) {
+      var m = ((minOfDay % 1440) + 1440) % 1440;
+      var h = Math.floor(m / 60), mm = m % 60;
+      return h + ":" + (mm < 10 ? "0" : "") + mm;
+    }
+    function homeTiming() {
+      var now = new Date();
+      var nowMin = now.getHours() * 60 + now.getMinutes();
+      var start = spineStart();
+      var remain = HOME_TARGET_MIN - nowMin;
+      var dl = homeDeadlineMin();
+      return {
+        remain: remain,
+        direct: homeDirectMin(start),
+        deadline: dl,
+        overdue: nowMin > dl,
+        area: homeAreaInfo()
+      };
+    }
+    // 帰宅軸のルート点列：現在地（GPS。未取得時は現在の起点）→自宅
+    function homeRoutePoints() {
+      var s = spineStart();
+      return [
+        { lat: s.lat, lon: s.lon, label: s.gps ? "現在地" : s.label },
+        { lat: HOME_POINT.lat, lon: HOME_POINT.lon, label: "自宅" }
+      ];
+    }
+    // 帰路の経由点：現在地から自宅方向へ向かう待機スポット／駅を1点まで。
+    // 軸からの横ずれが小さく、遠回りが最小のものを選ぶ。無ければ null（直行）
+    function homeViaSpot() {
+      var pts = homeRoutePoints();
+      var S = pts[0], H = pts[1];
+      var direct = haversineKm(S.lat, S.lon, H.lat, H.lon);
+      if (direct < 1.2) return null;
+      var ref = { lat: S.lat, lon: S.lon };
+      var Hp = toXY(H.lat, H.lon, ref);
+      var best = null, bestDetour = Infinity;
+      WAIT_SPOTS.forEach(function (sp) {
+        if (sp.areaId === "mitaka") return; // 自宅最寄りは経由点にしない
+        var st = null;
+        for (var j = 0; j < MAP_STATIONS.length; j++) if (MAP_STATIONS[j].id === sp.areaId) st = MAP_STATIONS[j];
+        if (!st) return;
+        var P = toXY(st.lat, st.lon, ref);
+        var dAxis = ptSegDistM(P, [0, 0], Hp) / 1000;
+        if (dAxis > 1.2) return;
+        var via = haversineKm(S.lat, S.lon, st.lat, st.lon) + haversineKm(st.lat, st.lon, H.lat, H.lon);
+        var detour = via - direct;
+        // 進行度：自宅寄り過ぎ・現在地寄り過ぎの点は経由点にしない
+        var t = direct > 0 ? haversineKm(S.lat, S.lon, st.lat, st.lon) / direct : 0;
+        if (t < 0.15 || t > 0.9) return;
+        if (detour < bestDetour) { bestDetour = detour; best = { spot: sp, st: st }; }
+      });
+      return best;
+    }
     var tmState = null; // 候補町リストの状態 {cats}（4カテゴリ全件を保持）
     var tmActiveCat = "band"; // 候補画面で表示中のセクション（カテゴリボタンで切替）
     var tmViewMode = "map"; // 候補画面の表示方法 "list" | "map"（既定は地図：色の分布と地形の対応を覚えるため。リストはトグルで呼び出す）
@@ -1128,6 +1219,93 @@
       postBand = postBand.filter(function (t) { return !inBand[t.town] && !inLand[t.town]; });
       postLand = postLand.filter(function (t) { return !inBand[t.town] && !inLand[t.town]; });
       return { pts: pts, band: band, land: land, postBand: postBand, postLand: postLand, post: postSeg ? post : null };
+    }
+    // ===== 帰宅モードの候補計算（軸＝現在地→自宅。通常軸と同じ幾何判定） =====
+    // 経由OK＝帰宅軸±500mの帯、着地OK＝自宅から1.2km。経由・後は
+    // 経由スポット→自宅の帯、着地・待機は経由スポットから1.2km。
+    // 締切超過時は全カテゴリを帯の内側の町だけに絞る（締切が最優先で、
+    // クエスト／ポイント残量は判定に一切影響させない）
+    function computeHomeTemamiso() {
+      var pts = homeRoutePoints();
+      var finalPt = pts[pts.length - 1];
+      var ref = { lat: (pts[0].lat + pts[1].lat) / 2, lon: (pts[0].lon + pts[1].lon) / 2 };
+      var xy = pts.map(function (p) { return toXY(p.lat, p.lon, ref); });
+      var F = xy[xy.length - 1];
+      var via = homeViaSpot();
+      var viaSeg = null, viaPt = null;
+      if (via) {
+        viaSeg = [toXY(via.st.lat, via.st.lon, ref), F];
+        viaPt = viaSeg[0];
+      }
+      var band = [], land = [], postBand = [], postLand = [];
+      var polys = window.TOWN_ZONE_POLYGONS || [];
+      for (var i = 0; i < polys.length; i++) {
+        var poly = polys[i];
+        var ringXY = [];
+        for (var j = 0; j < poly.ring.length; j++) ringXY.push(toXY(poly.ring[j][1], poly.ring[j][0], ref));
+        var minSeg = Infinity, minPt = Infinity, minViaSeg = Infinity, minViaPt = Infinity;
+        for (var k = 0; k < ringXY.length - 1; k++) {
+          var dS = segSegDistM(ringXY[k], ringXY[k + 1], xy[0], xy[1]);
+          if (dS < minSeg) minSeg = dS;
+          var dP = ptSegDistM(F, ringXY[k], ringXY[k + 1]);
+          if (dP < minPt) minPt = dP;
+          if (viaSeg) {
+            var dVS = segSegDistM(ringXY[k], ringXY[k + 1], viaSeg[0], viaSeg[1]);
+            if (dVS < minViaSeg) minViaSeg = dVS;
+            var dVP = ptSegDistM(viaPt, ringXY[k], ringXY[k + 1]);
+            if (dVP < minViaPt) minViaPt = dVP;
+          }
+        }
+        var endIn = pointInRing(finalPt.lon, finalPt.lat, poly.ring);
+        var startIn = pointInRing(pts[0].lon, pts[0].lat, poly.ring);
+        if (minSeg <= TM_BAND_HALF_M || endIn || startIn) band.push({ city: poly.city, town: poly.town, d: minSeg });
+        if (minPt <= TM_LAND_RADIUS_M || endIn) land.push({ city: poly.city, town: poly.town, d: minPt });
+        if (viaSeg) {
+          var viaIn = pointInRing(via.st.lon, via.st.lat, poly.ring);
+          if (minViaSeg <= TM_BAND_HALF_M || endIn || viaIn) postBand.push({ city: poly.city, town: poly.town, d: minViaSeg });
+          if (minViaPt <= TM_LAND_RADIUS_M || viaIn) postLand.push({ city: poly.city, town: poly.town, d: minViaPt });
+        }
+      }
+      function dedupeMin(list) {
+        var seen = {}, out = [];
+        list.forEach(function (t) {
+          if (seen[t.town] == null) { seen[t.town] = out.length; out.push(t); }
+          else if (t.d < out[seen[t.town]].d) out[seen[t.town]] = t;
+        });
+        return out;
+      }
+      band = dedupeMin(band); land = dedupeMin(land);
+      postBand = dedupeMin(postBand); postLand = dedupeMin(postLand);
+      band.sort(function (x, y) { return x.d - y.d; });
+      land.sort(function (x, y) { return x.d - y.d; });
+      postBand.sort(function (x, y) { return x.d - y.d; });
+      postLand.sort(function (x, y) { return x.d - y.d; });
+      var inBand = {}, inLand = {};
+      band.forEach(function (t) { inBand[t.town] = true; });
+      land.forEach(function (t) { inLand[t.town] = true; });
+      postBand = postBand.filter(function (t) { return !inBand[t.town] && !inLand[t.town]; });
+      postLand = postLand.filter(function (t) { return !inBand[t.town] && !inLand[t.town]; });
+      var timing = homeTiming();
+      if (timing.overdue) {
+        land = land.filter(function (t) { return inBand[t.town]; });
+        postBand = postBand.filter(function (t) { return inBand[t.town]; });
+        postLand = postLand.filter(function (t) { return inBand[t.town]; });
+      }
+      return { pts: pts, band: band, land: land, postBand: postBand, postLand: postLand, via: via, timing: timing };
+    }
+    // 帰宅モードでの候補ドロップ判定（帰宅軸と経由スポット→自宅の脚で見る）
+    function homeCandidateMetrics() {
+      if (!candId) return null;
+      var cand = areaById(candId);
+      var pts = homeRoutePoints();
+      var H = pts[1];
+      var dHome = haversineKm(cand.lat, cand.lon, H.lat, H.lon);
+      var ref = { lat: cand.lat, lon: cand.lon };
+      var A = toXY(pts[0].lat, pts[0].lon, ref), B = toXY(H.lat, H.lon, ref);
+      var dRoute = ptSegDistM([0, 0], A, B) / 1000;
+      var direct = haversineKm(pts[0].lat, pts[0].lon, H.lat, H.lon);
+      var viaKm = haversineKm(pts[0].lat, pts[0].lon, cand.lat, cand.lon) + dHome;
+      return { cand: cand, dHome: dHome, dRoute: dRoute, detourKm: Math.max(0, viaKm - direct) };
     }
     // 候補エリア中心の、ルート軸からの距離と最終ドロップからの距離、遠回り概算
     function candidateMetrics() {
@@ -1557,7 +1735,53 @@
       s.className = "ov-verdict " + cls;
       s.innerHTML = esc(text) + '<span class="ov-go">候補 ›</span>';
     }
+    // 帰宅モード中の判定ストリップ文言（候補画面・マップ下端で共用）
+    function homeStripText(t) {
+      var core = "23:00帰宅まで残り" + Math.max(0, t.remain) + "分｜直行なら" + t.direct + "分｜締切" + fmtClock(t.deadline);
+      return t.overdue ? "締切超過・直行のみ｜" + core : core;
+    }
+    function renderHomeResults() {
+      var box = el("verdict");
+      var res = computeHomeTemamiso();
+      var t = res.timing;
+      var strip = homeStripText(t);
+      var catSummary = "経由" + res.band.length + "・着地" + res.land.length +
+        "・後" + res.postBand.length + "・待機" + res.postLand.length;
+      var hm = homeCandidateMetrics();
+      var sub;
+      if (hm) {
+        var verdictWord;
+        if (t.overdue) verdictWord = hm.dRoute <= 0.5 ? "帯の内側のみ可" : "取らない ─ 締切超過";
+        else if (hm.dHome <= 1.2 || hm.dRoute <= 0.5) verdictWord = "取れる ─ 帰宅方向";
+        else if (hm.dHome <= 2.2 || hm.dRoute <= 1.0) verdictWord = "条件付き ─ 金額で判断";
+        else verdictWord = "取らない ─ 帰宅軸から外れる";
+        sub = "候補ドロップ：" + hm.cand.label + "｜" + verdictWord +
+          "｜自宅から " + hm.dHome.toFixed(1) + "km／帰宅軸から " + hm.dRoute.toFixed(1) + "km" +
+          "／遠回り概算 +" + hm.detourKm.toFixed(1) + "km（約" + Math.round(hm.detourKm * 4) + "分）";
+      } else {
+        sub = "帰宅軸：" + res.pts[0].label + " → 自宅｜" + catSummary +
+          (res.via ? "｜経由：" + res.via.spot.name : "｜経由なし（直行）");
+      }
+      box.className = "card verdict " + (t.overdue ? "homeover" : "home");
+      box.innerHTML = '<p class="v-title">' + esc(strip) + '</p><p class="v-sub">' + esc(sub) + "</p>";
+      // マップ下端ストリップは setMapVerdict を介さず直接組む（色調クラスを保つため）
+      var mv = el("map-verdict");
+      if (mv) {
+        mv.className = "ov-verdict " + (t.overdue ? "homeover" : "home");
+        mv.innerHTML = esc(strip + "｜" + catSummary) + '<span class="ov-go">候補 ›</span>';
+      }
+      var cats = [
+        { key: "band", label: "経由OK", note: "帰宅軸（現在地→自宅）の帯（±500m）・判定は丁目単位", list: res.band },
+        { key: "land", label: "着地OK", note: "自宅から1.2km・判定は丁目単位", list: res.land },
+        { key: "pband", label: "経由OK（ドロップ後）", note: res.via ? "経由スポット（" + res.via.spot.name + "）→自宅の帯（±500m）" : "自宅方向の経由スポットがないため対象なし", list: res.postBand },
+        { key: "pland", label: "着地OK（待機寄り）", note: res.via ? res.via.spot.name + "から1.2km" : "自宅方向の経由スポットがないため対象なし", list: res.postLand }
+      ];
+      tmState = { cats: cats };
+      renderTowns();
+      renderInlineTowns();
+    }
     function renderResults() {
+      if (homeMode) { renderHomeResults(); return; }
       var box = el("verdict");
       var res = computeTemamiso();
       if (!res) {
@@ -1784,11 +2008,17 @@
       });
       // 背骨の軸（と、後・待機カテゴリではドロップ後の脚）も初期表示の
       // 範囲に含める：候補の広がりと軸が一緒に画面へ収まるようにする
-      var pts = routePoints();
+      // 帰宅モード中は帰宅軸（現在地→自宅）を範囲に含める
+      var pts = homeMode ? homeRoutePoints() : routePoints();
       if (pts) pts.forEach(function (p) { grow(p.lon, p.lat); });
       if (cat.key === "pband" || cat.key === "pland") {
-        var post = postLegInfo();
-        if (post) { grow(post.from.lon, post.from.lat); grow(post.to.lon, post.to.lat); }
+        if (homeMode) {
+          var hv = homeViaSpot();
+          if (hv) { grow(hv.st.lon, hv.st.lat); grow(HOME_POINT.lon, HOME_POINT.lat); }
+        } else {
+          var post = postLegInfo();
+          if (post) { grow(post.from.lon, post.from.lat); grow(post.to.lon, post.to.lat); }
+        }
       }
       return {
         color: TM_CAT_COLORS[cat.key] || "#facc15",
@@ -1895,9 +2125,10 @@
             ["!", ["in", ["get", "name"], ["literal", data.candNames]]]];
         }
         // 背骨の軸（白線＋端点ラベル）。後・待機カテゴリではドロップ後の
-        // 脚（最終ドロップ→待機スポット）も紫の線で重ねる
+        // 脚（最終ドロップ→待機スポット）も紫の線で重ねる。
+        // 帰宅モード中は帰宅軸（現在地→自宅）を描く
         var axisFeatures = [];
-        var pts = routePoints();
+        var pts = homeMode ? homeRoutePoints() : routePoints();
         if (pts && pts.length >= 2) {
           axisFeatures.push({
             type: "Feature", properties: { kind: "axis" },
@@ -1908,13 +2139,24 @@
           axisFeatures.push({ type: "Feature", properties: { kind: "axis", label: lastPt.label }, geometry: { type: "Point", coordinates: [lastPt.lon, lastPt.lat] } });
         }
         if (cat.key === "pband" || cat.key === "pland") {
-          var post = postLegInfo();
-          if (post) {
-            axisFeatures.push({
-              type: "Feature", properties: { kind: "postaxis" },
-              geometry: { type: "LineString", coordinates: [[post.from.lon, post.from.lat], [post.to.lon, post.to.lat]] }
-            });
-            axisFeatures.push({ type: "Feature", properties: { kind: "postaxis", label: areaById(post.to.id).label }, geometry: { type: "Point", coordinates: [post.to.lon, post.to.lat] } });
+          if (homeMode) {
+            var hvia = homeViaSpot();
+            if (hvia) {
+              axisFeatures.push({
+                type: "Feature", properties: { kind: "postaxis" },
+                geometry: { type: "LineString", coordinates: [[hvia.st.lon, hvia.st.lat], [HOME_POINT.lon, HOME_POINT.lat]] }
+              });
+              axisFeatures.push({ type: "Feature", properties: { kind: "postaxis", label: areaById(hvia.spot.areaId).label }, geometry: { type: "Point", coordinates: [hvia.st.lon, hvia.st.lat] } });
+            }
+          } else {
+            var post = postLegInfo();
+            if (post) {
+              axisFeatures.push({
+                type: "Feature", properties: { kind: "postaxis" },
+                geometry: { type: "LineString", coordinates: [[post.from.lon, post.from.lat], [post.to.lon, post.to.lat]] }
+              });
+              axisFeatures.push({ type: "Feature", properties: { kind: "postaxis", label: areaById(post.to.id).label }, geometry: { type: "Point", coordinates: [post.to.lon, post.to.lat] } });
+            }
           }
         }
         if (axisFeatures.length) {
@@ -2212,6 +2454,21 @@
 
     // ===== 最適帰路ナビ =====
     function renderReturnNav() {
+      var a0 = el("return-nav");
+      if (homeMode) {
+        // 帰宅モード中は常時、自宅への帰路便ナビ（店舗街経由1点まで）
+        var via = homeViaSpot();
+        if (via) {
+          a0.href = "https://maps.apple.com/?saddr=" + encodeURIComponent("Current Location") +
+            "&waypoints=" + encodeURIComponent(via.spot.daddr) +
+            "&daddr=" + encodeURIComponent(HOME_POINT.daddr) + "&dirflg=b";
+          a0.textContent = "帰宅ナビ → " + via.spot.name + " 経由 → 自宅";
+        } else {
+          a0.href = appleMapsNavUrl(HOME_POINT.daddr, true);
+          a0.textContent = "帰宅ナビ → 自宅（直行）";
+        }
+        return;
+      }
       var now = new Date();
       var mins = now.getHours() * 60 + now.getMinutes();
       var homeTime = mins >= 21 * 60 + 30 || mins < 11 * 60;
@@ -2753,7 +3010,7 @@
       // 経由OK帯（区間ごとのカプセル）・着地OK圏（最終ドロップ円）
       var tmOverlay = null;
       var tmLabelOverlay = null;
-      var pts = routePoints();
+      var pts = homeMode ? homeRoutePoints() : routePoints();
       if (pts) {
         var tmFeatures = [];
         for (var s = 0; s < pts.length - 1; s++) {
@@ -2765,7 +3022,8 @@
         tmFeatures.push({ type: "Feature", properties: { kind: "land" }, geometry: { type: "Polygon", coordinates: [circlePolygon(fin.lat, fin.lon, TM_LAND_RADIUS_M)] } });
         tmFeatures.push({ type: "Feature", properties: { kind: "land", label: "着地OK圏" }, geometry: { type: "Point", coordinates: [fin.lon, fin.lat + TM_LAND_RADIUS_M / 110574] } });
         // ドロップ後の脚（最終ドロップ→待機スポット）：帯は橙、着地圏は紫で背骨側と区別する
-        var postLeg = postLegInfo();
+        // 帰宅モード中はドロップ後の脚は描かない（帰宅軸のみ）
+        var postLeg = homeMode ? null : postLegInfo();
         if (postLeg && haversineKm(postLeg.from.lat, postLeg.from.lon, postLeg.to.lat, postLeg.to.lon) >= 0.1) {
           tmFeatures.push({ type: "Feature", properties: { kind: "pband" }, geometry: { type: "Polygon", coordinates: [capsulePolygon(postLeg.from, postLeg.to, TM_BAND_HALF_M)] } });
           tmFeatures.push({ type: "Feature", properties: { kind: "pband", label: "経由OK（待機行き）" }, geometry: { type: "Point", coordinates: [(postLeg.from.lon + postLeg.to.lon) / 2, (postLeg.from.lat + postLeg.to.lat) / 2] } });
@@ -2860,6 +3118,42 @@
           ]
         });
       }
+      // 帰宅モード中は帰宅軸（現在地→自宅）を太い橙線で強調し、自宅点も出す
+      var homeAxisOverlay = null;
+      if (homeMode) {
+        var hpts = homeRoutePoints();
+        homeAxisOverlay = {
+          id: "home-axis",
+          data: { type: "FeatureCollection", features: [
+            { type: "Feature", properties: { kind: "line" }, geometry: { type: "LineString", coordinates: hpts.map(function (p) { return [p.lon, p.lat]; }) } },
+            { type: "Feature", properties: { kind: "home", label: "自宅" }, geometry: { type: "Point", coordinates: [HOME_POINT.lon, HOME_POINT.lat] } }
+          ] },
+          layers: [
+            {
+              id: "home-axis-line", type: "line", source: "home-axis",
+              filter: ["==", ["get", "kind"], "line"],
+              layout: { "line-cap": "round", "line-join": "round" },
+              paint: { "line-color": "#fb923c", "line-width": 5, "line-opacity": 0.95 }
+            },
+            {
+              id: "home-axis-dot", type: "circle", source: "home-axis",
+              filter: ["==", ["get", "kind"], "home"],
+              paint: { "circle-radius": 8, "circle-color": "#fb923c", "circle-stroke-color": "#ffffff", "circle-stroke-width": 3 }
+            },
+            {
+              id: "home-axis-label", type: "symbol", source: "home-axis",
+              filter: ["has", "label"],
+              layout: {
+                "text-field": ["get", "label"],
+                "text-font": ["Optimistic-SemiBold", "NotoSans-Kurrent-Regular"],
+                "text-size": 14, "text-anchor": "left", "text-offset": [1.0, 0],
+                "text-allow-overlap": true, "text-optional": true
+              },
+              paint: { "text-color": "#fdba74", "text-halo-color": "#0b0f14", "text-halo-width": 2.2 }
+            }
+          ]
+        };
+      }
       try {
         mapHandle = mountMapHelper(inner, {
           center: { lat: c.lat, lng: c.lon },
@@ -2952,6 +3246,7 @@
                 }
               ]
             },
+            ...(homeAxisOverlay ? [homeAxisOverlay] : []),
             // 現在地マーカーは全ラベルより前面（配列の最後尾）に描く
             ...gpsMarkerOverlays
           ]
@@ -2993,6 +3288,19 @@
     })();
     el("map-verdict").addEventListener("click", function () { showScreen("scr-towns"); });
 
+    // ===== 帰宅トグル（マップ画面に常設。手動のみ・自動起動なし） =====
+    function syncHomeToggle() {
+      var b = el("home-toggle");
+      if (!b) return;
+      b.classList.toggle("home-on", homeMode);
+      b.setAttribute("aria-pressed", homeMode ? "true" : "false");
+    }
+    el("home-toggle").addEventListener("click", function () {
+      homeMode = !homeMode;
+      syncHomeToggle();
+      refresh();
+    });
+
     // ===== 初期描画 =====
     renderInputs();
     renderResults();
@@ -3010,6 +3318,7 @@
         refresh();
       } else {
         renderReturnNav(); // 21:30の帰宅モード切替に追随
+        if (homeMode) renderResults(); // 帰宅モード中は残り時間・締切を1分ごとに更新
       }
     }, 60000);
     </script>
