@@ -125,14 +125,14 @@
       }
 
       /* ===== ドロップ入力 ===== */
-      .drop-sec { padding: 8px; }
+      .drop-sec { padding: 6px; }
       .mode-row { display: flex; gap: 4px; }
       .mode-btn {
         min-height: 48px; flex: 1; border-radius: var(--radius); border: 1px solid var(--border);
         background: var(--surface2); color: var(--dim); font-size: 15px; font-weight: 900;
       }
       .mode-btn.active { border-color: var(--accent); background: rgba(46,230,107,0.14); color: var(--text); }
-      .d-label { margin: 6px 0 0; font-size: 13px; font-weight: 900; color: var(--dim); }
+      .d-label { margin: 4px 0 0; font-size: 13px; font-weight: 900; color: var(--dim); }
       .d-label .req { color: var(--accent); }
       .d-grid { margin-top: 6px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
       .chip {
@@ -147,9 +147,13 @@
       .start-line { margin: 4px 0 0; font-size: 12px; font-weight: 700; line-height: 1.4; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
       .start-line b { color: var(--text); }
       .start-line .from-gps { color: var(--accent); }
+      /* 起点表示と枠別ナビは1行に統合し、候補ブロックへ縦を譲る */
+      .start-nav-row { margin-top: 4px; display: flex; gap: 4px; align-items: stretch; }
+      .start-nav-row .start-line { margin: 0; align-self: center; flex: 0 1 auto; }
+      .start-nav-row .drop-nav-row { margin: 0; flex: 1 1 auto; }
       .drop-nav-row { margin-top: 4px; display: flex; gap: 4px; flex-wrap: wrap; }
       .drop-nav-btn {
-        display: flex; min-height: 34px; flex: 1 1 20%; align-items: center; justify-content: center;
+        display: flex; min-height: 30px; flex: 1 1 20%; align-items: center; justify-content: center;
         border-radius: var(--radius); border: 1px solid var(--border); background: var(--surface2);
         font-size: 12px; font-weight: 900; color: var(--text); text-decoration: none; padding: 2px 4px; text-align: center; line-height: 1.3;
       }
@@ -168,7 +172,23 @@
 
       /* ===== 候補町リスト ===== */
       .towns-sec { padding: 10px; }
-      .tm-scroll { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+      .tm-scroll {
+        flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden;
+        overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
+        /* iOS Safariでタッチスクロールを確実に効かせる：縦パンをこの要素が受け持つ宣言 */
+        touch-action: pan-y;
+        /* スクロールできる端にだけ影を残す視覚的手がかり（カバーは内容と一緒に
+           流れて消え、影だけがその方向に続きがある間ずっと残る） */
+        background-image:
+          linear-gradient(var(--surface) 30%, rgba(21, 27, 35, 0)),
+          linear-gradient(rgba(21, 27, 35, 0), var(--surface) 70%),
+          radial-gradient(farthest-side at 50% 0, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0)),
+          radial-gradient(farthest-side at 50% 100%, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0));
+        background-repeat: no-repeat;
+        background-position: center top, center bottom, center top, center bottom;
+        background-size: 100% 26px, 100% 26px, 100% 9px, 100% 9px;
+        background-attachment: local, local, scroll, scroll;
+      }
       .tm-grid3 { margin-top: 6px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
       .tm-h { margin: 12px 0 0; font-size: 16px; font-weight: 900; line-height: 1.3; }
       .tm-h:first-of-type { margin-top: 2px; }
@@ -217,62 +237,76 @@
       .heat-legend { margin-top: 8px; display: flex; flex-wrap: wrap; column-gap: 16px; row-gap: 4px; font-size: 11px; font-weight: 700; color: var(--dim); }
 
       /* ===== 住所ショートカット（コピペ／町名入力→Appleマップ） ===== */
-      .addr-sec { padding: 8px; flex-shrink: 0; }
-      .addr-row { margin-top: 4px; display: flex; gap: 4px; }
+      .addr-sec { padding: 6px; flex-shrink: 0; }
+      .addr-row { margin-top: 3px; display: flex; gap: 4px; }
       #addr-input, #pick-input {
-        flex: 1; min-width: 0; min-height: 38px; border-radius: var(--radius); border: 1px solid var(--border);
+        flex: 1; min-width: 0; min-height: 36px; border-radius: var(--radius); border: 1px solid var(--border);
         background: var(--surface2); color: var(--text); font-size: 16px; padding: 0 12px;
       }
       #addr-input::placeholder, #pick-input::placeholder { color: var(--dim); font-size: 13px; }
       .addr-clear {
-        min-height: 38px; min-width: 56px; border-radius: var(--radius); border: 1px solid var(--border);
+        min-height: 36px; min-width: 56px; border-radius: var(--radius); border: 1px solid var(--border);
         background: var(--surface2); color: var(--dim); font-size: 13px; font-weight: 900;
       }
-      .addr-actions { margin-top: 4px; display: flex; gap: 4px; }
+      .addr-actions { margin-top: 3px; display: flex; gap: 4px; }
       .addr-actions[hidden] { display: none; }
       .addr-btn {
-        display: flex; min-height: 38px; flex: 1; align-items: center; justify-content: center;
+        display: flex; min-height: 36px; flex: 1; align-items: center; justify-content: center;
         border-radius: var(--radius); border: 1px solid var(--border); background: var(--surface2);
-        font-size: 14px; font-weight: 900; color: var(--text); text-decoration: none; padding: 4px 6px; text-align: center; line-height: 1.3;
+        font-size: 14px; font-weight: 900; color: var(--text); text-decoration: none; padding: 3px 6px; text-align: center; line-height: 1.3;
       }
-      .addr-btn.primary { background: var(--accent); border-color: var(--accent); color: #06280f; min-height: 44px; font-size: 16px; }
+      .addr-btn.primary { background: var(--accent); border-color: var(--accent); color: #06280f; min-height: 40px; font-size: 16px; }
       .addr-btn.disabled { opacity: 0.45; pointer-events: none; }
 
       /* ===== ピックアップ駅チップ（タップ1回で駅名が入る） ===== */
-      .pick-chips { margin-top: 4px; display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+      .pick-chips { margin-top: 3px; display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
       .pick-chip {
-        min-height: 28px; overflow: hidden; white-space: nowrap; border-radius: 8px;
+        min-height: 26px; overflow: hidden; white-space: nowrap; border-radius: 8px;
         border: 1px solid var(--border); background: var(--surface2); color: var(--dim);
         padding: 0 1px; font-size: 10px; font-weight: 900; line-height: 1.2; letter-spacing: -0.05em;
       }
       .pick-chip.active { border-color: var(--accent); background: rgba(46,230,107,0.16); color: var(--text); }
+      /* 駅が選択済みの時は選択中の駅と「変更」だけを残して1行に畳み、
+         候補ブロックへ縦を譲る。「変更」で全駅を再表示する */
+      .pick-chip.pick-change { display: none; }
+      .pick-chips.collapsed { display: flex; }
+      .pick-chips.collapsed .pick-chip { display: none; }
+      .pick-chips.collapsed .pick-chip.active { display: block; flex: 1; }
+      .pick-chips.collapsed .pick-chip.pick-change { display: block; flex: 0 0 68px; color: var(--text); }
 
       /* ===== 入力画面内の候補地点（背骨が入ったらその場に出る） ===== */
-      .in-towns { margin-top: 4px; flex: 1; min-height: 0; display: flex; flex-direction: column; border-top: 1px solid var(--border); padding-top: 2px; }
-      .in-towns .tm-h { font-size: 13px; margin-top: 8px; }
+      .in-towns { margin-top: 4px; flex: 1; min-height: 0; position: relative; border-top: 1px solid var(--border); }
+      /* スクロール箱はflexの入れ子で高さを決めず、親の確定した箱へ絶対配置で
+         ぴったり重ねる（iOS Safariでflex由来の高さだとタッチスクロールが
+         効かなくなる事象の回避） */
+      #in-chips { position: absolute; top: 2px; right: 0; bottom: 0; left: 0; }
+      .in-towns .tm-h { font-size: 13px; margin-top: 6px; }
       .in-towns .tm-h:first-of-type { margin-top: 2px; }
-      .in-towns .tm-grid3 { gap: 4px; margin-top: 4px; }
-      .in-chips .town-chip { min-height: 34px; padding: 4px; font-size: 12px; }
+      .in-towns .tm-grid3 { gap: 4px; margin-top: 3px; }
+      .in-chips .town-chip { min-height: 32px; padding: 4px; font-size: 12px; }
 
       /* ===== ワンタップ取消し（1つ戻る／全て取消し） ===== */
-      .undo-row { display: flex; gap: 4px; margin-bottom: 6px; }
+      .undo-row { display: flex; gap: 4px; margin-bottom: 4px; }
       .undo-btn {
-        min-height: 34px; flex: 1; border-radius: var(--radius); border: 1px solid var(--border);
+        min-height: 32px; flex: 1; border-radius: var(--radius); border: 1px solid var(--border);
         background: var(--surface2); color: var(--text); font-size: 14px; font-weight: 900;
       }
       .undo-btn:disabled { opacity: 0.4; }
 
       /* ===== スロット式ドロップ入力 ===== */
-      #scr-input { padding: 6px; gap: 6px; }
+      #scr-input { padding: 5px; gap: 5px; }
       #scr-input .drop-sec { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+      /* 候補ブロック以外は縮まず、余った縦は全て候補ブロックが受け取る */
+      #scr-input .drop-sec > * { flex-shrink: 0; }
+      #scr-input .drop-sec > .in-towns { flex-shrink: 1; }
       .slot-row { display: flex; gap: 4px; }
       .slot-btn {
-        min-height: 40px; flex: 1; min-width: 0; border-radius: var(--radius); border: 1px solid var(--border);
-        background: var(--surface2); color: var(--dim); font-size: 11px; font-weight: 900; line-height: 1.3; padding: 3px 2px; overflow-wrap: anywhere;
+        min-height: 36px; flex: 1; min-width: 0; border-radius: var(--radius); border: 1px solid var(--border);
+        background: var(--surface2); color: var(--dim); font-size: 11px; font-weight: 900; line-height: 1.25; padding: 2px 2px; overflow-wrap: anywhere;
       }
-      .slot-btn .slot-name { display: block; font-size: 14px; color: var(--text); margin-top: 1px; }
+      .slot-btn .slot-name { display: block; font-size: 13px; color: var(--text); margin-top: 1px; }
       .slot-add {
-        min-height: 40px; flex: 0 0 46px; border-radius: var(--radius); border: 1px dashed var(--border);
+        min-height: 36px; flex: 0 0 46px; border-radius: var(--radius); border: 1px dashed var(--border);
         background: transparent; color: var(--dim); font-size: 15px; font-weight: 900; line-height: 1.3; padding: 3px 2px;
       }
       .slot-add .slot-name { display: block; font-size: 11px; margin-top: 2px; }
@@ -280,12 +314,16 @@
       .slot-btn.active { border-color: var(--accent); background: rgba(46,230,107,0.14); }
       .slot-btn.active.d2 { border-color: var(--land); background: rgba(34,211,238,0.12); }
       .slot-btn.active.cand { border-color: var(--cond); background: rgba(255,192,46,0.12); }
-      #slot-grid { margin-top: 4px; grid-template-columns: repeat(5, 1fr); }
-      #scr-input .chip { min-height: 26px; }
+      #slot-grid { margin-top: 3px; grid-template-columns: repeat(5, 1fr); gap: 3px; }
+      #scr-input .chip { min-height: 24px; }
 
       /* ===== 候補（全カテゴリ同時表示・ブロック内だけ縦スクロール） ===== */
-      #scr-towns .towns-sec { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+      #scr-towns .towns-sec { flex: 1; min-height: 0; position: relative; }
       #scr-towns .verdict { flex-shrink: 0; }
+      /* 候補画面では候補ブロックが画面の大半を占める：カード内へ絶対配置で広げ、
+         下端の注記だけを固定帯として残す */
+      #tm-chips { position: absolute; top: 10px; right: 10px; bottom: 30px; left: 10px; }
+      #scr-towns .tm-note { position: absolute; right: 10px; bottom: 6px; left: 10px; margin: 0; }
       .tm-catnote { margin: 4px 0 0; font-size: 11px; line-height: 1.5; color: var(--dim); }
     </style>
   </head>
@@ -338,8 +376,10 @@
           </div>
           <div class="slot-row" id="slot-row" role="group" aria-label="入力するドロップの切り替え"></div>
           <div class="d-grid" id="slot-grid" role="group" aria-label="エリア選択"></div>
-          <p class="start-line" id="start-line"></p>
-          <div class="drop-nav-row" id="drop-nav-row"></div>
+          <div class="start-nav-row">
+            <p class="start-line" id="start-line"></p>
+            <div class="drop-nav-row" id="drop-nav-row"></div>
+          </div>
           <div class="in-towns" id="in-towns">
             <div class="tm-scroll in-chips" id="in-chips"></div>
           </div>
@@ -1133,12 +1173,16 @@
       { label: "田無駅", short: "田無" },
       { label: "花小金井駅", short: "花小金井" }
     ];
+    // 駅チップの折りたたみ状態：駅が選ばれたら選択中の駅だけを残して畳む
+    // （候補ブロックの可視高さ確保が目的）。「変更」を押した時だけ全駅を出す
+    var pickChipsExpanded = false;
     function renderPickChips() {
       var html = "";
       PICK_STATIONS.forEach(function (s) {
         html += '<button type="button" class="pick-chip" data-pick="' + esc(s.label) +
           '" aria-pressed="false" aria-label="ピックアップを' + esc(s.label) + 'にする">' + esc(s.short) + "</button>";
       });
+      html += '<button type="button" class="pick-chip pick-change" id="pick-expand" aria-label="ピックアップの駅を選び直す">変更</button>';
       el("pick-chips").innerHTML = html;
       var btns = el("pick-chips").querySelectorAll("button[data-pick]");
       for (var i = 0; i < btns.length; i++) {
@@ -1150,10 +1194,15 @@
           pushHistory();
           f.value = next;
           committedFieldVal["pick-input"] = next;
+          pickChipsExpanded = false; // 選び直したら再び畳む
           syncAddrLinks();
           updateUndoBtn();
         });
       }
+      el("pick-expand").addEventListener("click", function () {
+        pickChipsExpanded = true;
+        syncPickChips();
+      });
       syncPickChips();
     }
     function syncPickChips() {
@@ -1161,11 +1210,15 @@
       if (!box) return;
       var cur = el("pick-input").value.trim();
       var btns = box.querySelectorAll("button[data-pick]");
+      var matched = false;
       for (var i = 0; i < btns.length; i++) {
         var on = btns[i].getAttribute("data-pick") === cur && cur !== "";
+        if (on) matched = true;
         btns[i].classList.toggle("active", on);
         btns[i].setAttribute("aria-pressed", on);
       }
+      if (!matched) pickChipsExpanded = false;
+      box.classList.toggle("collapsed", matched && !pickChipsExpanded);
     }
     renderPickChips();
     syncAddrLinks();
