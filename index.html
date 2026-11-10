@@ -99,7 +99,21 @@
 
       /* ===== マップ内オーバーレイ ===== */
       .ov-controls { position: absolute; top: 8px; left: 8px; right: 8px; z-index: 6; display: flex; flex-direction: column; gap: 4px; pointer-events: none; }
-      .ov-controls .center-row { pointer-events: auto; align-self: flex-end; }
+      .ov-top-row { display: flex; gap: 4px; align-items: flex-start; }
+      .ov-top-row .center-row { pointer-events: auto; margin-left: auto; flex-shrink: 0; }
+      /* 現在地の即答チップ（マップ左上）：「現在地」がアクティブでGPS
+         取得済みの間だけ、ズームコントロール（左端・マージン込みで
+         約39px幅）の右隣に町名だけを出す。詳細（ゾーン判定・最寄り
+         エリア）は下部オーバーレイが担う役割分担。幅が足りない端末では
+         末尾を省略してチップ行（現在地／ドロップ地）と重ねない */
+      .gps-town-chip {
+        margin-left: 46px; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+        border-radius: 999px; border: 1px solid var(--border);
+        background: rgba(11, 15, 20, 0.92); color: var(--text);
+        padding: 6px 10px; font-size: 12px; font-weight: 900; line-height: 1.3;
+        pointer-events: none;
+      }
+      .gps-town-chip[hidden] { display: none; }
       /* 上部の通知帯は廃止（2026-11-10 指定）：GPS取得の通知は帯で出さず、
          町名は現在地マーカー脇のラベルと下部オーバーレイに出す。
          帯の要素自体も二重に表示不能にしておく */
@@ -367,7 +381,7 @@
       #scr-towns .verdict { flex-shrink: 0; }
       /* 候補画面では候補ブロックが画面の大半を占める：カード内へ絶対配置で広げ、
          下端の注記だけを固定帯として残す */
-      #tm-chips { position: absolute; top: 48px; right: 10px; bottom: 28px; left: 10px; }
+      #tm-chips { position: absolute; top: 82px; right: 10px; bottom: 28px; left: 10px; }
       #scr-towns .tm-note { position: absolute; right: 10px; bottom: 6px; left: 10px; margin: 0; }
       .tm-catnote { margin: 4px 0 0; font-size: 11px; line-height: 1.5; color: var(--dim); }
 
@@ -384,14 +398,13 @@
       }
 
       /* ===== 候補画面：リスト／地図の表示切替 =====
-         リスト表示の寸法（1画面収まり）は変えない：切替は候補ブロック
-         右上に重ねる浮動セグメントとし、見出し・注記・空メッセージには
-         右側の余白を確保して文字と重ねない。地図モードでは切替トグルが
-         地図の右上端に重なって見えたため、地図の箱はトグルの帯（46〜74px）
-         の下（top:78px）から広げ、トグルと地図操作（ズーム等）が視覚的に
-         干渉しない配置にする。リスト側の箱（top:48）は従来どおり */
+         トグルは浮動させず、カテゴリボタンの直下に通常フローで1帯を
+         確保する（帯の高さ：margin 4px＋実高28px）。リストの箱・
+         地図の箱はどちらもその帯の下（top:82px）から始めるため、
+         トグルが地図の描画・操作に重なる構造自体が存在しない。
+         リスト側も同寸にそろえ、見出し側の余白ハックは廃止した */
       .tm-view-toggle {
-        position: absolute; top: 46px; right: 10px; z-index: 8; display: flex;
+        position: relative; z-index: 8; display: flex; width: max-content; margin: 4px 0 0 auto;
         border-radius: 999px; border: 1px solid var(--border);
         background: rgba(11, 15, 20, 0.9); overflow: hidden;
       }
@@ -400,22 +413,22 @@
       }
       .tm-view-toggle button.active { background: rgba(46, 230, 107, 0.2); color: var(--text); }
       .tm-map-stage {
-        position: absolute; top: 78px; right: 10px; bottom: 28px; left: 10px;
+        position: absolute; top: 82px; right: 10px; bottom: 28px; left: 10px;
         border-radius: 8px; overflow: hidden; background: var(--surface2);
       }
       .tm-map-stage[hidden] { display: none; }
       /* 地図モードの空表示：選択中カテゴリの候補が0件のとき、リスト側の
-         「対象の町はありません」と同じ文言を地図の中央に出す */
+         「対象の町はありません」と同じ文言を地図の中央に出す。
+         地図キャンバス・コントロールより確実に前面へ出すため z-index は
+         大きめに取る（MapLibre のコントロールは最大でも一桁台） */
       .tm-map-empty {
-        position: absolute; left: 50%; top: 50%; z-index: 5; transform: translate(-50%, -50%);
+        position: absolute; left: 50%; top: 50%; z-index: 20; transform: translate(-50%, -50%);
         width: max-content; max-width: 86%;
         border-radius: 10px; border: 1px solid var(--border); background: rgba(11, 15, 20, 0.93);
         padding: 12px 16px; font-size: 14px; font-weight: 900; line-height: 1.5; text-align: center; color: var(--text);
       }
       .tm-map-empty[hidden] { display: none; }
-      .tm-map-empty .tme-sub { display: block; margin-top: 2px; font-size: 11px; font-weight: 700; color: var(--dim); }
       #tm-chips[hidden] { display: none; }
-      #tm-chips .tm-h, #tm-chips .tm-catnote, #tm-chips .tm-empty { padding-right: 106px; }
 
       /* ===== カテゴリボタン（候補ブロック直上・常設） =====
          候補画面ではセクション切替、入力画面ではピックアップ内の位置ジャンプ。
@@ -464,9 +477,12 @@
         <div class="map-stage">
           <div class="map-host" id="map-host"></div>
           <div class="ov-controls">
-            <div class="center-row" role="group" aria-label="マップの中心">
-              <button type="button" class="center-btn" id="center-gps">現在地</button>
-              <button type="button" class="center-btn" id="center-drop">ドロップ地</button>
+            <div class="ov-top-row">
+              <span class="gps-town-chip" id="gps-town-chip" role="status" hidden></span>
+              <div class="center-row" role="group" aria-label="マップの中心">
+                <button type="button" class="center-btn" id="center-gps">現在地</button>
+                <button type="button" class="center-btn" id="center-drop">ドロップ地</button>
+              </div>
             </div>
             <p class="ov-status" id="map-status" aria-live="polite" hidden></p>
           </div>
@@ -534,11 +550,11 @@
             <button type="button" class="jump-btn pland" data-jump="pland">着地・待機 <span class="jc num" data-jc="pland">0</span></button>
           </div>
           <div class="tm-view-toggle" role="group" aria-label="候補の表示方法">
-            <button type="button" data-tmview="list" class="active" aria-pressed="true">リスト</button>
-            <button type="button" data-tmview="map" aria-pressed="false">地図</button>
+            <button type="button" data-tmview="list" aria-pressed="false">リスト</button>
+            <button type="button" data-tmview="map" class="active" aria-pressed="true">地図</button>
           </div>
-          <div class="tm-scroll" id="tm-chips"></div>
-          <div class="tm-map-stage" id="tm-map-stage" hidden>
+          <div class="tm-scroll" id="tm-chips" hidden></div>
+          <div class="tm-map-stage" id="tm-map-stage">
             <div class="map-host" id="tm-map-host"></div>
             <div class="tm-map-empty" id="tm-map-empty" role="status" hidden></div>
           </div>
@@ -850,8 +866,9 @@
     var activeSlot = 0; // 入力中スロット 0〜drops.length-1=ドロップ枠、drops.length=候補ドロップ
     var tmState = null; // 候補町リストの状態 {cats}（4カテゴリ全件を保持）
     var tmActiveCat = "band"; // 候補画面で表示中のセクション（カテゴリボタンで切替）
-    var tmViewMode = "list"; // 候補画面の表示方法 "list" | "map"（地図はリストの置換ではなく追加モード）
+    var tmViewMode = "map"; // 候補画面の表示方法 "list" | "map"（既定は地図：色の分布と地形の対応を覚えるため。リストはトグルで呼び出す）
     var tmMapHandle = null; // 候補地図のマウントハンドル
+    var tmMapFallbackShown = false; // 候補地図が代替表示（町名一覧）に倒れたか。倒れた時は代替側が空文言を担う
     // 候補地図のポリゴン色＝カテゴリボタンの色（--band/--land/--pband/--pland と一致）
     var TM_CAT_COLORS = { band: "#facc15", land: "#22d3ee", pband: "#fb923c", pland: "#c084fc" };
 
@@ -1806,19 +1823,34 @@
         return;
       }
       if (cat.list.length) { box.hidden = true; return; }
-      box.innerHTML = esc(cat.label) + "：対象の町はありません" +
+      // 文言はリスト側（townsSectionHtml）とバイト単位で一致させる
+      box.innerHTML = esc(cat.label) + "：" +
         ((cat.key === "pband" || cat.key === "pland")
-          ? '<span class="tme-sub">背骨側と重なる町は背骨側のリストに表示</span>' : "");
+          ? "対象の町はありません（背骨側と重なる町は背骨側のリストに表示）。"
+          : "対象の町はありません。");
       box.hidden = false;
     }
     function showTownsMapFallback(host, cat) {
+      tmMapFallbackShown = true;
       var empty = el("tm-map-empty");
-      if (empty) empty.hidden = true; // 代替表示（町名一覧）が空表示を兼ねる
-      var names = cat ? cat.list.map(function (t) { return t.town; }).join("、") : "";
+      if (empty) empty.hidden = true; // 代替表示側が文言を担うため、中央オーバーレイは重ねない
+      // 0件カテゴリでは代替表示の中にリスト側と同一の空文言を必ず含める
+      // （以前は「0町」の見出しだけで、指定文言が画面に出なかった）
+      var body;
+      if (!cat) {
+        body = '<p class="fnote">ドロップ地を選ぶと候補の町が地図に出ます。</p>';
+      } else if (!cat.list.length) {
+        body = '<p class="ft">' + ((cat.key === "pband" || cat.key === "pland")
+          ? "対象の町はありません（背骨側と重なる町は背骨側のリストに表示）。"
+          : "対象の町はありません。") + "</p>";
+      } else {
+        body = '<p class="fnote">' + esc(cat.list.map(function (t) { return t.town; }).join("、")) + "</p>";
+      }
       host.innerHTML =
         '<div class="map-fallback" role="img" aria-label="候補地図を表示できないため町名一覧で代替">' +
         '<p class="ft">地図を表示できませんでした。町名一覧で代替します。</p>' +
-        (cat ? '<p class="fh">' + esc(cat.label) + " " + cat.list.length + '町</p><p class="fnote">' + esc(names) + "</p>" : "") +
+        (cat ? '<p class="fh">' + esc(cat.label) + " " + cat.list.length + "町</p>" : "") +
+        body +
         "</div>";
     }
     function mountTownsMap() {
@@ -1826,6 +1858,7 @@
       if (!host) return;
       if (tmMapHandle) { try { tmMapHandle.destroy(); } catch (e) { /* noop */ } tmMapHandle = null; }
       host.innerHTML = "";
+      tmMapFallbackShown = false;
       var cat = tmActiveCategory();
       syncTmMapEmpty(cat);
       var inner = document.createElement("div");
@@ -2066,6 +2099,11 @@
       } catch (e) {
         showTownsMapFallback(host, cat);
       }
+      // マウント後にもう一度だけ空表示を同期する：ヘルパーのマウント処理が
+      // 同期的に走る環境でも、表示状態が「現在のカテゴリの件数」と一致する
+      // ことをここで保証する。代替表示に倒れた場合は代替側が文言を担う
+      // ため、オーバーレイは再表示しない
+      if (!tmMapFallbackShown) syncTmMapEmpty(cat);
     }
     // リスト／地図の表示同期：モードに応じて箱を差し替え、地図モードで
     // 候補画面が表示中の時だけ地図を組む（隠れた容器へは描かない）。
@@ -2506,6 +2544,20 @@
       box.hidden = false;
       box.className = "ov-gps loading";
       box.innerHTML = '<p class="ov-gps-kicker">現在地</p><p class="ov-gps-town">現在地を取得中…</p>';
+      syncGpsTownChip();
+    }
+    // 左上の即答チップ：現在地表示がアクティブでGPS取得済みの間だけ、
+    // 下部オーバーレイ見出しと同じ解決結果（町名／「最寄り：○○」）を
+    // マップ左上（ズームコントロールの右隣）に出す。ドロップ地へ切り
+    // 替えた時・取得中・取得失敗時は出さない（失敗表示は下部のみ）
+    function syncGpsTownChip() {
+      var chip = el("gps-town-chip");
+      if (!chip) return;
+      if (centerMode === "gps" && gpsPlaceWanted && gpsStatus === "ok" && mapGps) {
+        var town = townInfoAt(mapGps.lat, mapGps.lon);
+        if (town) { chip.textContent = gpsTownLabel(town); chip.hidden = false; return; }
+      }
+      chip.hidden = true;
     }
     function showGpsPlaceOk() {
       var box = el("gps-place");
@@ -2519,6 +2571,7 @@
         '<p class="ov-gps-town">' + esc(town ? gpsTownLabel(town) : "判定範囲外") + "</p>" +
         '<p class="ov-gps-zone">' + esc(town && !town.nearest ? (GPS_ZONE_LABELS[town.zone] || "エリア外") : "エリア外") +
         "｜最寄りエリア：" + esc(areaById(currentAreaId).label) + "</p>";
+      syncGpsTownChip();
     }
     function showGpsPlaceError() {
       var box = el("gps-place");
@@ -2527,8 +2580,9 @@
       box.innerHTML = '<p class="ov-gps-kicker">現在地</p>' +
         '<p class="ov-gps-town">現在地を取得できませんでした</p>' +
         '<p class="ov-gps-zone">GPSが使えないため、起点はエリア中心の仮判定のままです</p>';
+      syncGpsTownChip();
     }
-    function hideGpsPlace() { el("gps-place").hidden = true; }
+    function hideGpsPlace() { el("gps-place").hidden = true; syncGpsTownChip(); }
     function acquireGps(done) {
       if (!("geolocation" in navigator)) {
         gpsStatus = "error";
