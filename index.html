@@ -2054,13 +2054,16 @@
     function acquireGps(done) {
       if (!("geolocation" in navigator)) {
         gpsStatus = "error";
-        setMapStatus("この端末ではGPSが使えません。起点はエリア中心の仮判定になります。");
+        // 失敗表示は下部オーバーレイ（前面表示）1本に統一する：前面表示が
+        // 求められている時は上部の状態行へ重複文言を残さない
+        if (gpsPlaceWanted) setMapStatus(null);
+        else setMapStatus("この端末ではGPSが使えません。起点はエリア中心の仮判定になります。");
         if (gpsPlaceWanted) showGpsPlaceError();
         if (done) done(false);
         return;
       }
       gpsStatus = "loading";
-      setMapStatus("位置情報を取得中…");
+      setMapStatus(gpsPlaceWanted ? null : "位置情報を取得中…");
       navigator.geolocation.getCurrentPosition(function (pos) {
         gpsStatus = "ok";
         var latitude = pos.coords.latitude, longitude = pos.coords.longitude;
@@ -2069,14 +2072,22 @@
         var town = townZoneAt(latitude, longitude);
         var nearId = nearestAreaIdIn(AREAS, from);
         if (nearId) currentAreaId = nearId;
-        setMapStatus("GPS取得：" + (town ? town.city + " " + town.town : "エリア中心の最寄り判定") +
-          "。起点は現在地、エリアは「" + areaById(currentAreaId).label + "」に合わせました。");
+        // 成功時も前面表示（町名＋ゾーン＋最寄りエリア）が情報の置き場。
+        // 上部の状態行は前面表示が無い時（ヒート画面からの取得）だけに使い、
+        // 前面表示がある時は旧メッセージを残さないよう消しておく
+        if (!gpsPlaceWanted) {
+          setMapStatus("GPS取得：" + (town ? town.city + " " + town.town : "エリア中心の最寄り判定") +
+            "。起点は現在地、エリアは「" + areaById(currentAreaId).label + "」に合わせました。");
+        } else {
+          setMapStatus(null);
+        }
         if (gpsPlaceWanted) showGpsPlaceOk();
         if (done) done(true);
         refresh();
       }, function () {
         gpsStatus = "error";
-        setMapStatus("位置情報を取得できませんでした。起点はエリア中心の仮判定のままです。");
+        // 失敗表示は下部オーバーレイ1本に統一（上部の状態行には残さない）
+        setMapStatus(null);
         if (gpsPlaceWanted) showGpsPlaceError();
         if (done) done(false);
       }, { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 });
@@ -2138,6 +2149,7 @@
       centerMode = "drop";
       gpsPlaceWanted = false;
       hideGpsPlace();
+      setMapStatus(null); // 上部の旧メッセージ行はドロップ地への切替で消す（失敗表示は下部オーバーレイに一本化済み）
       renderMapControls(); mountCorridorMap();
     });
     function showMapFallback(host) {
@@ -2156,7 +2168,7 @@
       host.innerHTML = "";
       var inner = document.createElement("div");
       inner.setAttribute("role", "img");
-      inner.setAttribute("aria-label", "回廊マップ（町名ラベルと町丁境界、中心から1.5kmと2.5kmの範囲円、1.2kmの捕捉範囲円、ドロップ地を選んだ場合は経由OK帯と着地OK圏）");
+      inner.setAttribute("aria-label", "回廊マップ（町名ラベルと町丁境界、中心から1.5kmと2.5kmの範囲円、1.2kmの捕捉範囲円、ドロップ地を選んだ場合は経由OK帯と着地OK圏、GPS取得時は現在地マーカー）");
       host.appendChild(inner);
       var c = mapCenterInfo();
       var northLat = function (m) { return c.lat + m / 110574; };
@@ -2294,6 +2306,31 @@
           ]
         };
       }
+      // 現在地マーカー（GPS取得済みの時だけ）：ヒート画面の現在地ドットと
+      // 同じ見た目（白フチの青ドット＋ハロー）。中心モードによらず現在地の
+      // 位置に残る（ドロップ地へ中心を切り替えても自分の位置は把握できる）
+      var gpsMarkerOverlays = [];
+      if (mapGps) {
+        gpsMarkerOverlays.push({
+          id: "gps-pos",
+          data: { type: "FeatureCollection", features: [
+            { type: "Feature", properties: {}, geometry: { type: "Point", coordinates: [mapGps.lon, mapGps.lat] } }
+          ] },
+          layers: [
+            {
+              id: "gps-pos-halo", type: "circle", source: "gps-pos",
+              paint: { "circle-radius": 15, "circle-color": "#2b7fff", "circle-opacity": 0.3 }
+            },
+            {
+              id: "gps-pos-dot", type: "circle", source: "gps-pos",
+              paint: {
+                "circle-radius": 7.5, "circle-color": "#2b7fff",
+                "circle-stroke-color": "#ffffff", "circle-stroke-width": 3
+              }
+            }
+          ]
+        });
+      }
       try {
         mapHandle = mountMapHelper(inner, {
           center: { lat: c.lat, lng: c.lon },
@@ -2385,7 +2422,9 @@
                   paint: { "text-color": "#f2f6fa", "text-halo-color": "#0b0f14", "text-halo-width": 1.8 }
                 }
               ]
-            }
+            },
+            // 現在地マーカーは全ラベルより前面（配列の最後尾）に描く
+            ...gpsMarkerOverlays
           ]
         }, function () { showMapFallback(host); });
         if (!mapHandle) showMapFallback(host);
