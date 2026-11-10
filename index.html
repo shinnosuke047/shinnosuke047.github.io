@@ -105,6 +105,20 @@
         border-radius: 8px; border: 1px solid var(--border); background: rgba(11, 15, 20, 0.88);
         padding: 6px 8px; font-size: 11px; line-height: 1.5; color: var(--text);
       }
+      /* ===== 現在地の前面表示（「現在地」タップで町名＋ゾーンを大きく出す） ===== */
+      .ov-gps {
+        position: absolute; left: 8px; right: 8px; bottom: 66px; z-index: 6;
+        border-radius: 10px; border: 1px solid var(--accent); background: rgba(11, 15, 20, 0.93);
+        padding: 10px 12px;
+      }
+      .ov-gps[hidden] { display: none; }
+      .ov-gps .ov-gps-kicker { margin: 0; font-size: 11px; font-weight: 900; letter-spacing: 0.08em; color: var(--accent); }
+      .ov-gps .ov-gps-town { margin: 2px 0 0; font-size: 22px; font-weight: 900; line-height: 1.25; color: var(--text); }
+      .ov-gps .ov-gps-zone { margin: 3px 0 0; font-size: 13px; font-weight: 700; line-height: 1.4; color: var(--text); }
+      .ov-gps.loading { border-color: var(--border); }
+      .ov-gps.loading .ov-gps-kicker { color: var(--dim); }
+      .ov-gps.error { border-color: var(--skip); }
+      .ov-gps.error .ov-gps-kicker { color: var(--skip); }
       .ov-verdict {
         position: absolute; left: 8px; right: 8px; bottom: 8px; z-index: 6;
         display: flex; min-height: 48px; align-items: center; gap: 8px;
@@ -348,6 +362,7 @@
             </div>
             <p class="ov-status" id="map-status" aria-live="polite" hidden></p>
           </div>
+          <div class="ov-gps" id="gps-place" aria-live="polite" hidden></div>
           <button type="button" class="ov-verdict idle" id="map-verdict">ドロップ①を選ぶと判定が出ます</button>
         </div>
       </section>
@@ -1531,9 +1546,45 @@
       }
       return null;
     }
+    // ===== 現在地の前面表示（町名＋ゾーン判定をマップ下端に大きく出す） =====
+    var gpsPlaceWanted = false; // 「現在地」チップが押されたら前面表示を出す
+    var GPS_ZONE_LABELS = {
+      corridor: "回廊内",
+      nerima: "練馬エリア",
+      tanashi: "準エリア（田無・花小金井側）",
+      kugayama: "準エリア（久我山側）",
+      outside: "エリア外"
+    };
+    function showGpsPlaceLoading() {
+      var box = el("gps-place");
+      box.hidden = false;
+      box.className = "ov-gps loading";
+      box.innerHTML = '<p class="ov-gps-kicker">現在地</p><p class="ov-gps-town">現在地を取得中…</p>';
+    }
+    function showGpsPlaceOk() {
+      var box = el("gps-place");
+      if (!mapGps) { showGpsPlaceError(); return; }
+      var town = townZoneAt(mapGps.lat, mapGps.lon);
+      box.hidden = false;
+      box.className = "ov-gps ok";
+      box.innerHTML = '<p class="ov-gps-kicker">現在地</p>' +
+        '<p class="ov-gps-town">' + esc(town ? town.city + " " + town.town : "判定範囲外") + "</p>" +
+        '<p class="ov-gps-zone">' + esc(town ? (GPS_ZONE_LABELS[town.zone] || "エリア外") : "エリア外") +
+        "｜最寄りエリア：" + esc(areaById(currentAreaId).label) + "</p>";
+    }
+    function showGpsPlaceError() {
+      var box = el("gps-place");
+      box.hidden = false;
+      box.className = "ov-gps error";
+      box.innerHTML = '<p class="ov-gps-kicker">現在地</p>' +
+        '<p class="ov-gps-town">現在地を取得できませんでした</p>' +
+        '<p class="ov-gps-zone">GPSが使えないため、起点はエリア中心の仮判定のままです</p>';
+    }
+    function hideGpsPlace() { el("gps-place").hidden = true; }
     function acquireGps(done) {
       if (!("geolocation" in navigator)) {
         setMapStatus("この端末ではGPSが使えません。起点はエリア中心の仮判定になります。");
+        if (gpsPlaceWanted) showGpsPlaceError();
         if (done) done(false);
         return;
       }
@@ -1547,10 +1598,12 @@
         if (nearId) currentAreaId = nearId;
         setMapStatus("GPS取得：" + (town ? town.city + " " + town.town : "エリア中心の最寄り判定") +
           "。起点は現在地、エリアは「" + areaById(currentAreaId).label + "」に合わせました。");
+        if (gpsPlaceWanted) showGpsPlaceOk();
         if (done) done(true);
         refresh();
       }, function () {
         setMapStatus("位置情報を取得できませんでした。起点はエリア中心の仮判定のままです。");
+        if (gpsPlaceWanted) showGpsPlaceError();
         if (done) done(false);
       }, { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 });
     }
@@ -1588,11 +1641,15 @@
     }
     el("center-gps").addEventListener("click", function () {
       centerMode = "gps";
-      if (!mapGps) { acquireGps(function () { renderMapControls(); mountCorridorMap(); }); }
+      gpsPlaceWanted = true;
+      if (mapGps) { showGpsPlaceOk(); }
+      else { showGpsPlaceLoading(); acquireGps(function () { renderMapControls(); mountCorridorMap(); }); }
       renderMapControls(); mountCorridorMap();
     });
     el("center-drop").addEventListener("click", function () {
       centerMode = "drop";
+      gpsPlaceWanted = false;
+      hideGpsPlace();
       renderMapControls(); mountCorridorMap();
     });
     function showMapFallback(host) {
@@ -1797,7 +1854,7 @@
                   id: "towns-boundary", type: "line", source: "towns",
                   filter: ["==", ["get", "kind"], "town-boundary"],
                   layout: { "line-join": "round" },
-                  paint: { "line-color": "#a855f7", "line-width": 2, "line-opacity": 0.9 }
+                  paint: { "line-color": "#7d7392", "line-width": 1.25, "line-opacity": 0.55 }
                 }
               ]
             },
