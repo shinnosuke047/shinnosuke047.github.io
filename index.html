@@ -267,6 +267,20 @@
       .heat-tile .t-lab { font-size: 9px; font-weight: 700; color: var(--dim); }
       .heat-tile.current { box-shadow: 0 0 0 2px var(--accent); }
       .heat-legend { margin-top: 8px; display: flex; flex-wrap: wrap; column-gap: 16px; row-gap: 4px; font-size: 11px; font-weight: 700; color: var(--dim); flex-shrink: 0; }
+      /* ===== ヒート画面の現在地（1行表示＋取得ボタン） ===== */
+      .heat-gps-row { margin-top: 6px; display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+      .heat-gps-line { margin: 0; flex: 1; min-width: 0; font-size: 12px; font-weight: 700; line-height: 1.4; color: var(--text); }
+      .heat-gps-line.err { color: var(--skip); }
+      .heat-gps-btn {
+        flex-shrink: 0; min-height: 32px; border-radius: 999px; border: 1px solid var(--accent);
+        background: rgba(46, 230, 107, 0.14); color: var(--text); padding: 0 12px; font-size: 12px; font-weight: 900; white-space: nowrap;
+      }
+      /* 模式グリッドの現在地ドット（白フチの青ドット。タイル右上に重ねる） */
+      .heat-tile { position: relative; }
+      .heat-tile .gps-dot {
+        position: absolute; top: 4px; right: 4px; width: 12px; height: 12px; border-radius: 50%;
+        background: #2b7fff; border: 2.5px solid #fff; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.45);
+      }
 
       /* ===== 住所ショートカット（コピペ／町名入力→Appleマップ） ===== */
       .addr-sec { padding: 4px; flex-shrink: 0; }
@@ -486,6 +500,10 @@
           <p class="sec-h">回廊各地ヒートマップ</p>
           <p class="heat-desc" id="heat-desc"></p>
           <div class="heat-bands" id="heat-bands" role="group" aria-label="時間帯の切り替え"></div>
+          <div class="heat-gps-row">
+            <p class="heat-gps-line" id="heat-gps-line" aria-live="polite">現在地：未取得</p>
+            <button type="button" class="heat-gps-btn" id="heat-gps-btn">現在地を取得</button>
+          </div>
           <div class="heat-stage" id="heat-stage">
             <div class="map-host" id="heat-map-host"></div>
             <div class="heat-schematic" id="heat-schematic" hidden></div>
@@ -1674,6 +1692,7 @@
     };
     function renderHeat() {
       el("heat-desc").textContent = "色の濃さ＝出やすさ。評価は初期値（実測で更新）。";
+      renderHeatGps();
       var html = "";
       TIME_BANDS.forEach(function (b, i) {
         html += '<button type="button" class="heat-band-btn num' + (i === heatBandIdx ? " active" : "") +
@@ -1690,6 +1709,37 @@
       }
       // ヒート画面が表示中の時だけ地図を組み直す（隠れた容器へは描かない）
       if (el("scr-heat").classList.contains("active")) mountHeatMap();
+    }
+    // ===== ヒート画面の現在地表示（マップ画面の現在地オーバーレイと同等の情報） =====
+    // 1行表示：町名＋ゾーン判定＋最寄りエリアと、そのエリアの選択中時間帯の
+    // ヒート（◎○△）。GPS未取得・取得中・失敗も必ず文言で出す（無言にしない）。
+    // GPSが無くてもヒートの閲覧自体は妨げない
+    function renderHeatGps() {
+      var line = el("heat-gps-line"), btn = el("heat-gps-btn");
+      if (!line || !btn) return;
+      if (mapGps) {
+        var town = townZoneAt(mapGps.lat, mapGps.lon);
+        var a = areaById(currentAreaId);
+        var meta = EASE_META[easeLevel(a.id, heatBandIdx)];
+        line.className = "heat-gps-line";
+        line.innerHTML = "現在地：" + esc(town ? town.city + " " + town.town : "判定範囲外") +
+          "（" + esc(town ? (GPS_ZONE_LABELS[town.zone] || "エリア外") : "エリア外") + "）｜" +
+          esc(a.label) + "エリア／" + TIME_BANDS[heatBandIdx] + "時台 " +
+          '<span style="color:' + meta.color + '">' + meta.symbol + " " + esc(meta.label) + "</span>";
+        btn.textContent = "再取得";
+      } else if (gpsStatus === "loading") {
+        line.className = "heat-gps-line";
+        line.textContent = "現在地を取得中…";
+        btn.textContent = "取得中";
+      } else if (gpsStatus === "error") {
+        line.className = "heat-gps-line err";
+        line.textContent = "現在地を取得できませんでした（GPS不可）。ヒートはそのまま見られます";
+        btn.textContent = "再取得";
+      } else {
+        line.className = "heat-gps-line";
+        line.textContent = "現在地：未取得";
+        btn.textContent = "現在地を取得";
+      }
     }
     function heatFitZoom() {
       var stage = el("heat-stage");
@@ -1719,6 +1769,52 @@
       });
       var fc = { type: "FeatureCollection", features: feats };
       var levelColor = ["match", ["get", "level"], 0, "#ff3b30", 1, "#ffc02e", "#2ee66b"];
+      // 現在地オーバーレイ（GPS取得済みの時だけ）：属するエリアの円を白枠で
+      // 強調し、現在地そのものに白フチの青ドットを重ねる。エリア色分け
+      // （赤・黄・緑）とは混ざらない色・形にしてある
+      var gpsAreaId = mapGps ? nearestAreaIdIn(AREAS, mapGps) : null;
+      var heatGpsOverlays = [];
+      if (gpsAreaId) {
+        var ga = areaById(gpsAreaId);
+        heatGpsOverlays.push({
+          id: "heat-current",
+          data: { type: "FeatureCollection", features: [
+            { type: "Feature", properties: {}, geometry: { type: "Polygon", coordinates: [circlePolygon(ga.lat, ga.lon, 1300)] } }
+          ] },
+          layers: [
+            {
+              id: "heat-current-fill", type: "fill", source: "heat-current",
+              paint: { "fill-color": "#ffffff", "fill-opacity": 0.07 }
+            },
+            {
+              id: "heat-current-line", type: "line", source: "heat-current",
+              layout: { "line-join": "round" },
+              paint: { "line-color": "#ffffff", "line-width": 3.5, "line-opacity": 1 }
+            }
+          ]
+        });
+      }
+      if (mapGps) {
+        heatGpsOverlays.push({
+          id: "heat-gps",
+          data: { type: "FeatureCollection", features: [
+            { type: "Feature", properties: {}, geometry: { type: "Point", coordinates: [mapGps.lon, mapGps.lat] } }
+          ] },
+          layers: [
+            {
+              id: "heat-gps-halo", type: "circle", source: "heat-gps",
+              paint: { "circle-radius": 15, "circle-color": "#2b7fff", "circle-opacity": 0.3 }
+            },
+            {
+              id: "heat-gps-dot", type: "circle", source: "heat-gps",
+              paint: {
+                "circle-radius": 7.5, "circle-color": "#2b7fff",
+                "circle-stroke-color": "#ffffff", "circle-stroke-width": 3
+              }
+            }
+          ]
+        });
+      }
       try {
         heatMapHandle = mountMapHelper(inner, {
           center: { lat: 35.7187, lng: 139.5746 },
@@ -1760,7 +1856,8 @@
                   paint: { "text-color": levelColor, "text-halo-color": "#0b0f14", "text-halo-width": 1.8 }
                 }
               ]
-            }
+            },
+            ...heatGpsOverlays
           ]
         }, function () { showHeatSchematic(); });
         if (!heatMapHandle) showHeatSchematic();
@@ -1775,13 +1872,16 @@
       var box = el("heat-schematic");
       if (!box) return;
       var html = "";
+      var gpsAreaId = mapGps ? nearestAreaIdIn(AREAS, mapGps) : null;
       AREAS.forEach(function (a) {
         var lv = easeLevel(a.id, heatBandIdx);
         var meta = EASE_META[lv];
         var cell = HEAT_GRID[a.id] || [1, 1];
+        var isGps = a.id === gpsAreaId;
         html += '<div class="heat-tile' + (a.id === currentAreaId ? " current" : "") +
           '" style="grid-row:' + cell[0] + ";grid-column:" + cell[1] + ";background:" + HEAT_BG[lv] +
-          '" role="img" aria-label="' + esc(a.label) + " " + TIME_BANDS[heatBandIdx] + "時台は" + meta.label + '">' +
+          '" role="img" aria-label="' + esc(a.label) + " " + TIME_BANDS[heatBandIdx] + "時台は" + meta.label + (isGps ? "（現在地）" : "") + '">' +
+          (isGps ? '<span class="gps-dot" aria-hidden="true"></span>' : "") +
           '<span class="t-name">' + esc(a.short) + "</span>" +
           '<span class="t-sym" style="color:' + meta.color + '">' + meta.symbol + "</span>" +
           '<span class="t-lab">' + esc(meta.label) + "</span></div>";
@@ -1804,6 +1904,7 @@
     }
     // ===== 現在地の前面表示（町名＋ゾーン判定をマップ下端に大きく出す） =====
     var gpsPlaceWanted = false; // 「現在地」チップが押されたら前面表示を出す
+    var gpsStatus = "idle"; // GPSの状態機械（idle/loading/ok/error）。ヒート画面の現在地行もこれで描く
     var GPS_ZONE_LABELS = {
       corridor: "回廊内",
       nerima: "練馬エリア",
@@ -1839,13 +1940,16 @@
     function hideGpsPlace() { el("gps-place").hidden = true; }
     function acquireGps(done) {
       if (!("geolocation" in navigator)) {
+        gpsStatus = "error";
         setMapStatus("この端末ではGPSが使えません。起点はエリア中心の仮判定になります。");
         if (gpsPlaceWanted) showGpsPlaceError();
         if (done) done(false);
         return;
       }
+      gpsStatus = "loading";
       setMapStatus("位置情報を取得中…");
       navigator.geolocation.getCurrentPosition(function (pos) {
+        gpsStatus = "ok";
         var latitude = pos.coords.latitude, longitude = pos.coords.longitude;
         mapGps = { lat: latitude, lon: longitude };
         var from = { lat: latitude, lon: longitude };
@@ -1858,11 +1962,20 @@
         if (done) done(true);
         refresh();
       }, function () {
+        gpsStatus = "error";
         setMapStatus("位置情報を取得できませんでした。起点はエリア中心の仮判定のままです。");
         if (gpsPlaceWanted) showGpsPlaceError();
         if (done) done(false);
       }, { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 });
     }
+    // ヒート画面の「現在地を取得／再取得」：取得の成否どちらでもヒート画面を
+    // 描き直し、マーカー・現在地行・エリア強調を最新のGPS状態へ追随させる
+    // （成功時は acquireGps 内の refresh() でも描き直される）
+    el("heat-gps-btn").addEventListener("click", function () {
+      gpsStatus = "loading";
+      renderHeatGps();
+      acquireGps(function () { renderHeat(); });
+    });
 
     // ===== マップ =====
     function mountMapHelper(container, options, onUnavailable) {
@@ -1876,22 +1989,27 @@
       return window.HatchMaps.mountMap(container, opts);
     }
     // ===== ベースマップの英語ラベル除去 =====
-    // ベーススタイル（外部配信）のラベルには英語／ローマ字表記が混ざり、現場では
-    // 読まないうえに視覚的にも煩いため、スタイルが読み込まれるたびにベース側の
-    // symbolレイヤーだけを書き換える：
-    // ・レイヤーidに英語専用と分かる語（en／english／latin／roman／romaji）を
-    //   含むものは非表示にする
-    // ・text-fieldが名前（name系プロパティ）を参照するレイヤーは、日本語名
-    //   （name:ja → name_ja）を優先し、無ければ現地名 name を使う式へ差し替える
-    //   （name_en等の英語プロパティ参照は捨てる。日本語ラベルは残る）
-    // ・名前を参照しないレイヤー（路線番号シールド等の数字表示）は触らない
+    // 原因の確定（2026-11-10、実スタイル定義と実タイルを直接確認）：
+    // ベーススタイル "Canterbury Dark"（external.xx.fbcdn.net/maps/vt/style/dark/）の
+    // 地名ラベルレイヤー（geography-labels-* 等）は全て text-field: ["get","name"] で、
+    // 参照先のベクトルタイル（maps/vtp/s1/88）の geography_labels レイヤーは
+    // プロパティが id/rank/sort/subtype/type/name のみで name:ja 等の日本語名を
+    // 一切持たない。しかも日本国内の地名でも name の値自体がローマ字
+    // （"Shimizu" "Amanuma" "Ogikubo" "Hon-Amanuma 3-chome" 等）であり、
+    // 道路名も大半がローマ字（"Ome Kaido" 等）。つまり日本語名はデータに
+    // 存在せず、式の差し替えでは日本語化は構造的に不可能（旧処理の
+    // coalesce は末尾の name＝ローマ字へ落ちていたのが実機で消えなかった理由）。
+    // 確実な手段として、ベース側の「名前を描く symbol レイヤー」を丸ごと
+    // 非表示にし、地名表示はコックピット自前の日本語ラベル（673丁目ラベル・
+    // 駅とランドマーク・円と帯とヒートのラベル）へ一本化する。
+    // text-field が shield_ref のみの路線番号シールド（311・4 等の数字）は残す。
     // 自前オーバーレイとラッパーの駅・ランドマーク表示（下記ソース群）に属する
-    // レイヤーは一切触らないため、町名・円・帯などの日本語ラベルはそのまま残る
+    // レイヤーは一切触らないため、自前の日本語ラベルはそのまま残る
     var OWN_MAP_SOURCES = {
       places: 1, "places-pins": 1, "places-labels": 1,
       arterials: 1, rings: 1, capture: 1, temamiso: 1, towns: 1,
       "rings-labels": 1, "capture-labels": 1, "temamiso-labels": 1, "towns-labels": 1,
-      "heat-areas": 1, "heat-labels": 1
+      "heat-areas": 1, "heat-labels": 1, "heat-current": 1, "heat-gps": 1
     };
     function stripBaseEnglishLabels(map) {
       if (!map || !map.getStyle) return;
@@ -1901,15 +2019,11 @@
         if (!layer || layer.type !== "symbol") return;
         if (layer.source && OWN_MAP_SOURCES[layer.source]) return;
         try {
-          if (/(^|[-_])(en|english|latin|roman|romaji)([-_]|$)/i.test(layer.id)) {
-            map.setLayoutProperty(layer.id, "visibility", "none");
-            return;
-          }
           var tf = layer.layout && layer.layout["text-field"];
-          if (tf == null) return;
-          if (!/name/.test(JSON.stringify(tf))) return; // 数字・記号だけの表示は対象外
-          map.setLayoutProperty(layer.id, "text-field",
-            ["coalesce", ["get", "name:ja"], ["get", "name_ja"], ["get", "name"]]);
+          if (tf == null) return; // アイコンのみのレイヤーは対象外
+          var s = JSON.stringify(tf);
+          if (/shield/.test(s)) return; // 路線番号シールド（311・4等の数字）は残す
+          if (/name|abbr/.test(s)) map.setLayoutProperty(layer.id, "visibility", "none");
         } catch (e) { /* 書き換えできないレイヤーはそのまま残す */ }
       });
     }
@@ -1917,7 +2031,7 @@
       if (!map) return;
       var apply = function () { stripBaseEnglishLabels(map); };
       try { if (map.isStyleLoaded && map.isStyleLoaded()) apply(); } catch (e) { /* noop */ }
-      if (map.on) map.on("style.load", apply);
+      if (map.on) { map.on("style.load", apply); map.on("load", apply); }
     }
     function mapCenterInfo() {
       if (centerMode === "drop") {
