@@ -105,11 +105,14 @@
          取得済みの間だけ、ズームコントロール（左端・マージン込みで
          約39px幅）の右隣に出す。主表示は町名（大）、副表示として
          最寄りエリアを下段に小さく併記する（範囲内で町名が実名解決
-         できている場合も出す）。詳細（ゾーン判定）は下部オーバーレイ
-         が担う。幅が足りない端末では各行の末尾を省略してチップ行
-         （現在地／ドロップ地）と重ねない */
+         できている場合も出す）。現在地の情報表示はこのチップに一本化
+         する（下部の前面表示オーバーレイは2026-11-10指定で廃止。
+         ゾーン判定はチップにも出さない）。町名は省略（…）で切らず、
+         幅が足りない場合は行を折り返してフル表記を読めるようにする。
+         チップは右端のボタン行（現在地／ドロップ地）を押し出さない
+         範囲で縮み、ボタン行と重ねない */
       .gps-town-chip {
-        margin-left: 46px; min-width: 0; flex: 0 1 auto; overflow: hidden;
+        margin-left: 46px; min-width: 0; flex: 0 1 auto;
         display: flex; flex-direction: column;
         border-radius: 10px; border: 1px solid var(--border);
         background: rgba(11, 15, 20, 0.92); color: var(--text);
@@ -118,31 +121,17 @@
       }
       .gps-town-chip .gps-town-main {
         font-size: 12px; font-weight: 900; color: var(--text);
-        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        white-space: normal; overflow-wrap: anywhere; word-break: break-all;
       }
       .gps-town-chip .gps-town-near {
         margin-top: 1px; font-size: 10px; font-weight: 700; color: var(--dim);
-        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        white-space: normal; overflow-wrap: anywhere; word-break: break-all;
       }
       .gps-town-chip[hidden] { display: none; }
       /* 上部の通知帯は廃止（2026-11-10 指定）：GPS取得の通知は帯で出さず、
-         町名は現在地マーカー脇のラベルと下部オーバーレイに出す。
+         町名は現在地マーカー脇のラベルと左上チップに出す。
          帯の要素自体も二重に表示不能にしておく */
       .ov-status { display: none !important; }
-      /* ===== 現在地の前面表示（「現在地」タップで町名＋ゾーンを大きく出す） ===== */
-      .ov-gps {
-        position: absolute; left: 8px; right: 8px; bottom: 66px; z-index: 6;
-        border-radius: 10px; border: 1px solid var(--accent); background: rgba(11, 15, 20, 0.93);
-        padding: 10px 12px;
-      }
-      .ov-gps[hidden] { display: none; }
-      .ov-gps .ov-gps-kicker { margin: 0; font-size: 11px; font-weight: 900; letter-spacing: 0.08em; color: var(--accent); }
-      .ov-gps .ov-gps-town { margin: 2px 0 0; font-size: 22px; font-weight: 900; line-height: 1.25; color: var(--text); }
-      .ov-gps .ov-gps-zone { margin: 3px 0 0; font-size: 13px; font-weight: 700; line-height: 1.4; color: var(--text); }
-      .ov-gps.loading { border-color: var(--border); }
-      .ov-gps.loading .ov-gps-kicker { color: var(--dim); }
-      .ov-gps.error { border-color: var(--skip); }
-      .ov-gps.error .ov-gps-kicker { color: var(--skip); }
       .ov-verdict {
         position: absolute; left: 8px; right: 8px; bottom: 8px; z-index: 6;
         display: flex; min-height: 48px; align-items: center; gap: 8px;
@@ -497,7 +486,6 @@
             </div>
             <p class="ov-status" id="map-status" aria-live="polite" hidden></p>
           </div>
-          <div class="ov-gps" id="gps-place" aria-live="polite" hidden></div>
           <button type="button" class="ov-verdict idle" id="map-verdict">ドロップ①を選ぶと判定が出ます</button>
         </div>
       </section>
@@ -2308,7 +2296,7 @@
       // ヒート画面が表示中の時だけ地図を組み直す（隠れた容器へは描かない）
       if (el("scr-heat").classList.contains("active")) mountHeatMap();
     }
-    // ===== ヒート画面の現在地表示（マップ画面の現在地オーバーレイと同等の情報） =====
+    // ===== ヒート画面の現在地表示（マップ画面の左上チップと同等の情報） =====
     // 1行表示：町名＋ゾーン判定＋最寄りエリアと、そのエリアの選択中時間帯の
     // ヒート（◎○△）。GPS未取得・取得中・失敗も必ず文言で出す（無言にしない）。
     // GPSが無くてもヒートの閲覧自体は妨げない
@@ -2490,7 +2478,7 @@
     // ===== GPS =====
     // 上部の通知帯は廃止：この関数は後方互換のため残すが、引数によらず
     // 常に帯を隠すだけ（成功・失敗どちらの文言も帯には出さない）。
-    // GPSの成否と町名は、下部オーバーレイとマーカー脇ラベルで伝える
+    // GPSの町名は、左上チップとマーカー脇ラベルで伝える（下部には出さない）
     function setMapStatus(msg) {
       var p = el("map-status");
       if (p) { p.hidden = true; p.textContent = ""; }
@@ -2540,8 +2528,13 @@
       if (!info) return null;
       return (info.nearest ? "最寄り：" : "") + info.city + " " + info.town;
     }
-    // ===== 現在地の前面表示（町名＋ゾーン判定をマップ下端に大きく出す） =====
-    var gpsPlaceWanted = false; // 「現在地」チップが押されたら前面表示を出す
+    // ===== 現在地の表示（左上チップに一本化） =====
+    // マップ下部の前面表示オーバーレイ（町名＋ゾーン判定の黒帯）は
+    // 2026-11-10 指定で廃止。成功・取得中・失敗のいずれも下部には
+    // 何も出さず、現在地の情報は左上チップ（町名＋最寄りエリア）だけ
+    // に出す。ゾーン判定はチップにも出さない。showGpsPlace* /
+    // hideGpsPlace は呼び出し側の互換のため残し、中身はチップ同期のみ
+    var gpsPlaceWanted = false; // 「現在地」チップが押されたら現在地表示を出す
     var gpsStatus = "idle"; // GPSの状態機械（idle/loading/ok/error）。ヒート画面の現在地行もこれで描く
     var GPS_ZONE_LABELS = {
       corridor: "回廊内",
@@ -2550,19 +2543,13 @@
       kugayama: "準エリア（久我山側）",
       outside: "エリア外"
     };
-    function showGpsPlaceLoading() {
-      var box = el("gps-place");
-      box.hidden = false;
-      box.className = "ov-gps loading";
-      box.innerHTML = '<p class="ov-gps-kicker">現在地</p><p class="ov-gps-town">現在地を取得中…</p>';
-      syncGpsTownChip();
-    }
+    function showGpsPlaceLoading() { syncGpsTownChip(); }
     // 左上の即答チップ：現在地表示がアクティブでGPS取得済みの間だけ、
-    // 下部オーバーレイ見出しと同じ解決結果（町名／「最寄り：○○」）を
-    // 主表示としてマップ左上（ズームコントロールの右隣）に大きく出し、
-    // その下段に最寄りエリアを小さく併記する（範囲内で町名が実名
-    // 解決できている場合も出す）。ドロップ地へ切り替えた時・取得中・
-    // 取得失敗時は出さない（失敗表示は下部のみ）
+    // 解決結果（町名／「最寄り：○○」）を主表示としてマップ左上
+    // （ズームコントロールの右隣）に出し、その下段に最寄りエリアを
+    // 小さく併記する（範囲内で町名が実名解決できている場合も出す）。
+    // ドロップ地へ切り替えた時・取得中・取得失敗時は出さない
+    // （失敗を伝える表示はマップ画面には出さない）
     function syncGpsTownChip() {
       var chip = el("gps-town-chip");
       if (!chip) return;
@@ -2578,35 +2565,14 @@
       }
       chip.hidden = true;
     }
-    function showGpsPlaceOk() {
-      var box = el("gps-place");
-      if (!mapGps) { showGpsPlaceError(); return; }
-      // 見出しは町名（範囲外でも最寄りの町名を出す）。「判定範囲外」が
-      // 見出しになるのは町が本当に引けない場合だけ
-      var town = townInfoAt(mapGps.lat, mapGps.lon);
-      box.hidden = false;
-      box.className = "ov-gps ok";
-      box.innerHTML = '<p class="ov-gps-kicker">現在地</p>' +
-        '<p class="ov-gps-town">' + esc(town ? gpsTownLabel(town) : "判定範囲外") + "</p>" +
-        '<p class="ov-gps-zone">' + esc(town && !town.nearest ? (GPS_ZONE_LABELS[town.zone] || "エリア外") : "エリア外") +
-        "｜最寄りエリア：" + esc(areaById(currentAreaId).label) + "</p>";
-      syncGpsTownChip();
-    }
-    function showGpsPlaceError() {
-      var box = el("gps-place");
-      box.hidden = false;
-      box.className = "ov-gps error";
-      box.innerHTML = '<p class="ov-gps-kicker">現在地</p>' +
-        '<p class="ov-gps-town">現在地を取得できませんでした</p>' +
-        '<p class="ov-gps-zone">GPSが使えないため、起点はエリア中心の仮判定のままです</p>';
-      syncGpsTownChip();
-    }
-    function hideGpsPlace() { el("gps-place").hidden = true; syncGpsTownChip(); }
+    function showGpsPlaceOk() { syncGpsTownChip(); }
+    function showGpsPlaceError() { syncGpsTownChip(); }
+    function hideGpsPlace() { syncGpsTownChip(); }
     function acquireGps(done) {
       if (!("geolocation" in navigator)) {
         gpsStatus = "error";
-        // 失敗表示は下部オーバーレイ（前面表示）1本に統一する。
-        // 上部の帯は成功・失敗とも一切出さない
+        // 失敗時はマップ画面に何も出さない（左上チップも出さず、
+        // 下部に失敗を伝える帯も出さない）。上部の帯も一切出さない
         setMapStatus(null);
         if (gpsPlaceWanted) showGpsPlaceError();
         if (done) done(false);
@@ -2623,14 +2589,14 @@
         if (nearId) currentAreaId = nearId;
         // 起点・エリアが現在地へ切り替わる挙動は維持するが、通知の帯は
         // 出さない。成功情報の置き場はマーカー脇の町名ラベル（再描画で
-        // 出る）と、下部オーバーレイ（前面表示時）の2つ
+        // 出る）と、左上チップ（「現在地」表示時）の2つ
         setMapStatus(null);
         if (gpsPlaceWanted) showGpsPlaceOk();
         if (done) done(true);
         refresh();
       }, function () {
         gpsStatus = "error";
-        // 失敗表示は下部オーバーレイ1本に統一（上部の状態行には残さない）
+        // 失敗時はマップ画面に何も出さない（チップも下部の帯も出さない）
         setMapStatus(null);
         if (gpsPlaceWanted) showGpsPlaceError();
         if (done) done(false);
@@ -2693,7 +2659,7 @@
       centerMode = "drop";
       gpsPlaceWanted = false;
       hideGpsPlace();
-      setMapStatus(null); // 上部の旧メッセージ行はドロップ地への切替で消す（失敗表示は下部オーバーレイに一本化済み）
+      setMapStatus(null); // 上部の旧メッセージ行はドロップ地への切替で消す
       renderMapControls(); mountCorridorMap();
     });
     function showMapFallback(host) {
