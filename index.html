@@ -534,7 +534,7 @@
             <div class="drop-nav-row" id="drop-nav-row"></div>
           </div>
           <div class="bulk-row">
-            <a class="addr-btn primary disabled" id="bulk-route" target="_blank" rel="noopener">一括ルートナビ（ドロップ2件から）</a>
+            <a class="addr-btn primary disabled" id="bulk-route" target="_blank" rel="noopener">一括ルートナビ（ピック＋ドロップから）</a>
           </div>
           <p class="bulk-note" id="bulk-note" hidden></p>
           <div class="in-towns" id="in-towns">
@@ -1539,30 +1539,43 @@
         : appleMapsNavUrl(q, true);
       view.href = "https://maps.apple.com/?q=" + encodeURIComponent(q);
     }
-    // ===== 一括ルートナビ（全ドロップを入力順のまま経由するAppleマップURL） =====
+    // ===== 一括ルートナビ（現在地→ピックアップ→全ドロップ→待機スポット） =====
     // ロケットのマルチ配達はアプリ指定順が固定のため、並べ替えは一切しない：
-    // 起点（ピックアップ欄が入っていればその地点、空なら現在地）→ドロップ
-    // ①→②→③→④（入力した枠の順序そのまま）→ドロップ後の待機スポット。
+    // 現在地→ピックアップ（入力があれば最初の経由地）→ドロップ①→②→③→④
+    // （入力した枠の順序そのまま。候補ドロップ枠に入力があれば最後の
+    // ドロップとして含める）→ドロップ後の待機スポット。
     // 各枠は住所が入っていればその住所、エリアだけならエリア中心（駅名）を使う。
-    // 地点が定まった枠が2件未満の間はボタンは押せない
+    // 有効条件は「ピックアップ＋ドロップ1件以上」または「ドロップ2件以上」。
+    // 以前はドロップ枠だけで2件を数え、ピックアップ欄と候補枠の入力を一切
+    // 数えなかったため、ピックアップ＋ドロップ①を入れても有効にならなかった。
+    // また起点がピックアップ地点だったため、現在地→ピックアップの脚が
+    // ルートから抜けていた（ピックアップは起点ではなく経由地として扱う）
     var ROUTE_MAX_STOPS = 9; // Appleマップのルートに載せられる地点数の上限
-    function bulkRouteStops() {
+    function bulkDropStops() {
       var stops = [];
-      var n = 0;
       drops.forEach(function (id, i) {
         var addr = (dropAddrs[i] || "").trim();
-        if (addr) { stops.push(addr); n++; }
-        else if (id) { stops.push(stationLabel(id)); n++; }
+        if (addr) stops.push(addr);
+        else if (id) stops.push(stationLabel(id));
       });
-      if (n < 2) return null;
+      var candStop = (candAddr || "").trim() || (candId ? stationLabel(candId) : "");
+      if (candStop && stops.indexOf(candStop) < 0) stops.push(candStop);
+      return stops;
+    }
+    function bulkRouteStops() {
       var pick = el("pick-input").value.trim();
-      stops.unshift(pick || "Current Location");
+      var dropStops = bulkDropStops();
+      if (dropStops.length < 1) return null;
+      if (!pick && dropStops.length < 2) return null;
+      var stops = ["Current Location"];
+      if (pick) stops.push(pick);
+      dropStops.forEach(function (s) { stops.push(s); });
       // 最後に付ける待機スポットは、ドロップ後の脚として選ばれているスポット
       // （無ければ最終ドロップのエリアのスポット＝最適帰路ナビと同じ先）
       var post = postLegInfo();
-      var spot = post ? post.spot : spotForArea(finalDropId(), bandIdx);
+      var spot = post ? post.spot : spotForArea(finalDropId() || candId, bandIdx);
       if (spot) stops.push(spot.daddr);
-      return { stops: stops, dropCount: n };
+      return { stops: stops, dropCount: dropStops.length, hasPick: !!pick };
     }
     function updateBulkRoute() {
       var a = el("bulk-route"), note = el("bulk-note");
@@ -1571,9 +1584,15 @@
       if (!r) {
         a.removeAttribute("href");
         a.classList.add("disabled");
-        a.textContent = "一括ルートナビ（ドロップ2件から）";
-        note.hidden = true;
-        note.textContent = "";
+        a.textContent = "一括ルートナビ（ピック＋ドロップから）";
+        // あと何が足りないかだけを注記に出す（入力が途中まで進んだ時だけ）
+        var pick = el("pick-input").value.trim();
+        var dc = bulkDropStops().length;
+        var hint = "";
+        if (pick && dc === 0) hint = "ドロップを1件入れると一括ナビが有効になります";
+        else if (!pick && dc === 1) hint = "ピックアップを入れるか、ドロップをもう1件追加すると一括ナビが有効になります";
+        note.hidden = !hint;
+        note.textContent = hint;
         return;
       }
       var stops = r.stops;
@@ -1588,7 +1607,9 @@
       }
       a.href = url;
       a.classList.remove("disabled");
-      a.textContent = "一括ルートナビ（ドロップ" + r.dropCount + "件・入力順）";
+      a.textContent = r.hasPick
+        ? "一括ルートナビ（ピック＋ドロップ" + r.dropCount + "件・入力順）"
+        : "一括ルートナビ（ドロップ" + r.dropCount + "件・入力順）";
       note.hidden = !truncated;
       note.textContent = truncated
         ? "地点数がAppleマップの上限を超えるため、先頭から" + ROUTE_MAX_STOPS + "地点で作成しています"
