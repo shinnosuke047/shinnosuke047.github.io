@@ -2532,7 +2532,14 @@
       var fd = finalDropId();
       if (fd) pushSpot(spotForArea(fd, bandIdx), "最終ドロップの待機先");
       pushSpot(spotForArea(currentAreaId, bandIdx), "現在地エリアの待機先");
+      // 固定枠以外は、現在の起点（GPS取得時は現在地、未取得時は現在エリアの
+      // 中心）からスポットのエリア中心までの距離が近い順。同距離は出やすさ降順
+      var origin = spineStart();
       var rest = WAIT_SPOTS.slice().sort(function (a, b) {
+        var aa = areaById(a.areaId), bb = areaById(b.areaId);
+        var da = haversineKm(origin.lat, origin.lon, aa.lat, aa.lon);
+        var db = haversineKm(origin.lat, origin.lon, bb.lat, bb.lon);
+        if (da !== db) return da - db;
         return (b.easeByBand[bandIdx] || 0) - (a.easeByBand[bandIdx] || 0);
       });
       rest.forEach(function (s) { pushSpot(s, ""); });
