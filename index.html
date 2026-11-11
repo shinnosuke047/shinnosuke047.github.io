@@ -54,7 +54,6 @@
       .screen { display: none; flex: 1; min-height: 0; flex-direction: column; gap: 8px; padding: 8px; overflow: hidden; }
       .screen.active { display: flex; }
       #scr-map { padding: 0; gap: 0; }
-      .return-bar { flex-shrink: 0; padding: 6px 8px 2px; }
 
       /* ===== 下部タップ移動バー（スワイプせずタップで各区画へ） ===== */
       .tabbar {
@@ -132,112 +131,10 @@
          町名は現在地マーカー脇のラベルと左上チップに出す。
          帯の要素自体も二重に表示不能にしておく */
       .ov-status { display: none !important; }
-      .ov-verdict {
-        position: absolute; left: 8px; right: 8px; bottom: 8px; z-index: 6;
-        display: flex; min-height: 48px; align-items: center; gap: 8px;
-        border-radius: 10px; border: 1px solid var(--border); background: rgba(11, 15, 20, 0.9);
-        padding: 8px 12px; font-size: 14px; font-weight: 900; line-height: 1.35; text-align: left; color: var(--text);
-      }
-      .ov-verdict .ov-go { margin-left: auto; flex-shrink: 0; font-size: 12px; font-weight: 700; color: var(--dim); }
-      .ov-verdict.take { border-color: var(--take); color: var(--take); }
-      .ov-verdict.cond { border-color: var(--cond); color: var(--cond); }
-      .ov-verdict.skip { border-color: var(--skip); color: var(--skip); }
-      .ov-verdict.idle { color: var(--dim); font-size: 13px; }
-      /* 帰宅モード中は判定ストリップを橙系に変えて通常と一目で区別する */
-      .ov-verdict.home { border-color: #fb923c; color: #fdba74; background: rgba(60, 32, 8, 0.92); }
-      .ov-verdict.homeover { border-color: var(--skip); color: #fff; background: rgba(120, 18, 12, 0.94); }
       .center-btn.home-on { border-color: #fb923c; background: rgba(251,146,60,0.28); color: #fff; }
 
-      /* ===== 帰路ナビ（大ボタン） ===== */
-      .big-nav {
-        display: flex; min-height: 52px; align-items: center; justify-content: center; gap: 8px;
-        border-radius: var(--radius); background: var(--accent); padding: 8px 12px;
-        font-size: 16px; font-weight: 900; color: #06280f; text-decoration: none; text-align: center; line-height: 1.35;
-      }
-
-      /* ===== ドロップ入力 ===== */
-      .drop-sec { padding: 4px; }
-      .mode-row { display: flex; gap: 4px; }
-      .mode-btn {
-        min-height: 48px; flex: 1; border-radius: var(--radius); border: 1px solid var(--border);
-        background: var(--surface2); color: var(--dim); font-size: 15px; font-weight: 900;
-      }
-      .mode-btn.active { border-color: var(--accent); background: rgba(46,230,107,0.14); color: var(--text); }
       .d-label { margin: 2px 0 0; font-size: 13px; font-weight: 900; color: var(--dim); }
       .d-label .req { color: var(--accent); }
-      .start-line { margin: 4px 0 0; font-size: 12px; font-weight: 700; line-height: 1.4; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-      .start-line b { color: var(--text); }
-      .start-line .from-gps { color: var(--accent); }
-      /* 起点表示と枠別ナビは1行に統合し、候補ブロックへ縦を譲る */
-      .start-nav-row { margin-top: 2px; display: flex; gap: 4px; align-items: stretch; }
-      .start-nav-row .start-line { margin: 0; align-self: center; flex: 0 1 auto; }
-      .start-nav-row .drop-nav-row { margin: 0; flex: 1 1 auto; }
-      .drop-nav-row { margin-top: 4px; display: flex; gap: 4px; flex-wrap: wrap; }
-      .drop-nav-btn {
-        display: flex; min-height: 30px; flex: 1 1 20%; align-items: center; justify-content: center;
-        border-radius: var(--radius); border: 1px solid var(--border); background: var(--surface2);
-        font-size: 12px; font-weight: 900; color: var(--text); text-decoration: none; padding: 2px 4px; text-align: center; line-height: 1.3;
-      }
-
-      /* ===== 一括ルートナビ（全ドロップを入力順で経由） ===== */
-      .bulk-row { margin-top: 2px; display: flex; }
-      .bulk-row .addr-btn { flex: 1; }
-      .bulk-note { margin: 3px 0 0; font-size: 11px; font-weight: 700; line-height: 1.4; color: var(--cond); }
-      .bulk-note[hidden] { display: none; }
-
-      /* ===== 判定バナー（見出し1行のみ。説明文は置かない） ===== */
-      .verdict { padding: 9px 12px; border: 1px solid var(--border); }
-      .verdict .v-title { margin: 0; font-size: 20px; font-weight: 900; line-height: 1.3; }
-      .verdict .v-sub { margin: 4px 0 0; font-size: 13px; font-weight: 700; line-height: 1.6; color: var(--dim); }
-      .verdict.home { border-color: #fb923c; background: rgba(251,146,60,0.12); }
-      .verdict.home .v-title { color: #fdba74; font-size: 17px; }
-      .verdict.homeover { border-color: var(--skip); background: rgba(255,59,48,0.16); }
-      .verdict.homeover .v-title { color: #ff8a80; font-size: 17px; }
-      .verdict.take { border-color: var(--take); background: rgba(46,230,107,0.10); }
-      .verdict.take .v-title { color: var(--take); }
-      .verdict.cond { border-color: var(--cond); background: rgba(255,192,46,0.10); }
-      .verdict.cond .v-title { color: var(--cond); }
-      .verdict.skip { border-color: var(--skip); background: rgba(255,59,48,0.10); }
-      .verdict.skip .v-title { color: var(--skip); }
-      .verdict.idle .v-title { font-size: 15px; color: var(--dim); }
-
-      /* ===== 候補町リスト ===== */
-      .towns-sec { padding: 10px; }
-      .tm-scroll {
-        flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden;
-        overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
-        /* iOS Safariでタッチスクロールを確実に効かせる：縦パンをこの要素が受け持つ宣言 */
-        touch-action: pan-y;
-        /* スクロールできる端にだけ影を残す視覚的手がかり（カバーは内容と一緒に
-           流れて消え、影だけがその方向に続きがある間ずっと残る） */
-        background-image:
-          linear-gradient(var(--surface) 30%, rgba(21, 27, 35, 0)),
-          linear-gradient(rgba(21, 27, 35, 0), var(--surface) 70%),
-          radial-gradient(farthest-side at 50% 0, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0)),
-          radial-gradient(farthest-side at 50% 100%, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0));
-        background-repeat: no-repeat;
-        background-position: center top, center bottom, center top, center bottom;
-        background-size: 100% 26px, 100% 26px, 100% 9px, 100% 9px;
-        background-attachment: local, local, scroll, scroll;
-      }
-      .tm-grid3 { margin-top: 6px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-      .tm-h { margin: 12px 0 0; font-size: 16px; font-weight: 900; line-height: 1.3; }
-      .tm-h:first-of-type { margin-top: 2px; }
-      .tm-h .cnt { font-size: 12px; color: var(--dim); font-weight: 700; }
-      .tm-h.band-h { color: var(--band); }
-      .tm-h.land-h { color: var(--land); }
-      .tm-h.pband-h { color: var(--pband); }
-      .tm-h.pland-h { color: var(--pland); }
-      .town-chip {
-        display: flex; width: 100%; min-width: 0; align-items: center; justify-content: center; gap: 2px;
-        border-radius: 8px; background: var(--surface2);
-        border: 1px solid var(--border); padding: 10px 4px; font-size: 13px; font-weight: 700; line-height: 1.25; min-height: 48px;
-        text-align: center; overflow-wrap: anywhere;
-      }
-      .town-chip .nav-mark { color: var(--accent); font-size: 11px; flex-shrink: 0; }
-      .tm-empty { margin: 6px 0 0; font-size: 13px; font-weight: 700; color: var(--dim); line-height: 1.6; }
-      .tm-note { margin: 8px 0 0; font-size: 11px; line-height: 1.6; color: var(--dim); }
-
       /* ===== 待機スポット ===== */
       .spots-sec { padding: 10px; }
       .spot-row { margin-top: 8px; display: flex; align-items: center; gap: 8px; border-top: 1px solid var(--border); padding-top: 8px; }
@@ -294,19 +191,11 @@
       }
 
       /* ===== 住所ショートカット（コピペ／町名入力→Appleマップ） ===== */
-      .addr-sec { padding: 4px; flex-shrink: 0; }
       .addr-row { margin-top: 2px; display: flex; gap: 4px; }
-      #addr-input, #pick-input {
-        flex: 1; min-width: 0; min-height: 34px; border-radius: var(--radius); border: 1px solid var(--border);
-        background: var(--surface2); color: var(--text); font-size: 16px; padding: 0 12px;
-      }
-      #addr-input::placeholder, #pick-input::placeholder { color: var(--dim); font-size: 13px; }
       .addr-clear {
         min-height: 34px; min-width: 56px; border-radius: var(--radius); border: 1px solid var(--border);
         background: var(--surface2); color: var(--dim); font-size: 13px; font-weight: 900;
       }
-      .addr-actions { margin-top: 2px; display: flex; gap: 4px; }
-      .addr-actions[hidden] { display: none; }
       .addr-btn {
         display: flex; min-height: 36px; flex: 1; align-items: center; justify-content: center;
         border-radius: var(--radius); border: 1px solid var(--border); background: var(--surface2);
@@ -317,7 +206,7 @@
 
       /* ===== マップ画面のピン別ナビボタン（判定ストリップの上に重ねない帯） ===== */
       .pin-nav-row {
-        position: absolute; left: 8px; right: 8px; bottom: 88px; z-index: 6;
+        position: absolute; left: 8px; right: 8px; bottom: 76px; z-index: 6;
         display: flex; gap: 4px; flex-wrap: wrap;
       }
       .pin-nav-row[hidden] { display: none; }
@@ -332,148 +221,141 @@
       .pin-nav-btn.cand { border-color: var(--cond); }
       .pin-nav-btn:active { background: rgba(46, 230, 107, 0.2); }
 
-      /* ===== 入力画面内の候補地点（背骨が入ったらその場に出る） ===== */
-      .in-towns { margin-top: 2px; flex: 1; min-height: 0; position: relative; border-top: 1px solid var(--border); }
-      /* スクロール箱はflexの入れ子で高さを決めず、親の確定した箱へ絶対配置で
-         ぴったり重ねる（iOS Safariでflex由来の高さだとタッチスクロールが
-         効かなくなる事象の回避） */
-      #in-chips { position: absolute; top: 35px; right: 0; bottom: 0; left: 0; }
-      .in-towns .tm-h { font-size: 13px; margin-top: 6px; }
-      .in-towns .tm-h:first-of-type { margin-top: 2px; }
-      .in-towns .tm-grid3 { gap: 4px; margin-top: 3px; }
-      .in-chips .town-chip { min-height: 32px; padding: 4px; font-size: 12px; }
+      /* ===== ピックアップ／ドロップ枠（入力モーダル：縦積みで全枠同時表示・各最大3件） ===== */
+      .drop-frame, .pick-frame { margin-top: 10px; }
+      .drop-frame[hidden], .pick-frame[hidden] { display: none; }
+      .drop-frame .d-label, .pick-frame .d-label { margin-top: 0; }
+      .drop-add-btn {
+        margin-top: 10px; width: 100%; min-height: 44px; border-radius: var(--radius);
+        border: 1px dashed var(--border); background: transparent; color: var(--text);
+        font-size: 14px; font-weight: 900;
+      }
+      .drop-add-btn:active { border-color: var(--accent); color: var(--accent); }
+      .drop-add-btn:disabled { opacity: 0.4; }
+      .drop-add-btn:disabled:active { border-color: var(--border); color: var(--text); }
 
-      /* ===== ワンタップ取消し（1つ戻る／全て取消し） ===== */
-      .undo-row { display: flex; gap: 4px; margin-bottom: 2px; }
-      .undo-btn {
-        min-height: 30px; flex: 1; border-radius: var(--radius); border: 1px solid var(--border);
+      /* ===== マップ下部のアクションバー（入力／進捗／ナビ） ===== */
+      .action-bar {
+        position: absolute; left: 8px; right: 8px; bottom: 8px; z-index: 6;
+        display: flex; gap: 6px;
+      }
+      .action-btn {
+        position: relative; flex: 1; min-height: 54px; border-radius: 12px;
+        border: 1px solid var(--border); background: rgba(11, 15, 20, 0.92);
+        font-size: 25px; line-height: 1; display: flex; align-items: center; justify-content: center;
+      }
+      .action-btn:active { border-color: var(--accent); background: rgba(46, 230, 107, 0.18); }
+      .ab-badge {
+        position: absolute; top: 4px; right: 6px; min-width: 20px; height: 20px;
+        border-radius: 999px; background: var(--accent); color: #06280f;
+        font-size: 12px; font-weight: 900; display: flex; align-items: center; justify-content: center; padding: 0 5px;
+      }
+      .ab-badge[hidden] { display: none; }
+
+      /* ===== 進捗／ナビパネル（マップ下部に重ねるシート） ===== */
+      .sheet {
+        position: absolute; left: 8px; right: 8px; bottom: 76px; z-index: 7;
+        max-height: 54%; display: flex; flex-direction: column;
+        border-radius: 12px; border: 1px solid var(--border); background: rgba(13, 18, 25, 0.97);
+      }
+      .sheet[hidden] { display: none; }
+      .sheet-head { display: flex; align-items: center; padding: 10px 12px 4px; flex-shrink: 0; }
+      .sheet-title { font-size: 15px; font-weight: 900; }
+      .sheet-close {
+        margin-left: auto; flex-shrink: 0; width: 34px; height: 34px; border-radius: 8px;
+        background: var(--surface2); color: var(--text); font-size: 15px; font-weight: 900;
+      }
+      .sheet-body { overflow-y: auto; overflow-x: hidden; padding: 2px 12px 12px; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+      .task-order { border-top: 1px solid var(--border); padding: 8px 0 2px; }
+      .task-order:first-child { border-top: none; padding-top: 2px; }
+      .task-order-head { display: flex; align-items: center; font-size: 12px; font-weight: 900; color: var(--dim); }
+      .order-cancel { margin-left: auto; font-size: 11px; font-weight: 700; color: var(--dim); text-decoration: underline; padding: 4px 2px; }
+      .task-row { display: flex; align-items: center; gap: 8px; padding: 7px 0; }
+      .task-info { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+      .task-kind { font-size: 11px; font-weight: 900; color: var(--dim); }
+      .task-name { font-size: 15px; font-weight: 900; line-height: 1.3; overflow-wrap: anywhere; }
+      .task-addr { font-size: 11px; font-weight: 700; color: var(--dim); line-height: 1.4; overflow-wrap: anywhere; }
+      .task-row.done .task-name { color: var(--dim); text-decoration: line-through; }
+      .task-nav {
+        flex-shrink: 0; min-height: 38px; display: flex; align-items: center; border-radius: 8px;
+        border: 1px solid var(--border); background: var(--surface2); color: var(--text);
+        padding: 0 10px; font-size: 12px; font-weight: 900; text-decoration: none;
+      }
+      .task-done-btn {
+        flex-shrink: 0; min-height: 38px; border-radius: 8px; background: var(--accent);
+        color: #06280f; padding: 0 14px; font-size: 13px; font-weight: 900;
+      }
+      .task-done-tag { flex-shrink: 0; font-size: 12px; font-weight: 900; color: var(--accent); }
+      .empty-note { margin: 12px 0 8px; font-size: 14px; font-weight: 900; color: var(--dim); text-align: center; }
+
+      /* ===== 帰宅パネル（帰宅ボタンONで上段の下に出る） ===== */
+      .home-panel {
+        pointer-events: auto; border-radius: 10px; border: 1px solid #fb923c;
+        background: rgba(60, 32, 8, 0.92); padding: 8px 10px;
+      }
+      .home-panel[hidden] { display: none; }
+      .home-panel-text { margin: 0; font-size: 12px; font-weight: 900; line-height: 1.45; color: #fdba74; }
+      .home-panel.over { border-color: var(--skip); background: rgba(120, 18, 12, 0.94); }
+      .home-panel.over .home-panel-text { color: #ffffff; }
+      .home-nav-btn {
+        margin-top: 6px; display: flex; min-height: 40px; align-items: center; justify-content: center;
+        border-radius: 8px; background: #fb923c; color: #2a1503;
+        font-size: 14px; font-weight: 900; text-decoration: none; padding: 4px 8px; text-align: center;
+      }
+      a.center-btn { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
+      .ov-top-row .center-btn { padding: 0 10px; font-size: 12px; }
+
+      /* ===== 案件入力モーダル ===== */
+      .modal-backdrop {
+        position: fixed; inset: 0; z-index: 50; background: rgba(4, 6, 9, 0.72);
+        display: flex; align-items: center; justify-content: center; padding: 14px;
+      }
+      .modal-backdrop[hidden] { display: none; }
+      .modal-card {
+        width: 100%; max-width: 520px; max-height: 92dvh; display: flex; flex-direction: column;
+        border-radius: 14px; border: 1px solid var(--border); background: var(--surface);
+      }
+      .modal-head { display: flex; align-items: center; padding: 12px 14px 4px; flex-shrink: 0; }
+      .modal-title { font-size: 16px; font-weight: 900; }
+      .modal-body { overflow-y: auto; overflow-x: hidden; padding: 6px 14px 12px; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+      .modal-foot {
+        display: flex; gap: 8px; padding: 10px 14px calc(12px + env(safe-area-inset-bottom, 0px));
+        border-top: 1px solid var(--border); flex-shrink: 0;
+      }
+      .modal-cancel {
+        flex: 0 0 108px; min-height: 48px; border-radius: 10px; border: 1px solid var(--border);
         background: var(--surface2); color: var(--text); font-size: 14px; font-weight: 900;
       }
-      .undo-btn:disabled { opacity: 0.4; }
-
-      /* ===== スロット式ドロップ入力 =====
-         入力画面だけは例外として縦スクロール可（2026-11-11 利用者指定）：
-         住所フィールド群と候補ブロックで固定ビューポートを
-         超えた分を、少しスクロールすれば一括ルートナビまで届く形にする。
-         他の4画面は従来通りスクロール不可。タブバーと最適帰路ナビは
-         このスクロール領域の外（.app直下）にあり固定のまま */
-      #scr-input {
-        padding: 4px; gap: 4px;
-        overflow-y: auto; overflow-x: hidden;
-        -webkit-overflow-scrolling: touch; overscroll-behavior: contain; touch-action: pan-y;
+      .modal-done {
+        flex: 1; min-height: 48px; border-radius: 10px; background: var(--accent);
+        color: #06280f; font-size: 16px; font-weight: 900;
       }
-      /* drop-sec は内容の高さ以下に縮めない（flex-shrink:0）。縦に余れば
-         flex-grow で画面いっぱいに広がり、余分は候補ブロックが受け取る */
-      #scr-input .drop-sec { flex: 1 0 auto; min-height: 0; display: flex; flex-direction: column; }
-      /* 候補ブロック以外は縮まず、余った縦は全て候補ブロックが受け取る */
-      #scr-input .drop-sec > * { flex-shrink: 0; }
-      #scr-input .drop-sec > .in-towns { flex-shrink: 1; }
-      .slot-row { display: flex; gap: 4px; }
-      .slot-btn {
-        min-height: 34px; flex: 1; min-width: 0; border-radius: var(--radius); border: 1px solid var(--border);
-        background: var(--surface2); color: var(--dim); font-size: 11px; font-weight: 900; line-height: 1.25; padding: 2px 2px; overflow-wrap: anywhere;
+      .plat-row { display: flex; gap: 6px; }
+      .plat-btn {
+        flex: 1; min-height: 46px; border-radius: 10px; border: 1px solid var(--border);
+        background: var(--surface2); color: var(--dim); font-size: 15px; font-weight: 900;
       }
-      .slot-btn .slot-name { display: block; font-size: 13px; color: var(--text); margin-top: 1px; }
-      .slot-add {
-        min-height: 34px; flex: 0 0 46px; border-radius: var(--radius); border: 1px dashed var(--border);
-        background: transparent; color: var(--dim); font-size: 15px; font-weight: 900; line-height: 1.3; padding: 3px 2px;
+      .plat-btn.active { border-color: var(--accent); background: rgba(46, 230, 107, 0.16); color: var(--text); }
+      .picked-btn {
+        margin-top: 8px; width: 100%; min-height: 42px; border-radius: 10px;
+        border: 1px dashed var(--border); background: transparent; color: var(--dim);
+        font-size: 13px; font-weight: 900;
       }
-      .slot-add .slot-name { display: block; font-size: 11px; margin-top: 2px; }
-      .slot-add:active { border-color: var(--accent); color: var(--accent); }
-      .slot-btn.active { border-color: var(--accent); background: rgba(46,230,107,0.14); }
-      .slot-btn.active.d2 { border-color: var(--land); background: rgba(34,211,238,0.12); }
-      .slot-btn.active.cand { border-color: var(--cond); background: rgba(255,192,46,0.12); }
-
-      /* ===== 候補（1セクション表示・カテゴリボタンで切替） ===== */
-      #scr-towns .towns-sec { flex: 1; min-height: 0; position: relative; }
-      #scr-towns .verdict { flex-shrink: 0; }
-      /* 候補画面では候補ブロックが画面の大半を占める：カード内へ絶対配置で広げ、
-         下端の注記だけを固定帯として残す */
-      #tm-chips { position: absolute; top: 82px; right: 10px; bottom: 28px; left: 10px; }
-      #scr-towns .tm-note { position: absolute; right: 10px; bottom: 6px; left: 10px; margin: 0; }
-      .tm-catnote { margin: 4px 0 0; font-size: 11px; line-height: 1.5; color: var(--dim); }
-
-      /* ===== 候補画面：1セクション1画面（選択中セクションの全件を収める） =====
-         最大級のセクション（経由OK 40町＝3列×14行）が390×844にスクロール
-         なしで収まる寸法。チップは町名のみ（「ナビ›」表記は省略し、タップで
-         ナビが開く挙動は維持）。入力画面のピックアップ側チップには適用しない */
-      #scr-towns .jump-btn { min-height: 32px; }
-      #scr-towns .tm-h { font-size: 15px; }
-      #scr-towns .tm-catnote { margin-top: 2px; font-size: 10px; line-height: 1.4; }
-      #scr-towns .tm-grid3 { margin-top: 4px; gap: 3px; }
-      #scr-towns .town-chip {
-        min-height: 30px; padding: 2px; font-size: 12px; line-height: 1.2; border-radius: 6px;
+      .picked-btn.active { border: 1px solid var(--cond); background: rgba(255, 192, 46, 0.15); color: var(--text); }
+      .m-input {
+        flex: 1; min-width: 0; min-height: 38px; border-radius: var(--radius); border: 1px solid var(--border);
+        background: var(--surface2); color: var(--text); font-size: 16px; padding: 0 12px;
       }
-
-      /* ===== 候補画面：リスト／地図の表示切替 =====
-         トグルは浮動させず、カテゴリボタンの直下に通常フローで1帯を
-         確保する（帯の高さ：margin 4px＋実高28px）。リストの箱・
-         地図の箱はどちらもその帯の下（top:82px）から始めるため、
-         トグルが地図の描画・操作に重なる構造自体が存在しない。
-         リスト側も同寸にそろえ、見出し側の余白ハックは廃止した */
-      .tm-view-toggle {
-        position: relative; z-index: 8; display: flex; width: max-content; margin: 4px 0 0 auto;
-        border-radius: 999px; border: 1px solid var(--border);
-        background: rgba(11, 15, 20, 0.9); overflow: hidden;
+      .m-input::placeholder { color: var(--dim); font-size: 13px; }
+      .m-input:disabled { opacity: 0.45; }
+      .band-row { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 4px; }
+      .band-chip {
+        min-height: 32px; border-radius: 999px; border: 1px solid var(--border);
+        background: var(--surface2); color: var(--dim); padding: 0 10px; font-size: 12px; font-weight: 900;
       }
-      .tm-view-toggle button {
-        min-height: 26px; padding: 0 13px; font-size: 12px; font-weight: 900; color: var(--dim); line-height: 1.2;
-      }
-      .tm-view-toggle button.active { background: rgba(46, 230, 107, 0.2); color: var(--text); }
-      .tm-map-stage {
-        position: absolute; top: 82px; right: 10px; bottom: 28px; left: 10px;
-        border-radius: 8px; overflow: hidden; background: var(--surface2);
-      }
-      .tm-map-stage[hidden] { display: none; }
-      /* 地図モードの空表示：選択中カテゴリの候補が0件のとき、リスト側の
-         「対象の町はありません」と同じ文言を地図の中央に出す。
-         地図キャンバス・コントロールより確実に前面へ出すため z-index は
-         大きめに取る（MapLibre のコントロールは最大でも一桁台） */
-      .tm-map-empty {
-        position: absolute; left: 50%; top: 50%; z-index: 20; transform: translate(-50%, -50%);
-        width: max-content; max-width: 86%;
-        border-radius: 10px; border: 1px solid var(--border); background: rgba(11, 15, 20, 0.93);
-        padding: 12px 16px; font-size: 14px; font-weight: 900; line-height: 1.5; text-align: center; color: var(--text);
-      }
-      .tm-map-empty[hidden] { display: none; }
-      #tm-chips[hidden] { display: none; }
-
-      /* ===== カテゴリボタン（候補ブロック直上・常設） =====
-         候補画面ではセクション切替、入力画面ではピックアップ内の位置ジャンプ。
-         件数は判定結果と連動して更新される。4ボタン均等幅・同高・1行固定：
-         ラベルは短縮形＋件数は括弧なし（例「経由OK 40」）で、390px幅でも
-         折り返し・はみ出しが出ない寸法にしてある */
-      .jump-bar { display: flex; gap: 4px; align-items: stretch; }
-      .jump-btn {
-        flex: 1 1 0; min-width: 0; min-height: 34px; border-radius: 8px; border: 1px solid var(--border);
-        background: var(--surface2); color: var(--text); font-size: 11px; font-weight: 900;
-        white-space: nowrap; padding: 0; letter-spacing: -0.04em; line-height: 1.2; text-align: center;
-      }
-      .jump-btn .jc { font-size: 12px; }
-      /* 候補画面で選択中のセクションのボタンはカテゴリ色で薄く塗る */
-      #tm-jump .jump-btn.band.active { background: rgba(250, 204, 21, 0.18); }
-      #tm-jump .jump-btn.land.active { background: rgba(34, 211, 238, 0.18); }
-      #tm-jump .jump-btn.pband.active { background: rgba(251, 146, 60, 0.18); }
-      #tm-jump .jump-btn.pland.active { background: rgba(192, 132, 252, 0.18); }
-      .jump-btn.band { border-color: rgba(250, 204, 21, 0.55); }
-      .jump-btn.band .jc { color: var(--band); }
-      .jump-btn.land { border-color: rgba(34, 211, 238, 0.55); }
-      .jump-btn.land .jc { color: var(--land); }
-      .jump-btn.pband { border-color: rgba(251, 146, 60, 0.55); }
-      .jump-btn.pband .jc { color: var(--pband); }
-      .jump-btn.pland { border-color: rgba(192, 132, 252, 0.55); }
-      .jump-btn.pland .jc { color: var(--pland); }
-      .jump-btn:active { background: rgba(46, 230, 107, 0.16); }
-      .in-towns .jump-bar { margin-top: 2px; }
-      .in-towns .jump-btn { min-height: 30px; }
-      /* 入力画面ピックアップ表示：チップ内のヒート記号と全件への導線 */
-      .town-chip .heat-mark { font-size: 11px; font-weight: 900; flex-shrink: 0; }
-      .in-all-link {
-        display: flex; width: 100%; min-height: 40px; margin-top: 10px; align-items: center; justify-content: center;
-        border-radius: 8px; border: 1px solid var(--accent); background: rgba(46, 230, 107, 0.12);
-        color: var(--text); font-size: 14px; font-weight: 900;
-      }
-      .in-all-link:active { background: rgba(46, 230, 107, 0.22); }
+      .band-chip.active { border-color: var(--accent); background: rgba(46, 230, 107, 0.16); color: var(--text); }
+      .modal-note { margin: 8px 0 0; font-size: 12px; font-weight: 900; line-height: 1.5; color: var(--cond); }
+      .modal-note[hidden] { display: none; }
     </style>
   </head>
   <body>
@@ -494,80 +376,25 @@
               </div>
             </div>
             <p class="ov-status" id="map-status" aria-live="polite" hidden></p>
+            <div class="home-panel" id="home-panel" hidden>
+              <p class="home-panel-text" id="home-panel-text"></p>
+              <a class="home-nav-btn" id="home-nav-btn" href="#" target="_blank" rel="noopener">自宅へナビ（三鷹市下連雀5-3-1）</a>
+            </div>
           </div>
           <div class="pin-nav-row" id="pin-nav-row" hidden></div>
-          <button type="button" class="ov-verdict idle" id="map-verdict">ドロップ①を選ぶと判定が出ます</button>
-        </div>
-      </section>
-
-      <!-- ===== 入力画面（住所ショートカット＋スロット式ドロップ入力） ===== -->
-      <section class="screen" id="scr-input" aria-label="ドロップ地入力">
-        <div class="card addr-sec">
-          <p class="d-label" style="margin-top:0">ピックアップ <span class="req">町名＋番号・住所をペースト</span></p>
-          <div class="addr-row">
-            <input id="pick-input" type="text" autocomplete="off" placeholder="例：荻窪5丁目／店舗の住所" aria-label="ピックアップ地点の町名と番号または住所" />
-            <button type="button" class="addr-clear" id="pick-clear">消す</button>
-            <button type="button" class="addr-clear" id="pick-paste">ペースト</button>
-          </div>
-          <div class="addr-actions" id="pick-actions" hidden>
-            <a class="addr-btn" id="pick-nav" target="_blank" rel="noopener">ピックアップへナビ開始</a>
-            <a class="addr-btn" id="pick-view" target="_blank" rel="noopener">ピックアップを地図で見る</a>
-          </div>
-          <p class="d-label" id="addr-label">ドロップ① <span class="req">町名＋番号、または住所をコピペ</span></p>
-          <div class="addr-row">
-            <input id="addr-input" type="text" autocomplete="off" placeholder="例：阿佐谷南1丁目／届け先の住所" aria-label="ドロップ先の住所または町名" />
-            <button type="button" class="addr-clear" id="addr-clear">消す</button>
-            <button type="button" class="addr-clear" id="addr-paste">ペースト</button>
-          </div>
-          <div class="addr-actions" id="addr-actions" hidden>
-            <a class="addr-btn primary" id="addr-nav" target="_blank" rel="noopener">ドロップ①へナビ開始</a>
-            <a class="addr-btn" id="addr-view" target="_blank" rel="noopener">ドロップ①を地図で見る</a>
-          </div>
-        </div>
-        <div class="card drop-sec">
-          <div class="undo-row">
-            <button type="button" class="undo-btn" id="undo-btn" disabled>↩ 1つ戻る</button>
-            <button type="button" class="undo-btn" id="clear-all-btn">全て取消し</button>
-          </div>
-          <div class="slot-row" id="slot-row" role="group" aria-label="入力するドロップの切り替え"></div>
-          <div class="start-nav-row">
-            <p class="start-line" id="start-line"></p>
-            <div class="drop-nav-row" id="drop-nav-row"></div>
-          </div>
-          <div class="bulk-row">
-            <a class="addr-btn primary disabled" id="bulk-route" target="_blank" rel="noopener">一括ルートナビ（ピック＋ドロップから）</a>
-          </div>
-          <p class="bulk-note" id="bulk-note" hidden></p>
-          <div class="in-towns" id="in-towns">
-            <div class="jump-bar" id="in-jump" role="group" aria-label="候補カテゴリへジャンプ">
-              <button type="button" class="jump-btn band" data-jump="band">経由OK <span class="jc num" data-jc="band">0</span></button>
-              <button type="button" class="jump-btn land" data-jump="land">着地OK <span class="jc num" data-jc="land">0</span></button>
+          <div class="sheet" id="sheet" hidden>
+            <div class="sheet-head">
+              <span class="sheet-title" id="sheet-title"></span>
+              <button type="button" class="sheet-close" id="sheet-close" aria-label="パネルを閉じる">✕</button>
             </div>
-            <div class="tm-scroll in-chips" id="in-chips"></div>
+            <div class="sheet-body" id="sheet-body"></div>
           </div>
-        </div>
-      </section>
-
-      <!-- ===== 候補画面（判定＋候補町リスト） ===== -->
-      <section class="screen" id="scr-towns" aria-label="判定と候補地点">
-        <div class="card verdict idle" id="verdict" aria-live="polite"></div>
-        <div class="card towns-sec">
-          <div class="jump-bar" id="tm-jump" role="group" aria-label="候補カテゴリ切替">
-            <button type="button" class="jump-btn band" data-jump="band">経由OK <span class="jc num" data-jc="band">0</span></button>
-            <button type="button" class="jump-btn land" data-jump="land">着地OK <span class="jc num" data-jc="land">0</span></button>
-            <button type="button" class="jump-btn pband" data-jump="pband">経由・後 <span class="jc num" data-jc="pband">0</span></button>
-            <button type="button" class="jump-btn pland" data-jump="pland">着地・待機 <span class="jc num" data-jc="pland">0</span></button>
+          <div class="action-bar" role="group" aria-label="案件操作">
+            <button type="button" class="action-btn" id="act-input" aria-label="案件を入力">🚲💨</button>
+            <button type="button" class="action-btn" id="act-rocket" aria-label="ロケットの進捗">🚀<span class="ab-badge num" id="badge-rocket" hidden></span></button>
+            <button type="button" class="action-btn" id="act-uber" aria-label="Uberの進捗">🐸<span class="ab-badge num" id="badge-uber" hidden></span></button>
+            <button type="button" class="action-btn" id="act-nav" aria-label="次の地点へのナビ">🗺️</button>
           </div>
-          <div class="tm-view-toggle" role="group" aria-label="候補の表示方法">
-            <button type="button" data-tmview="list" aria-pressed="false">リスト</button>
-            <button type="button" data-tmview="map" class="active" aria-pressed="true">地図</button>
-          </div>
-          <div class="tm-scroll" id="tm-chips" hidden></div>
-          <div class="tm-map-stage" id="tm-map-stage">
-            <div class="map-host" id="tm-map-host"></div>
-            <div class="tm-map-empty" id="tm-map-empty" role="status" hidden></div>
-          </div>
-          <p class="tm-note">町名タップでAppleマップの自転車ナビがその町へ開きます。</p>
         </div>
       </section>
 
@@ -599,19 +426,92 @@
 
     </main>
 
-    <!-- ===== 最適帰路ナビ（全画面で常時表示） ===== -->
-    <div class="return-bar">
-      <a class="big-nav" id="return-nav" href="#" target="_blank" rel="noopener">最適帰路ナビ</a>
-    </div>
-
     <!-- ===== 下部タブ：タップで画面切替（スクロールなし） ===== -->
     <nav class="tabbar" aria-label="画面切り替え">
       <button type="button" data-screen="scr-map" class="active">マップ</button>
-      <button type="button" data-screen="scr-input">入力</button>
-      <button type="button" data-screen="scr-towns">候補</button>
       <button type="button" data-screen="scr-spots">待機</button>
       <button type="button" data-screen="scr-heat">ヒート</button>
     </nav>
+
+    <!-- ===== 案件入力モーダル（🚲💨から開く） ===== -->
+    <div class="modal-backdrop" id="order-modal" hidden>
+      <div class="modal-card" role="dialog" aria-modal="true" aria-label="案件入力">
+        <div class="modal-head">
+          <span class="modal-title">案件入力</span>
+          <button type="button" class="sheet-close" id="modal-close" aria-label="入力を閉じる">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="plat-row" role="group" aria-label="プラットフォーム">
+            <button type="button" class="plat-btn" id="plat-rocket">🚀 ロケット</button>
+            <button type="button" class="plat-btn" id="plat-uber">🐸 Uber</button>
+          </div>
+          <div id="m-pick-frames">
+            <div class="pick-frame" id="m-pick-frame-0">
+              <p class="d-label">ピックアップ① <span class="req">店舗の住所をペースト</span></p>
+              <div class="addr-row">
+                <input id="m-pick-input-0" class="m-input" type="text" autocomplete="off" placeholder="例：荻窪5丁目／店舗の住所" aria-label="ピックアップ①の住所" />
+                <button type="button" class="addr-clear" data-pick-clear="0">消す</button>
+                <button type="button" class="addr-clear" data-pick-paste="0">ペースト</button>
+              </div>
+              <button type="button" class="picked-btn" data-pick-done="0" aria-pressed="false">ピックアップ済みにする</button>
+            </div>
+            <div class="pick-frame" id="m-pick-frame-1" hidden>
+              <p class="d-label">ピックアップ② <span class="req">店舗の住所をペースト</span></p>
+              <div class="addr-row">
+                <input id="m-pick-input-1" class="m-input" type="text" autocomplete="off" placeholder="例：荻窪5丁目／店舗の住所" aria-label="ピックアップ②の住所" />
+                <button type="button" class="addr-clear" data-pick-clear="1">消す</button>
+                <button type="button" class="addr-clear" data-pick-paste="1">ペースト</button>
+              </div>
+              <button type="button" class="picked-btn" data-pick-done="1" aria-pressed="false">ピックアップ済みにする</button>
+            </div>
+            <div class="pick-frame" id="m-pick-frame-2" hidden>
+              <p class="d-label">ピックアップ③ <span class="req">店舗の住所をペースト</span></p>
+              <div class="addr-row">
+                <input id="m-pick-input-2" class="m-input" type="text" autocomplete="off" placeholder="例：荻窪5丁目／店舗の住所" aria-label="ピックアップ③の住所" />
+                <button type="button" class="addr-clear" data-pick-clear="2">消す</button>
+                <button type="button" class="addr-clear" data-pick-paste="2">ペースト</button>
+              </div>
+              <button type="button" class="picked-btn" data-pick-done="2" aria-pressed="false">ピックアップ済みにする</button>
+            </div>
+          </div>
+          <button type="button" class="drop-add-btn" id="m-pick-add" aria-label="ピックアップ枠を追加">＋ ピックアップ追加</button>
+          <div id="m-drop-frames">
+            <div class="drop-frame" id="m-drop-frame-0">
+              <p class="d-label">ドロップ① <span class="req">届け先の住所をペースト</span></p>
+              <div class="addr-row">
+                <input id="m-drop-input-0" class="m-input" type="text" autocomplete="off" placeholder="例：阿佐谷北2丁目／届け先の住所" aria-label="ドロップ①の住所" />
+                <button type="button" class="addr-clear" data-drop-clear="0">消す</button>
+                <button type="button" class="addr-clear" data-drop-paste="0">ペースト</button>
+              </div>
+            </div>
+            <div class="drop-frame" id="m-drop-frame-1" hidden>
+              <p class="d-label">ドロップ② <span class="req">届け先の住所をペースト</span></p>
+              <div class="addr-row">
+                <input id="m-drop-input-1" class="m-input" type="text" autocomplete="off" placeholder="例：阿佐谷北2丁目／届け先の住所" aria-label="ドロップ②の住所" />
+                <button type="button" class="addr-clear" data-drop-clear="1">消す</button>
+                <button type="button" class="addr-clear" data-drop-paste="1">ペースト</button>
+              </div>
+            </div>
+            <div class="drop-frame" id="m-drop-frame-2" hidden>
+              <p class="d-label">ドロップ③ <span class="req">届け先の住所をペースト</span></p>
+              <div class="addr-row">
+                <input id="m-drop-input-2" class="m-input" type="text" autocomplete="off" placeholder="例：阿佐谷北2丁目／届け先の住所" aria-label="ドロップ③の住所" />
+                <button type="button" class="addr-clear" data-drop-clear="2">消す</button>
+                <button type="button" class="addr-clear" data-drop-paste="2">ペースト</button>
+              </div>
+            </div>
+          </div>
+          <button type="button" class="drop-add-btn" id="m-drop-add" aria-label="ドロップ枠を追加">＋ ドロップ追加</button>
+          <p class="d-label" style="margin-top:12px">候補の時間帯 <span class="req">通常は現在時刻で自動</span></p>
+          <div class="band-row" id="m-band-row"></div>
+          <p class="modal-note" id="modal-note" hidden></p>
+        </div>
+        <div class="modal-foot">
+          <button type="button" class="modal-cancel" id="modal-cancel">キャンセル</button>
+          <button type="button" class="modal-done" id="modal-done">入力完了</button>
+        </div>
+      </div>
+    </div>
     </div>
 
     <script>
@@ -913,11 +813,12 @@
     // ===== 状態 =====
     var currentAreaId = "ogikubo";
     var bandIdx = bandIndexForHour(new Date().getHours());
+    var bandManual = false; // 入力モーダルで時間帯を手動指定した間は、時刻による自動追随を止める
     var mapGps = null;
     var mapHandle = null;
     var centerMode = "gps"; // "gps" | "drop"
-    var MAX_DROPS = 4; // ドロップ枠の上限（ダブルからダブルを受けるケースまで想定）
-    var DROP_MARKS = ["①", "②", "③", "④"];
+    var MAX_DROPS = 9; // 背骨へ平坦化するドロップ数の上限（案件自体はモーダル側で管理する）
+    var DROP_MARKS = ["①", "②", "③", "④", "⑤", "⑥", "⑦", "⑧", "⑨"];
     var drops = [null]; // ドロップ枠のエリアid（1〜4件、必要な分だけ増やす）
     var candId = null; // 候補ドロップのエリアid
     var dropAddrs = [""]; // ドロップ枠ごとの住所テキスト（枠ごとに独立保持し、切り替えで混ざらない）
@@ -933,7 +834,6 @@
     function clonePin(p) {
       return p ? { lat: p.lat, lon: p.lon, exact: !!p.exact, addr: p.addr } : null;
     }
-    var activeSlot = 0; // 入力中スロット 0〜drops.length-1=ドロップ枠、drops.length=候補ドロップ
     // ===== 帰宅モード =====
     // 自宅（三鷹市下連雀五丁目）の座標は同丁目ポリゴンの重心。帰宅モードは
     // 手動トグルのみ（自動起動なし）。ON中は候補の軸を「現在地→自宅」へ
@@ -1037,104 +937,70 @@
       for (var i = drops.length - 1; i >= 0; i--) if (drops[i]) return drops[i];
       return null;
     }
-    // ===== ワンタップ取消し用の履歴（入力状態のスナップショット） =====
-    var historyStack = [];
-    // テキスト欄の履歴は「入力1回分」を1エントリに丸める：欄ごとに履歴へ
-    // 確定済みの値を保持し、入力中は積まない。入力の区切り（フォーカスを
-    // 外した時／他の操作の直前）で、変わっていれば開始前の状態を1つだけ積む
-    var committedFieldVal = { "pick-input": "", "addr-input": "" };
-    // 住所テキストはスロットごとに独立保持する。表示中の住所欄は選択中
-    // スロット分だけを映し、切り替え時はそのスロット自身の値だけを出す
-    function slotAddr(i) { return i < drops.length ? (dropAddrs[i] || "") : candAddr; }
-    function setSlotAddr(i, v) {
-      if (i < drops.length) {
-        while (dropAddrs.length < drops.length) dropAddrs.push("");
-        dropAddrs[i] = v;
-      } else candAddr = v;
+    // ===== 案件モデル（プラットフォーム別の進捗管理） =====
+    // 案件は入力モーダル（🚲💨）から積まれ、進捗パネル（🚀／🐸）で
+    // タスクごとに完了を更新する。未完了タスクから従来の背骨状態
+    // （pickPin／drops／dropPins／dropAddrs）を組み直して候補計算・
+    // ピン表示・帰路ナビ等の既存基盤へ流すため、計算幾何は従来と同一。
+    // 軸の決め方：未完了タスクの中で最初のピックアップを始点、最後の
+    // ドロップを終点とする。ピックアップ済みの案件しか無い場合は起点は
+    // 従来の起点（GPS／現在エリア）になり、ドロップ基準で軸が組まれる
+    var orders = [];
+    var orderSeq = 0;
+    // 案件のピックアップは最大3件（ダブル等に対応）。各ピックはドロップと
+    // 同じ保持オブジェクト {pin, areaId, addr, done} で持ち、入力時点で
+    // 「ピックアップ済み」にされた行は preDone=true で積まれ、進捗パネル
+    // には最初からタスクとして現れない（完了済み行としても出さない）
+    function orderTasks(o) {
+      var ts = [];
+      o.picks.forEach(function (p, i) {
+        ts.push({ kind: "pick", order: o, idx: i, pin: p.pin, areaId: p.areaId, addr: p.addr, done: !!p.done, preDone: !!p.preDone });
+      });
+      o.drops.forEach(function (d, i) {
+        ts.push({ kind: "drop", order: o, idx: i, pin: d.pin, areaId: d.areaId, addr: d.addr, done: !!d.done, preDone: false });
+      });
+      return ts;
     }
-    function commitTextField(id) {
-      var f = el(id);
-      if (!f || f.value === committedFieldVal[id]) return false;
-      var prev = snapshotObj();
-      if (id === "pick-input") {
-        prev.pick = committedFieldVal[id];
-      } else {
-        // 巻き戻し対象は選択中スロットの住所だけ（他枠の住所は触らない）
-        if (activeSlot < drops.length) prev.da[activeSlot] = committedFieldVal[id];
-        else prev.ca = committedFieldVal[id];
-        prev.drop = committedFieldVal[id];
-      }
-      pushSnapshot(JSON.stringify(prev));
-      committedFieldVal[id] = f.value;
-      if (id === "addr-input") setSlotAddr(activeSlot, f.value);
-      return true;
+    function orderFinished(o) {
+      return o.picks.every(function (p) { return p.done; }) && o.drops.every(function (d) { return d.done; });
     }
-    function commitPendingText() {
-      commitPickField();
-      commitAddrField();
+    function unfinishedTasks() {
+      var ts = [];
+      orders.forEach(function (o) {
+        orderTasks(o).forEach(function (t) { if (!t.done) ts.push(t); });
+      });
+      return ts;
     }
-    function commitPickField() {
-      if (!commitTextField("pick-input")) return false;
-      applyPickCommit();
-      return true;
+    function syncLegacyFromOrders() {
+      var startPin = null, startAreaId = null;
+      var dA = [], dP = [], dT = [];
+      orders.forEach(function (o) {
+        // 軸の始点は「最初の未完了ピックアップ」（案件内・案件間とも入力順）。
+        // 全ピックが済み／完了の案件しか無い場合は始点なし＝従来の起点
+        // （GPS／現在エリア）からドロップ基準で軸が組まれる
+        o.picks.forEach(function (p) {
+          if (!p.done && p.pin && !startPin) { startPin = p.pin; startAreaId = p.areaId; }
+        });
+        o.drops.forEach(function (d) {
+          if (!d.done) { dA.push(d.areaId); dP.push(d.pin); dT.push(d.addr); }
+        });
+      });
+      pickPin = startPin ? clonePin(startPin) : null;
+      pickAreaId = startAreaId;
+      drops = dA.length ? dA : [null];
+      dropPins = dP.length ? dP : [null];
+      dropAddrs = dT.length ? dT : [""];
+      candId = null;
+      candPin = null;
+      candAddr = "";
     }
-    function commitAddrField() {
-      if (!commitTextField("addr-input")) return false;
-      applyAddrCommit();
-      return true;
+    // タスクの代表点：ピンの座標、無ければエリア中心。どちらも無ければ null
+    function taskPoint(t) {
+      if (t.pin && t.pin.lat != null) return { lat: t.pin.lat, lon: t.pin.lon };
+      if (t.areaId) { var a = areaById(t.areaId); return { lat: a.lat, lon: a.lon }; }
+      return null;
     }
-    function hasPendingText() {
-      return el("pick-input").value !== committedFieldVal["pick-input"] ||
-        el("addr-input").value !== committedFieldVal["addr-input"];
-    }
-    function snapshotObj() {
-      return {
-        d: drops.slice(), c: candId,
-        da: dropAddrs.slice(), ca: candAddr,
-        pick: el("pick-input").value, drop: el("addr-input").value,
-        pa: pickAreaId, pp: clonePin(pickPin),
-        dp: dropPins.map(clonePin), cp: clonePin(candPin)
-      };
-    }
-    function snapshotState() { return JSON.stringify(snapshotObj()); }
-    function pushSnapshot(s) {
-      if (historyStack[historyStack.length - 1] === s) return;
-      historyStack.push(s);
-      if (historyStack.length > 60) historyStack.shift();
-      updateUndoBtn();
-    }
-    function pushHistory() {
-      commitPendingText(); // 未確定のテキスト入力があれば先に1エントリへ丸めてから積む
-      pushSnapshot(snapshotState());
-    }
-    function restoreState(s) {
-      var o = JSON.parse(s);
-      drops = (o.d && o.d.length) ? o.d.slice(0, MAX_DROPS) : [null];
-      candId = o.c;
-      if (o.da && o.da.length) {
-        dropAddrs = o.da.slice(0, MAX_DROPS);
-        while (dropAddrs.length < drops.length) dropAddrs.push("");
-      } else {
-        dropAddrs = drops.map(function () { return ""; });
-        if (o.drop) dropAddrs[0] = o.drop;
-      }
-      candAddr = o.ca != null ? o.ca : "";
-      pickAreaId = o.pa != null ? o.pa : null;
-      pickPin = o.pp ? clonePin(o.pp) : null;
-      candPin = o.cp ? clonePin(o.cp) : null;
-      dropPins = (o.dp || []).slice(0, drops.length).map(clonePin);
-      while (dropPins.length < drops.length) dropPins.push(null);
-      if (activeSlot > drops.length) activeSlot = drops.length;
-      el("pick-input").value = o.pick || "";
-      el("addr-input").value = slotAddr(activeSlot);
-      committedFieldVal["pick-input"] = el("pick-input").value;
-      committedFieldVal["addr-input"] = el("addr-input").value;
-      syncAddrLinks();
-    }
-    function updateUndoBtn() {
-      var b = el("undo-btn");
-      if (b) b.disabled = historyStack.length === 0 && !hasPendingText();
-    }
+
     // 起点：GPS取得済みなら現在地、未取得なら選択中エリアの中心（駅座標）
     function spineStart() {
       if (mapGps) return { lat: mapGps.lat, lon: mapGps.lon, gps: true, label: "現在地" };
@@ -1472,210 +1338,6 @@
       return { cand: cand, dFinal: dFinal, dRoute: dRoute, detourKm: detour, dPostRoute: dPostRoute, dSpot: dSpot, postDetourKm: postDetour, post: post };
     }
 
-    // ===== ドロップ入力UI（スロット式：枠をタップで切り替え、住所欄は選択中スロット分だけを映す） =====
-    // 枠は固定ではなく「＋追加」で最大4件まで増える。最後のタブは常に候補ドロップ。
-    // 指定経路は住所欄へのペースト（手入力も可）のみ：確定した住所が
-    // エリア解決＋ピンになる（駅チップ／エリアチップの指定UIは廃止）
-    function slotDef(i) {
-      if (i < drops.length) {
-        return {
-          label: "ドロップ" + DROP_MARKS[i],
-          desc: i === 0
-            ? "1件目の届け先。背骨の軸はここから始まります"
-            : "重ね取りの届け先。最後の枠が着地基準",
-          cls: i === 0 ? "" : "d2"
-        };
-      }
-      return { label: "候補ドロップ", desc: "来た案件の届け先。即判定します", cls: "cand" };
-    }
-    function slotValue(i) { return i < drops.length ? drops[i] : candId; }
-    function slotDisplayName(i) {
-      var v = slotValue(i);
-      if (v) return areaById(v).short;
-      var pin = i < drops.length ? dropPins[i] : candPin;
-      return pin ? "ピン" : "未選択";
-    }
-    function addDropSlot() {
-      if (drops.length >= MAX_DROPS) return;
-      pushHistory();
-      var wasCand = activeSlot >= drops.length;
-      drops.push(null);
-      dropAddrs.push(""); // 新規枠の住所は空（前の枠の住所は引き継がない）
-      dropPins.push(null); // 新規枠のピンも空
-      activeSlot = wasCand ? drops.length : drops.length - 1;
-      refresh();
-    }
-    function renderInputs() {
-      // スロットタブ（ドロップ枠＋候補＋追加ボタン。現在の選択エリア名をタブ自身に表示する）
-      var rowHtml = "";
-      var total = drops.length + 1;
-      for (var s = 0; s < total; s++) {
-        var def = slotDef(s);
-        var v = slotValue(s);
-        rowHtml += '<button type="button" class="slot-btn' + (activeSlot === s ? " active " + def.cls : "") +
-          '" data-slot="' + s + '" aria-pressed="' + (activeSlot === s) + '">' +
-          esc(def.label) + '<span class="slot-name">' + esc(slotDisplayName(s)) + "</span></button>";
-      }
-      if (drops.length < MAX_DROPS) {
-        rowHtml += '<button type="button" class="slot-add" id="slot-add" aria-label="ドロップ枠を追加">＋<span class="slot-name">追加</span></button>';
-      }
-      el("slot-row").innerHTML = rowHtml;
-      var sbtns = el("slot-row").querySelectorAll("button[data-slot]");
-      for (var bi = 0; bi < sbtns.length; bi++) {
-        sbtns[bi].addEventListener("click", function () {
-          var next = parseInt(this.getAttribute("data-slot"), 10);
-          if (next === activeSlot) return;
-          commitPendingText(); // 切替前の入力を旧スロット分として確定させてから移る
-          setSlotAddr(activeSlot, el("addr-input").value);
-          activeSlot = next;
-          renderInputs();
-        });
-      }
-      var addBtn = el("slot-add");
-      if (addBtn) addBtn.addEventListener("click", addDropSlot);
-      // テキスト欄の見出しと入力対象の表示を選択中スロットに追随させる
-      el("addr-label").innerHTML = esc(addrTargetLabel()) + ' <span class="req">町名＋番号、または住所をコピペ</span>';
-      el("addr-input").setAttribute("aria-label", addrTargetLabel() + "の住所または町名");
-      // 住所欄には選択中スロット自身に保存された住所だけを表示する
-      var slotText = slotAddr(activeSlot);
-      if (el("addr-input").value !== slotText) el("addr-input").value = slotText;
-      committedFieldVal["addr-input"] = slotText;
-      syncAddrLinks();
-      // 起点表示（1行に収まる短文のみ。詳細はマップ側の状態表示に出る）
-      var start = spineStart();
-      el("start-line").innerHTML = "起点：" + (start.gps
-        ? '<span class="from-gps">現在地（GPS）</span>'
-        : "<b>" + esc(start.label) + "</b>（仮判定）");
-      // ドロップへのナビボタン（ピンが立った全枠分＋候補）。宛先は正確ピンが
-      // あればその座標、無ければ住所文字列／エリア宛先を使う
-      var navHtml = "";
-      drops.forEach(function (id, i) {
-        var u = pointNavUrl(dropPins[i], dropAddrs[i], id);
-        if (!u) return;
-        var nm = id ? ("ドロップ" + DROP_MARKS[i] + " " + areaById(id).label) : ("ドロップ" + DROP_MARKS[i]);
-        navHtml += '<a class="drop-nav-btn" href="' + u +
-          '" target="_blank" rel="noopener">' + esc(nm) + "へナビ</a>";
-      });
-      var candUrl = pointNavUrl(candPin, candAddr, candId);
-      if (candUrl) {
-        navHtml += '<a class="drop-nav-btn" href="' + candUrl +
-          '" target="_blank" rel="noopener">候補' + (candId ? " " + esc(areaById(candId).label) : "") + "へナビ</a>";
-      }
-      el("drop-nav-row").innerHTML = navHtml;
-      el("drop-nav-row").style.display = navHtml ? "flex" : "none";
-    }
-
-    // ===== ピックアップ／ドロップ①ショートカット（町名＋番号・住所→Appleマップ） =====
-    // ドロップ①を入れた時だけナビショートカットが現れる。出発地はピックアップ欄が
-    // 入っていればその地点、空なら現在地。
-    // テキスト欄の入力対象表示は、現在選択中のドロップ枠（または候補）に連動する
-    function addrTargetLabel() {
-      return activeSlot < drops.length ? "ドロップ" + DROP_MARKS[activeSlot] : "候補ドロップ";
-    }
-    function syncAddrLinks() {
-      var q = el("addr-input").value.trim();
-      var pick = el("pick-input").value.trim();
-      var nav = el("addr-nav"), view = el("addr-view"), row = el("addr-actions");
-      // ピックアップ欄にも専用のマップショートカットを出す（入力が入った時だけ）
-      var pNav = el("pick-nav"), pView = el("pick-view"), pRow = el("pick-actions");
-      if (!pick) {
-        pRow.hidden = true;
-        pNav.removeAttribute("href"); pView.removeAttribute("href");
-      } else {
-        pRow.hidden = false;
-        pNav.href = appleMapsNavUrl(pick, true);
-        pView.href = "https://maps.apple.com/?q=" + encodeURIComponent(pick);
-      }
-      updateBulkRoute();
-      if (!q) {
-        row.hidden = true;
-        nav.removeAttribute("href"); view.removeAttribute("href");
-        return;
-      }
-      row.hidden = false;
-      nav.textContent = addrTargetLabel() + "へナビ開始";
-      view.textContent = addrTargetLabel() + "を地図で見る";
-      nav.href = pick
-        ? "https://maps.apple.com/?saddr=" + encodeURIComponent(pick) + "&daddr=" + encodeURIComponent(q) + "&dirflg=b"
-        : appleMapsNavUrl(q, true);
-      view.href = "https://maps.apple.com/?q=" + encodeURIComponent(q);
-    }
-    // ===== 一括ルートナビ（現在地→ピックアップ→全ドロップ→待機スポット） =====
-    // ロケットのマルチ配達はアプリ指定順が固定のため、並べ替えは一切しない：
-    // 現在地→ピックアップ（入力があれば最初の経由地）→ドロップ①→②→③→④
-    // （入力した枠の順序そのまま。候補ドロップ枠に入力があれば最後の
-    // ドロップとして含める）→ドロップ後の待機スポット。
-    // 各枠は住所が入っていればその住所、エリアだけならエリア中心（駅名）を使う。
-    // 有効条件は「ピックアップ＋ドロップ1件以上」または「ドロップ2件以上」。
-    // 以前はドロップ枠だけで2件を数え、ピックアップ欄と候補枠の入力を一切
-    // 数えなかったため、ピックアップ＋ドロップ①を入れても有効にならなかった。
-    // また起点がピックアップ地点だったため、現在地→ピックアップの脚が
-    // ルートから抜けていた（ピックアップは起点ではなく経由地として扱う）
-    var ROUTE_MAX_STOPS = 9; // Appleマップのルートに載せられる地点数の上限
-    function bulkDropStops() {
-      var stops = [];
-      drops.forEach(function (id, i) {
-        var addr = (dropAddrs[i] || "").trim();
-        if (addr) stops.push(addr);
-        else if (id) stops.push(stationLabel(id));
-      });
-      var candStop = (candAddr || "").trim() || (candId ? stationLabel(candId) : "");
-      if (candStop && stops.indexOf(candStop) < 0) stops.push(candStop);
-      return stops;
-    }
-    function bulkRouteStops() {
-      var pick = el("pick-input").value.trim();
-      var dropStops = bulkDropStops();
-      if (dropStops.length < 1) return null;
-      if (!pick && dropStops.length < 2) return null;
-      var stops = ["Current Location"];
-      if (pick) stops.push(pick);
-      dropStops.forEach(function (s) { stops.push(s); });
-      // 最後に付ける待機スポットは、ドロップ後の脚として選ばれているスポット
-      // （無ければ最終ドロップのエリアのスポット＝最適帰路ナビと同じ先）
-      var post = postLegInfo();
-      var spot = post ? post.spot : spotForArea(finalDropId() || candId, bandIdx);
-      if (spot) stops.push(spot.daddr);
-      return { stops: stops, dropCount: dropStops.length, hasPick: !!pick };
-    }
-    function updateBulkRoute() {
-      var a = el("bulk-route"), note = el("bulk-note");
-      if (!a || !note) return;
-      var r = bulkRouteStops();
-      if (!r) {
-        a.removeAttribute("href");
-        a.classList.add("disabled");
-        a.textContent = "一括ルートナビ（ピック＋ドロップから）";
-        // あと何が足りないかだけを注記に出す（入力が途中まで進んだ時だけ）
-        var pick = el("pick-input").value.trim();
-        var dc = bulkDropStops().length;
-        var hint = "";
-        if (pick && dc === 0) hint = "ドロップを1件入れると一括ナビが有効になります";
-        else if (!pick && dc === 1) hint = "ピックアップを入れるか、ドロップをもう1件追加すると一括ナビが有効になります";
-        note.hidden = !hint;
-        note.textContent = hint;
-        return;
-      }
-      var stops = r.stops;
-      var truncated = stops.length > ROUTE_MAX_STOPS;
-      if (truncated) stops = stops.slice(0, ROUTE_MAX_STOPS); // 先頭から上限までで生成する
-      var url = "https://maps.apple.com/?saddr=" + encodeURIComponent(stops[0]) +
-        "&daddr=" + encodeURIComponent(stops[stops.length - 1]) + "&dirflg=b";
-      if (stops.length > 2) {
-        url = "https://maps.apple.com/?saddr=" + encodeURIComponent(stops[0]) +
-          "&waypoints=" + stops.slice(1, stops.length - 1).map(function (s) { return encodeURIComponent(s); }).join("|") +
-          "&daddr=" + encodeURIComponent(stops[stops.length - 1]) + "&dirflg=b";
-      }
-      a.href = url;
-      a.classList.remove("disabled");
-      a.textContent = r.hasPick
-        ? "一括ルートナビ（ピック＋ドロップ" + r.dropCount + "件・入力順）"
-        : "一括ルートナビ（ドロップ" + r.dropCount + "件・入力順）";
-      note.hidden = !truncated;
-      note.textContent = truncated
-        ? "地点数がAppleマップの上限を超えるため、先頭から" + ROUTE_MAX_STOPS + "地点で作成しています"
-        : "";
-    }
     // ===== 住所・町名テキスト→背骨スロットの解決 =====
     // 住所入力だけでも候補が出るよう、確定したテキストをエリアへ変換する：
     // エリア名が含まれればそのエリア、町名が含まれればその丁目ポリゴンの
@@ -1715,13 +1377,11 @@
       return nearestAreaIdIn(AREAS, { lat: slat / n, lon: slon / n });
     }
     // ===== 住所確定→ピン生成（近似ピンは即時、正確ピンは非同期で差し替え） =====
-    // フィールドが確定したら、まず従来の町・エリア解決でエリア中心の近似ピンを
+    // 住所が確定したら、まず従来の町・エリア解決でエリア中心の近似ピンを
     // 即時に立て、並行して Nominatim へジオコーディングを試みる。成功したら
     // ピンを返却座標へ差し替えて再計算する。失敗・タイムアウト・返却点が
     // 現在地（無ければ自宅）から60km超の場合は近似のままにする。
-    // ジオコーディングの成否で候補計算やナビはブロックされない（近似で即時動作）。
-    // 履歴は直前の commitTextField が確定前の状態を積み済み（テキスト＋エリア＋
-    // ピンを1回の「1つ戻る」で一緒に巻き戻せるよう、ここでは追加で積まない）
+    // ジオコーディングの成否で候補計算やナビはブロックされない（近似で即時動作）
     function approxPin(areaId, addr) {
       if (!areaId) return { lat: null, lon: null, exact: false, addr: addr };
       var a = areaById(areaId);
@@ -1751,103 +1411,50 @@
         apply(lat, lon);
       }).catch(function () { if (timer) clearTimeout(timer); });
     }
-    // ジオコーディング結果の適用は、対象のピンが今も同じ住所のものとして
-    // 残っている時だけ（入力し直し・取消し後に届いた古い応答は捨てる）
-    function startGeocodeFor(kind, idx, addr) {
-      geocodeAddress(addr, function (lat, lon) {
-        if (kind === "pick") {
-          if (!pickPin || pickPin.addr !== addr) return;
-          if (el("pick-input").value.trim() !== addr) return;
-          pickPin = { lat: lat, lon: lon, exact: true, addr: addr };
-          if (!pickAreaId) pickAreaId = nearestAreaIdIn(AREAS, { lat: lat, lon: lon });
-        } else if (kind === "cand") {
-          if (!candPin || candPin.addr !== addr) return;
-          if ((candAddr || "").trim() !== addr) return;
-          candPin = { lat: lat, lon: lon, exact: true, addr: addr };
-          if (!candId) candId = nearestAreaIdIn(AREAS, { lat: lat, lon: lon });
-        } else {
-          if (!dropPins[idx] || dropPins[idx].addr !== addr) return;
-          if (((dropAddrs[idx] || "").trim()) !== addr) return;
-          dropPins[idx] = { lat: lat, lon: lon, exact: true, addr: addr };
-          if (!drops[idx]) drops[idx] = nearestAreaIdIn(AREAS, { lat: lat, lon: lon });
+    // 住所テキスト→ピン保持オブジェクト {addr, areaId, pin} への解決。
+    // モーダルの入力欄（編集中）と登録済み案件の両方で同じ2段解決を使う
+    function resolveInto(store, addr) {
+      store.addr = addr;
+      var areaId = addr ? resolveDropAreaFromText(addr) : null;
+      store.areaId = areaId;
+      store.pin = addr ? approxPin(areaId, addr) : null;
+      if (addr) {
+        geocodeAddress(addr, function (lat, lon) { applyGeocoded(addr, lat, lon); });
+      }
+    }
+    // ジオコーディング結果の適用先：同じ住所の近似ピンを持つ場所すべて
+    // （モーダル編集中の欄と、入力完了済みの案件タスク）。入力し直し等で
+    // 住所が変わったピンには触れない
+    function applyGeocoded(addr, lat, lon) {
+      function upgrade(store) {
+        if (store.pin && store.pin.addr === addr && !store.pin.exact) {
+          store.pin = { lat: lat, lon: lon, exact: true, addr: addr };
+          if (!store.areaId) store.areaId = nearestAreaIdIn(AREAS, { lat: lat, lon: lon });
+          return true;
         }
+        return false;
+      }
+      var changed = false;
+      if (modalOpen) {
+        modalPicks.forEach(function (p) { if (upgrade(p)) changed = true; });
+        modalDrops.forEach(function (d) { if (upgrade(d)) changed = true; });
+        if (changed) renderModal();
+        changed = false;
+      }
+      orders.forEach(function (o) {
+        o.picks.forEach(function (p) { if (upgrade(p)) changed = true; });
+        o.drops.forEach(function (d) { if (upgrade(d)) changed = true; });
+      });
+      if (changed) {
+        syncLegacyFromOrders();
         refresh();
-      });
-    }
-    function applyAddrCommit() {
-      var text = el("addr-input").value.trim();
-      var areaId = text ? resolveDropAreaFromText(text) : null;
-      if (activeSlot < drops.length) {
-        while (dropPins.length < drops.length) dropPins.push(null);
-        drops[activeSlot] = areaId;
-        dropPins[activeSlot] = text ? approxPin(areaId, text) : null;
-        if (text) startGeocodeFor("drop", activeSlot, text);
-      } else {
-        candId = areaId;
-        candPin = text ? approxPin(areaId, text) : null;
-        if (text) startGeocodeFor("cand", -1, text);
       }
-      refresh();
     }
-    function applyPickCommit() {
-      var text = el("pick-input").value.trim();
-      var areaId = text ? resolveDropAreaFromText(text) : null;
-      pickAreaId = areaId;
-      pickPin = text ? approxPin(areaId, text) : null;
-      if (text) startGeocodeFor("pick", -1, text);
-      refresh();
-    }
-    // テキスト欄は入力中リンクだけを追随させ、履歴へは積まない。入力の
-    // 区切り（フォーカスを外した時）に commitTextField が「入力1回分」を
-    // 1エントリとして確定させるので、「1つ戻る」1タップで欄ごと戻る。
-    // 貼り付けもフォーカス中の1回の入力として同じ1エントリに丸まる
-    ["addr-input", "pick-input"].forEach(function (id) {
-      var f = el(id);
-      f.addEventListener("input", function () {
-        if (id === "addr-input") setSlotAddr(activeSlot, f.value); // 入力はその場で選択中スロット分として保持
-        syncAddrLinks();
-        updateUndoBtn();
-      });
-      f.addEventListener("blur", function () {
-        // 住所・町名が確定したら、その入力だけでピンと背骨も決まるよう反映する
-        if (id === "addr-input") commitAddrField();
-        else commitPickField();
-      });
-    });
-    el("addr-input").addEventListener("keydown", function (e) {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        var h = el("addr-nav").getAttribute("href");
-        if (h) window.open(h, "_blank", "noopener");
-      }
-    });
-    el("addr-clear").addEventListener("click", function () {
-      if (!el("addr-input").value) return;
-      pushHistory();
-      el("addr-input").value = ""; setSlotAddr(activeSlot, ""); committedFieldVal["addr-input"] = "";
-      // 住所欄がスロット指定の唯一の経路になったため、「消す」でそのスロットの
-      // エリア・ピンも一緒に消す（「1つ戻る」で復元できる）
-      if (activeSlot < drops.length) { drops[activeSlot] = null; dropPins[activeSlot] = null; }
-      else { candId = null; candPin = null; }
-      syncAddrLinks();
-      refresh();
-    });
-    el("pick-clear").addEventListener("click", function () {
-      if (!el("pick-input").value) return;
-      pushHistory();
-      el("pick-input").value = ""; committedFieldVal["pick-input"] = "";
-      pickAreaId = null; pickPin = null;
-      syncAddrLinks();
-      refresh();
-    });
-
     // ===== ペーストボタン（配達アプリからコピーした住所をワンタップで貼る） =====
-    // 読み取りが成功したら、手入力＋blur確定と全く同じ経路（input イベント
-    // → commitTextField → applyAddrCommit／applyPickCommit）を即時に通し、
-    // 町名・エリア解決とピン生成、ナビ／一括ナビの活性更新まで一気に進める。
-    // 読み取りが権限等で失敗した場合（空含む）はエラーで止めず、その欄へ
-    // フォーカスを当てるだけにして、システムのペースト呼び出しに委ねる
-    function pasteIntoField(id) {
+    // 読み取りが成功したら done(text) へ渡して即時に解決まで進める。
+    // 失敗した場合（空・権限なし含む）はエラーで止めず、その欄へフォーカスを
+    // 当てるだけにして、システムのペースト呼び出しに委ねる
+    function pasteIntoField(id, done) {
       var f = el(id);
       function fallback() { try { f.focus(); } catch (e) { /* noop */ } }
       if (!navigator.clipboard || typeof navigator.clipboard.readText !== "function") { fallback(); return; }
@@ -1855,791 +1462,42 @@
         var t = (text || "").trim();
         if (!t) { fallback(); return; }
         f.value = t;
-        f.dispatchEvent(new Event("input", { bubbles: true }));
-        if (id === "addr-input") commitAddrField();
-        else commitPickField();
+        if (done) done(t);
       }).catch(function () { fallback(); });
     }
-    el("pick-paste").addEventListener("click", function () { pasteIntoField("pick-input"); });
-    el("addr-paste").addEventListener("click", function () { pasteIntoField("addr-input"); });
 
-    syncAddrLinks();
-
-    // ===== ワンタップ取消し（1つ戻る／全て取消し） =====
-    el("undo-btn").addEventListener("click", function () {
-      commitPendingText(); // 入力の途中でも、その入力1回分から戻れるようにする
-      if (!historyStack.length) return;
-      var s = historyStack.pop();
-      restoreState(s);
-      updateUndoBtn();
-      refresh();
-    });
-    el("clear-all-btn").addEventListener("click", function () {
-      pushHistory();
-      drops = [null];
-      candId = null;
-      dropAddrs = [""];
-      candAddr = "";
-      dropPins = [null];
-      candPin = null;
-      pickAreaId = null;
-      pickPin = null;
-      activeSlot = 0;
-      el("addr-input").value = "";
-      el("pick-input").value = "";
-      committedFieldVal["addr-input"] = "";
-      committedFieldVal["pick-input"] = "";
-      syncAddrLinks();
-      refresh();
-    });
-
-    // ===== 判定バナー＋候補町リスト =====
-    // マップ下端の判定帯（タップで候補画面へ）。判定の要約をマップの中に常駐させる
-    function setMapVerdict(cls, text) {
-      var s = el("map-verdict");
-      if (!s) return;
-      s.className = "ov-verdict " + cls;
-      s.innerHTML = esc(text) + '<span class="ov-go">候補 ›</span>';
-    }
-    // 帰宅モード中の判定ストリップ文言（候補画面・マップ下端で共用）
-    function homeStripText(t) {
-      var core = "23:00帰宅まで残り" + Math.max(0, t.remain) + "分｜直行なら" + t.direct + "分｜締切" + fmtClock(t.deadline);
-      return t.overdue ? "締切超過・直行のみ｜" + core : core;
-    }
-    function renderHomeResults() {
-      var box = el("verdict");
-      var res = computeHomeTemamiso();
-      var t = res.timing;
-      var strip = homeStripText(t);
-      var catSummary = "経由" + res.band.length + "・着地" + res.land.length +
-        "・後" + res.postBand.length + "・待機" + res.postLand.length;
-      var hm = homeCandidateMetrics();
-      var sub;
-      if (hm) {
-        var verdictWord;
-        if (t.overdue) verdictWord = hm.dRoute <= 0.5 ? "帯の内側のみ可" : "取らない ─ 締切超過";
-        else if (hm.dHome <= 1.2 || hm.dRoute <= 0.5) verdictWord = "取れる ─ 帰宅方向";
-        else if (hm.dHome <= 2.2 || hm.dRoute <= 1.0) verdictWord = "条件付き ─ 金額で判断";
-        else verdictWord = "取らない ─ 帰宅軸から外れる";
-        sub = "候補ドロップ：" + hm.cand.label + "｜" + verdictWord +
-          "｜自宅から " + hm.dHome.toFixed(1) + "km／帰宅軸から " + hm.dRoute.toFixed(1) + "km" +
-          "／遠回り概算 +" + hm.detourKm.toFixed(1) + "km（約" + Math.round(hm.detourKm * 4) + "分）";
-      } else {
-        sub = "帰宅軸：" + res.pts[0].label + " → 自宅｜" + catSummary +
-          (res.via ? "｜経由：" + res.via.spot.name : "｜経由なし（直行）");
-      }
-      box.className = "card verdict " + (t.overdue ? "homeover" : "home");
-      box.innerHTML = '<p class="v-title">' + esc(strip) + '</p><p class="v-sub">' + esc(sub) + "</p>";
-      // マップ下端ストリップは setMapVerdict を介さず直接組む（色調クラスを保つため）
-      var mv = el("map-verdict");
-      if (mv) {
-        mv.className = "ov-verdict " + (t.overdue ? "homeover" : "home");
-        mv.innerHTML = esc(strip + "｜" + catSummary) + '<span class="ov-go">候補 ›</span>';
-      }
-      var cats = [
-        { key: "band", label: "経由OK", note: "帰宅軸（現在地→自宅）の帯（±500m）・判定は丁目単位", list: res.band },
-        { key: "land", label: "着地OK", note: "自宅から1.2km・判定は丁目単位", list: res.land },
-        { key: "pband", label: "経由OK（ドロップ後）", note: res.via ? "経由スポット（" + res.via.spot.name + "）→自宅の帯（±500m）" : "自宅方向の経由スポットがないため対象なし", list: res.postBand },
-        { key: "pland", label: "着地OK（待機寄り）", note: res.via ? res.via.spot.name + "から1.2km" : "自宅方向の経由スポットがないため対象なし", list: res.postLand }
-      ];
-      tmState = { cats: cats };
-      renderTowns();
-      renderInlineTowns();
-    }
+    // ===== 候補計算（結果はメインマップのポリゴン着色で表示する） =====
+    // 判定ストリップと候補タブは廃止し、候補の確認はマップ上の着色に
+    // 一本化した。計算結果は tmState に保持し（マップ描画が使う）、
+    // 件数は検証用に window.__lastCandidates へ出す（UIには表示しない）
     function renderResults() {
-      if (homeMode) { renderHomeResults(); return; }
-      var box = el("verdict");
-      var res = computeTemamiso();
+      var res = homeMode ? computeHomeTemamiso() : computeTemamiso();
       if (!res) {
-        box.className = "card verdict idle";
-        box.innerHTML = '<p class="v-title">ドロップ①を選ぶと、重ねて良い町と候補の可否が即出ます</p>';
-        setMapVerdict("idle", "ドロップ①を選ぶと判定が出ます");
         tmState = null;
-        renderTowns();
-        renderInlineTowns();
+        window.__lastCandidates = null;
         return;
       }
-      var routeLabel = res.pts.map(function (p) { return p.label; }).join(" → ");
-      // マップ下端の判定ストリップに常時出す4カテゴリ件数サマリー
-      var catSummary = "経由" + res.band.length + "・着地" + res.land.length +
-        "・後" + res.postBand.length + "・待機" + res.postLand.length;
-      // 候補の判定（背骨軸と、ドロップ後→待機スポットの脚の両方で見る）
-      var m = candidateMetrics();
-      if (m) {
-        var cls, title;
-        var viaSpine = m.dFinal <= 1.2 || m.dRoute <= 0.5;
-        var viaPost = m.dSpot <= 1.2 || m.dPostRoute <= 0.5;
-        var viaSpineCond = m.dFinal <= 2.2 || m.dRoute <= 1.0;
-        var viaPostCond = m.dSpot <= 2.2 || m.dPostRoute <= 1.0;
-        if (viaSpine || viaPost) {
-          cls = "take";
-          title = "取れる ─ 手前味噌成立" + (viaPost && !viaSpine ? "（ドロップ後の待機移動で回収）" : "");
-        } else if (viaSpineCond || viaPostCond) {
-          cls = "cond"; title = "条件付き ─ 金額で判断";
-        } else {
-          cls = "skip"; title = "取らない ─ どちらの軸からも外れる";
-        }
-        var sub = "候補ドロップ：" + m.cand.label +
-          "｜背骨軸：最終ドロップから " + m.dFinal.toFixed(1) + "km／軸から " + m.dRoute.toFixed(1) + "km" +
-          "／遠回り概算 +" + m.detourKm.toFixed(1) + "km（約" + Math.round(m.detourKm * 4) + "分）";
-        if (m.post) {
-          sub += "｜待機移動軸（→" + m.post.spot.name + "）：待機スポットから " +
-            (m.dSpot === Infinity ? "―" : m.dSpot.toFixed(1) + "km") +
-            "／軸から " + (m.dPostRoute === Infinity ? "―" : m.dPostRoute.toFixed(1) + "km") +
-            "／遠回り概算 +" + (m.postDetourKm === Infinity ? "―" : m.postDetourKm.toFixed(1) + "km");
-        }
-        box.className = "card verdict " + cls;
-        box.innerHTML = '<p class="v-title">' + esc(title) + '</p><p class="v-sub">' + esc(sub) + "</p>" +
-          '<p class="v-sub">ルート：' + esc(routeLabel) + "</p>";
-        setMapVerdict(cls, title + "｜" + catSummary);
-      } else {
-        box.className = "card verdict take";
-        box.innerHTML = '<p class="v-title">軸確定：' + esc(routeLabel) + '</p>';
-        setMapVerdict("take", "軸確定：" + routeLabel + "｜" + catSummary);
-      }
-      // 候補町リストは4カテゴリ全件を保持し、候補画面では選択中の
-      // 1セクションだけを表示する（カテゴリボタンで切替）。
-      // ドロップ後の脚が定まらない時は後半2カテゴリを空リストにし、
-      // 件数サマリーとカテゴリ構成が状態によらず一定になるようにする
-      var cats = [
-        { key: "band", label: "経由OK", note: "背骨の帯（軸±500m）・判定は丁目単位", list: res.band },
-        { key: "land", label: "着地OK", note: "最終ドロップから1.2km・判定は丁目単位", list: res.land },
-        { key: "pband", label: "経由OK（ドロップ後）", note: res.post ? "最終ドロップ→" + res.post.spot.name + "の帯（±500m）" : "ドロップ後の待機スポットが定まらないため対象なし", list: res.postBand },
-        { key: "pland", label: "着地OK（待機寄り）", note: res.post ? res.post.spot.name + "から1.2km" : "ドロップ後の待機スポットが定まらないため対象なし", list: res.postLand }
-      ];
-      tmState = { cats: cats };
-      renderTowns();
-      renderInlineTowns();
-    }
-    // 候補町リスト表示：候補画面は選択中の1セクションだけを描く。
-    // チップは小型化し、そのセクションの全件が1画面に収まる設計
-    // （最大級＝経由OK 40町が390×844にスクロールなしで収まる寸法）。
-    // hideNav=true のとき「ナビ›」表記を省く（タップでナビが開く挙動は不変）
-    function townChipHtml(t, heatLv, hideNav) {
-      var heat = "";
-      if (heatLv != null) {
-        var meta = EASE_META[heatLv];
-        heat = '<span class="heat-mark" style="color:' + meta.color + '">' + meta.symbol + "</span>";
-      }
-      return '<button type="button" class="town-chip" data-town="' + esc(t.town) + '" data-city="' + esc(t.city) +
-        '" aria-label="' + esc(t.city + " " + t.town) + 'へAppleマップでナビする">' + esc(t.town) + heat +
-        (hideNav ? "" : '<span class="nav-mark">ナビ›</span>') + "</button>";
-    }
-    function townsSectionHtml(c, withNote, compact) {
-      var h = '<p class="tm-h ' + c.key + '-h" data-cat="' + c.key + '">' + esc(c.label) + ' <span class="cnt">' + c.list.length + "町</span></p>";
-      if (withNote) h += '<p class="tm-catnote">' + esc(c.note) + "</p>";
-      if (!c.list.length) {
-        h += '<p class="tm-empty">' + ((c.key === "pband" || c.key === "pland")
-          ? "対象の町はありません（背骨側と重なる町は背骨側のリストに表示）。"
-          : "対象の町はありません。") + "</p>";
-        return h;
-      }
-      h += '<div class="tm-grid3">';
-      c.list.forEach(function (t) { h += townChipHtml(t, null, compact); });
-      h += "</div>";
-      return h;
-    }
-    function bindTownChips(box) {
-      var btns = box.querySelectorAll("button[data-town]");
-      for (var i = 0; i < btns.length; i++) {
-        btns[i].addEventListener("click", function () {
-          var dest = this.getAttribute("data-city") + this.getAttribute("data-town");
-          window.open(appleMapsNavUrl(dest, true), "_blank", "noopener");
-        });
-      }
-    }
-    function renderTowns() {
-      var box = el("tm-chips");
-      if (!tmState) {
-        box.innerHTML = '<p class="tm-empty">ドロップ地を選ぶと、経由OK・着地OKの町名が並びます。</p>';
-        updateJumpCounts();
-        syncCatButtons();
-        syncTownsView();
-        return;
-      }
-      var cat = null;
-      tmState.cats.forEach(function (c) { if (c.key === tmActiveCat) cat = c; });
-      if (!cat) cat = tmState.cats[0];
-      box.innerHTML = townsSectionHtml(cat, true, true);
-      bindTownChips(box);
-      box.scrollTop = 0;
-      updateJumpCounts();
-      syncCatButtons();
-      syncTownsView();
-    }
-
-    // ===== カテゴリボタン（候補ブロック直上） =====
-    // 件数は現在の判定結果（tmState）と連動。
-    // 候補画面（tm-jump）：タップで表示セクションを切り替える（1セクション1画面）。
-    // 入力画面（in-jump）：ピックアップ表示の中をカテゴリ見出しへスクロール移動する
-    function updateJumpCounts() {
-      var counts = { band: 0, land: 0, pband: 0, pland: 0 };
-      if (tmState) {
-        tmState.cats.forEach(function (c) { counts[c.key] = c.list.length; });
-      }
-      var spans = document.querySelectorAll("[data-jc]");
-      for (var i = 0; i < spans.length; i++) {
-        spans[i].textContent = counts[spans[i].getAttribute("data-jc")] || 0;
-      }
-    }
-    function syncCatButtons() {
-      var bar = el("tm-jump");
-      if (!bar) return;
-      var btns = bar.querySelectorAll("button[data-jump]");
-      for (var i = 0; i < btns.length; i++) {
-        var on = btns[i].getAttribute("data-jump") === tmActiveCat;
-        if (on) btns[i].classList.add("active"); else btns[i].classList.remove("active");
-        btns[i].setAttribute("aria-pressed", on ? "true" : "false");
-      }
-    }
-    function bindCatBar() {
-      var bar = el("tm-jump");
-      if (!bar) return;
-      var btns = bar.querySelectorAll("button[data-jump]");
-      for (var i = 0; i < btns.length; i++) {
-        btns[i].addEventListener("click", function () {
-          tmActiveCat = this.getAttribute("data-jump");
-          renderTowns();
-        });
-      }
-    }
-    function jumpToCategory(scrollBox, key) {
-      if (!scrollBox) return;
-      var h = scrollBox.querySelector('[data-cat="' + key + '"]');
-      if (!h) return;
-      var target = scrollBox.scrollTop +
-        h.getBoundingClientRect().top - scrollBox.getBoundingClientRect().top - 2;
-      scrollBox.scrollTop = Math.max(0, target);
-    }
-    function bindJumpBar(barId, boxId) {
-      var bar = el(barId);
-      if (!bar) return;
-      var btns = bar.querySelectorAll("button[data-jump]");
-      for (var i = 0; i < btns.length; i++) {
-        btns[i].addEventListener("click", function () {
-          jumpToCategory(el(boxId), this.getAttribute("data-jump"));
-        });
-      }
-    }
-    bindCatBar();
-    bindJumpBar("in-jump", "in-chips");
-
-    // ===== 候補画面：地図表示（候補ポリゴンを実際の位置にカテゴリ色で描く） =====
-    // 目的はリストの置換ではなく地理学習：リストで見た色と同じ色の塊が
-    // 実際の町位置にどう分布するかを見て、色の分布と地形の対応を覚える。
-    // ラベルは町名のフル表記（丁目まで。例「荻窪五丁目」）で、連番のような
-    // 新しい番号は振らない。カテゴリ切替はリストと同じ tmActiveCat を共有し、
-    // 地図に出るのは選択中カテゴリの色のポリゴンだけ。
-    function tmActiveCategory() {
-      if (!tmState) return null;
-      var cat = null;
-      tmState.cats.forEach(function (c) { if (c.key === tmActiveCat) cat = c; });
-      return cat || tmState.cats[0];
-    }
-    // 選択中カテゴリの候補町について、判定用ポリゴン（804丁目）から
-    // 描画用フィーチャ（面＋ラベル点）と、初期表示に収める範囲を作る。
-    // ラベル点は町ごとに1つ、全ポリゴン部の頂点重心に置く（ポリゴンが
-    // 分かれている町でも町の中心付近に来る）。ラベルの文字列は town
-    // そのもの＝丁目までのフル表記。
-    function candidateMapData(cat) {
-      var want = {};
-      cat.list.forEach(function (t) { want[t.city + "|" + t.town] = true; });
-      var polys = window.TOWN_ZONE_POLYGONS || [];
-      var polyFeatures = [];
-      var acc = {}; // town -> {slat, slon, n}（ラベル点の重心計算用）
-      var minLat = Infinity, maxLat = -Infinity, minLon = Infinity, maxLon = -Infinity;
-      function grow(lon, lat) {
-        if (lon < minLon) minLon = lon;
-        if (lon > maxLon) maxLon = lon;
-        if (lat < minLat) minLat = lat;
-        if (lat > maxLat) maxLat = lat;
-      }
-      polys.forEach(function (p) {
-        if (!want[p.city + "|" + p.town]) return;
-        polyFeatures.push({ type: "Feature", properties: {}, geometry: { type: "Polygon", coordinates: [p.ring] } });
-        var a = acc[p.town] || (acc[p.town] = { slat: 0, slon: 0, n: 0 });
-        var n = Math.max(1, p.ring.length - 1); // 閉じ点（先頭の複製）は数えない
-        for (var k = 0; k < n; k++) {
-          grow(p.ring[k][0], p.ring[k][1]);
-          a.slon += p.ring[k][0]; a.slat += p.ring[k][1]; a.n++;
-        }
-      });
-      var labelFeatures = [];
-      Object.keys(acc).forEach(function (town) {
-        var a = acc[town];
-        labelFeatures.push({
-          type: "Feature", properties: { label: town },
-          geometry: { type: "Point", coordinates: [a.slon / a.n, a.slat / a.n] }
-        });
-      });
-      // 背骨の軸（と、後・待機カテゴリではドロップ後の脚）も初期表示の
-      // 範囲に含める：候補の広がりと軸が一緒に画面へ収まるようにする
-      // 帰宅モード中は帰宅軸（現在地→自宅）を範囲に含める
-      var pts = homeMode ? homeRoutePoints() : routePoints();
-      if (pts) pts.forEach(function (p) { grow(p.lon, p.lat); });
-      if (cat.key === "pband" || cat.key === "pland") {
-        if (homeMode) {
-          var hv = homeViaSpot();
-          if (hv) { grow(hv.st.lon, hv.st.lat); grow(HOME_POINT.lon, HOME_POINT.lat); }
-        } else {
-          var post = postLegInfo();
-          if (post) { grow(post.from.lon, post.from.lat); grow(post.to.lon, post.to.lat); }
-        }
-      }
-      return {
-        color: TM_CAT_COLORS[cat.key] || "#facc15",
-        polyFeatures: polyFeatures,
-        labelFeatures: labelFeatures,
-        candNames: cat.list.map(function (t) { return t.town; }),
-        bounds: isFinite(minLat) ? { minLat: minLat, maxLat: maxLat, minLon: minLon, maxLon: maxLon } : null
-      };
-    }
-    // 範囲全体がステージに収まる中心と倍率（候補ポリゴン＋軸。周囲に余白）
-    function tmFitView(bounds) {
-      var stage = el("tm-map-stage");
-      var w = (stage && stage.clientWidth) || 350;
-      var h = (stage && stage.clientHeight) || 420;
-      var cLat = (bounds.minLat + bounds.maxLat) / 2;
-      var cLon = (bounds.minLon + bounds.maxLon) / 2;
-      var wM = Math.max(320, (bounds.maxLon - bounds.minLon) * 111320 * Math.cos(cLat * Math.PI / 180) * 1.18);
-      var hM = Math.max(320, (bounds.maxLat - bounds.minLat) * 110574 * 1.18);
-      var mpp = Math.max(wM / w, hM / h);
-      var z = Math.log(40075016.686 * Math.cos(cLat * Math.PI / 180) / (512 * mpp)) / Math.LN2;
-      return { lat: cLat, lon: cLon, zoom: Math.max(10.6, Math.min(15, z)) };
-    }
-    // 地図モードの空表示：選択中カテゴリの候補が0件なら、リスト側と
-    // 同じ文言を地図の中央に出す。候補がある／地図が代替表示の時は隠す
-    function syncTmMapEmpty(cat) {
-      var box = el("tm-map-empty");
-      if (!box) return;
-      if (!cat) {
-        box.innerHTML = "ドロップ地を選ぶと候補の町が地図に出ます";
-        box.hidden = false;
-        return;
-      }
-      if (cat.list.length) { box.hidden = true; return; }
-      // 文言はリスト側（townsSectionHtml）とバイト単位で一致させる
-      box.innerHTML = esc(cat.label) + "：" +
-        ((cat.key === "pband" || cat.key === "pland")
-          ? "対象の町はありません（背骨側と重なる町は背骨側のリストに表示）。"
-          : "対象の町はありません。");
-      box.hidden = false;
-    }
-    function showTownsMapFallback(host, cat) {
-      tmMapFallbackShown = true;
-      var empty = el("tm-map-empty");
-      if (empty) empty.hidden = true; // 代替表示側が文言を担うため、中央オーバーレイは重ねない
-      // 0件カテゴリでは代替表示の中にリスト側と同一の空文言を必ず含める
-      // （以前は「0町」の見出しだけで、指定文言が画面に出なかった）
-      var body;
-      if (!cat) {
-        body = '<p class="fnote">ドロップ地を選ぶと候補の町が地図に出ます。</p>';
-      } else if (!cat.list.length) {
-        body = '<p class="ft">' + ((cat.key === "pband" || cat.key === "pland")
-          ? "対象の町はありません（背骨側と重なる町は背骨側のリストに表示）。"
-          : "対象の町はありません。") + "</p>";
-      } else {
-        body = '<p class="fnote">' + esc(cat.list.map(function (t) { return t.town; }).join("、")) + "</p>";
-      }
-      host.innerHTML =
-        '<div class="map-fallback" role="img" aria-label="候補地図を表示できないため町名一覧で代替">' +
-        '<p class="ft">地図を表示できませんでした。町名一覧で代替します。</p>' +
-        (cat ? '<p class="fh">' + esc(cat.label) + " " + cat.list.length + "町</p>" : "") +
-        body +
-        "</div>";
-    }
-    function mountTownsMap() {
-      var host = el("tm-map-host");
-      if (!host) return;
-      if (tmMapHandle) { try { tmMapHandle.destroy(); } catch (e) { /* noop */ } tmMapHandle = null; }
-      host.innerHTML = "";
-      tmMapFallbackShown = false;
-      var cat = tmActiveCategory();
-      syncTmMapEmpty(cat);
-      var inner = document.createElement("div");
-      inner.setAttribute("role", "img");
-      inner.setAttribute("aria-label", cat
-        ? "候補地図：" + cat.label + "の町（" + cat.list.length + "町）を実際の位置にカテゴリ色のポリゴンと町名ラベル（丁目まで）で表示"
-        : "候補地図：ドロップ地を選ぶと候補の町が実際の位置に色で表示されます");
-      host.appendChild(inner);
-      var places = [];
-      MAP_STATIONS.forEach(function (s) { places.push({ label: s.label, lat: s.lat, lng: s.lon }); });
-      MAP_LANDMARKS.forEach(function (l) { places.push({ label: l.label, lat: l.lat, lng: l.lon }); });
-      // 町境界（文脈）と全町ラベルは回廊マップと同じものを使う。
-      // 候補の町は全町ラベル（白）から除き、候補ラベル（カテゴリ色）を
-      // 最前面で描くことで二重表示を避ける
-      var townLabelFilter = ["==", ["get", "kind"], "town-label"];
-      var overlays = [
-        {
-          id: "towns",
-          data: window.TOWN_BOUNDARIES_GEOJSON,
-          layers: [
-            {
-              id: "towns-boundary", type: "line", source: "towns",
-              filter: ["==", ["get", "kind"], "town-boundary"],
-              layout: { "line-join": "round" },
-              paint: { "line-color": "#7d7392", "line-width": 1.25, "line-opacity": 0.55 }
-            }
-          ]
-        }
-      ];
-      var view = { lat: 35.7048, lon: 139.6202, zoom: 12 }; // 候補が無い時の既定（荻窪中心）
-      if (cat) {
-        var data = candidateMapData(cat);
-        if (data.candNames.length) {
-          townLabelFilter = ["all", ["==", ["get", "kind"], "town-label"],
-            ["!", ["in", ["get", "name"], ["literal", data.candNames]]]];
-        }
-        // 背骨の軸（白線＋端点ラベル）。後・待機カテゴリではドロップ後の
-        // 脚（最終ドロップ→待機スポット）も紫の線で重ねる。
-        // 帰宅モード中は帰宅軸（現在地→自宅）を描く
-        var axisFeatures = [];
-        var pts = homeMode ? homeRoutePoints() : routePoints();
-        if (pts && pts.length >= 2) {
-          axisFeatures.push({
-            type: "Feature", properties: { kind: "axis" },
-            geometry: { type: "LineString", coordinates: pts.map(function (p) { return [p.lon, p.lat]; }) }
-          });
-          axisFeatures.push({ type: "Feature", properties: { kind: "axis", label: pts[0].label }, geometry: { type: "Point", coordinates: [pts[0].lon, pts[0].lat] } });
-          var lastPt = pts[pts.length - 1];
-          axisFeatures.push({ type: "Feature", properties: { kind: "axis", label: lastPt.label }, geometry: { type: "Point", coordinates: [lastPt.lon, lastPt.lat] } });
-        }
-        if (cat.key === "pband" || cat.key === "pland") {
-          if (homeMode) {
-            var hvia = homeViaSpot();
-            if (hvia) {
-              axisFeatures.push({
-                type: "Feature", properties: { kind: "postaxis" },
-                geometry: { type: "LineString", coordinates: [[hvia.st.lon, hvia.st.lat], [HOME_POINT.lon, HOME_POINT.lat]] }
-              });
-              axisFeatures.push({ type: "Feature", properties: { kind: "postaxis", label: areaById(hvia.spot.areaId).label }, geometry: { type: "Point", coordinates: [hvia.st.lon, hvia.st.lat] } });
-            }
-          } else {
-            var post = postLegInfo();
-            if (post) {
-              axisFeatures.push({
-                type: "Feature", properties: { kind: "postaxis" },
-                geometry: { type: "LineString", coordinates: [[post.from.lon, post.from.lat], [post.to.lon, post.to.lat]] }
-              });
-              axisFeatures.push({ type: "Feature", properties: { kind: "postaxis", label: areaById(post.to.id).label }, geometry: { type: "Point", coordinates: [post.to.lon, post.to.lat] } });
-            }
-          }
-        }
-        if (axisFeatures.length) {
-          overlays.push({
-            id: "tm-axis",
-            data: { type: "FeatureCollection", features: axisFeatures },
-            layers: [
-              {
-                id: "tm-axis-line", type: "line", source: "tm-axis",
-                filter: ["==", ["geometry-type"], "LineString"],
-                layout: { "line-cap": "round", "line-join": "round" },
-                paint: {
-                  "line-color": ["match", ["get", "kind"], "postaxis", "#c084fc", "#e8edf2"],
-                  "line-width": 2.5, "line-opacity": 0.85
-                }
-              },
-              {
-                id: "tm-axis-dot", type: "circle", source: "tm-axis",
-                filter: ["==", ["geometry-type"], "Point"],
-                paint: {
-                  "circle-radius": 4.5, "circle-color": "#ffffff",
-                  "circle-stroke-color": "#0b0f14", "circle-stroke-width": 2
-                }
-              }
-            ]
-          });
-          overlays.push({
-            id: "tm-axis-labels",
-            data: { type: "FeatureCollection", features: axisFeatures },
-            layers: [
-              {
-                id: "tm-axis-label", type: "symbol", source: "tm-axis-labels",
-                filter: ["has", "label"],
-                layout: {
-                  "text-field": ["get", "label"],
-                  "text-font": ["Optimistic-SemiBold", "NotoSans-Kurrent-Regular"],
-                  "text-size": 11, "text-anchor": "left", "text-offset": [0.7, 0],
-                  "text-allow-overlap": true, "text-optional": true
-                },
-                paint: { "text-color": "#e8edf2", "text-halo-color": "#0b0f14", "text-halo-width": 1.6 }
-              }
-            ]
-          });
-        }
-        // 候補ポリゴン：実際の町位置にカテゴリ色で塗る
-        overlays.push({
-          id: "tm-cand",
-          data: { type: "FeatureCollection", features: data.polyFeatures },
-          layers: [
-            {
-              id: "tm-cand-fill", type: "fill", source: "tm-cand",
-              filter: ["==", ["geometry-type"], "Polygon"],
-              paint: { "fill-color": data.color, "fill-opacity": 0.42 }
-            },
-            {
-              id: "tm-cand-line", type: "line", source: "tm-cand",
-              filter: ["==", ["geometry-type"], "Polygon"],
-              layout: { "line-join": "round" },
-              paint: { "line-color": data.color, "line-width": 2, "line-opacity": 0.95 }
-            }
-          ]
-        });
-        if (data.bounds) view = tmFitView(data.bounds);
-        // 文脈ラベル（候補でない町も含む全町ラベル）：候補ラベルと混同
-        // しないよう、候補地図では小さく・沈んだ色に落とす。さらに
-        // text-ignore-placement で候補ラベルの配置を阻害しない
-        // （文脈ラベル同士の衝突回避は従来どおり効く）
-        overlays.push({
-          id: "towns-labels",
-          data: window.TOWN_BOUNDARIES_GEOJSON,
-          layers: [
-            {
-              id: "towns-label", type: "symbol", source: "towns-labels",
-              filter: townLabelFilter,
-              layout: {
-                "text-field": ["get", "name"],
-                "text-font": ["Optimistic-SemiBold", "NotoSans-Kurrent-Regular"],
-                "text-size": 11.5, "text-anchor": "center",
-                "text-allow-overlap": false, "text-optional": true, "text-ignore-placement": true
-              },
-              paint: { "text-color": "#aeb9c4", "text-halo-color": "#0b0f14", "text-halo-width": 1.4 }
-            }
-          ]
-        });
-        // 候補の町名ラベル（丁目までのフル表記）は最前面レイヤーで描く。
-        // 【判別要素】候補ラベルは「カテゴリ色の太い縁（halo）で囲んだ
-        // 濃色文字」のチップとして描く：白文字＋細い黒縁の文脈ラベルとは
-        // 色でも形でも混同しない。ベース側の地名ラベルはスタイル差し替え
-        // で全て非表示のため、画面に出る町名はこの2種だけ。
-        // 【間引きの方針】ラベルデータは候補全件分（町ごとに1点、
-        // candidateMapData がリストと同数・同集合で生成する。データ側の
-        // 欠落はない）。描画は allow-overlap を切った衝突回避のため、
-        // 密集する低倍率では候補同士で一時的に隠れるものが出るが、
-        // ズームインすれば当該町のチップが読める。文脈ラベルは
-        // ignore-placement で候補を押し出さない
-        overlays.push({
-          id: "tm-cand-labels",
-          data: { type: "FeatureCollection", features: data.labelFeatures },
-          layers: [
-            {
-              id: "tm-cand-label", type: "symbol", source: "tm-cand-labels",
-              filter: ["has", "label"],
-              layout: {
-                "text-field": ["get", "label"],
-                "text-font": ["Optimistic-SemiBold", "NotoSans-Kurrent-Regular"],
-                "text-size": 12.5, "text-anchor": "center",
-                "text-allow-overlap": false, "text-optional": true, "text-padding": 1.5
-              },
-              paint: {
-                "text-color": "#101318", "text-halo-color": data.color,
-                "text-halo-width": 3.5, "text-halo-blur": 0.3
-              }
-            }
-          ]
-        });
-      } else {
-        overlays.push({
-          id: "towns-labels",
-          data: window.TOWN_BOUNDARIES_GEOJSON,
-          layers: [
-            {
-              id: "towns-label", type: "symbol", source: "towns-labels",
-              filter: townLabelFilter,
-              layout: {
-                "text-field": ["get", "name"],
-                "text-font": ["Optimistic-SemiBold", "NotoSans-Kurrent-Regular"],
-                "text-size": 11.5, "text-anchor": "center",
-                "text-allow-overlap": false, "text-optional": true, "text-ignore-placement": true
-              },
-              paint: { "text-color": "#aeb9c4", "text-halo-color": "#0b0f14", "text-halo-width": 1.4 }
-            }
-          ]
-        });
-      }
-      // 住所ピン（ピックアップ／ドロップ／候補）も候補画面の地図に出す
-      var tmPinsOverlay = pinsOverlay("tm");
-      if (tmPinsOverlay) overlays.push(tmPinsOverlay);
-      // 現在地マーカーは回廊マップと同じ見た目で重ねる（取得済みの時だけ。
-      // 初期表示の範囲計算には含めない：回廊外にいても候補が収まる倍率を保つ）
-      if (mapGps) {
-        overlays.push({
-          id: "gps-pos",
-          data: { type: "FeatureCollection", features: [
-            { type: "Feature", properties: {}, geometry: { type: "Point", coordinates: [mapGps.lon, mapGps.lat] } }
-          ] },
-          layers: [
-            {
-              id: "gps-pos-halo", type: "circle", source: "gps-pos",
-              paint: { "circle-radius": 15, "circle-color": "#2b7fff", "circle-opacity": 0.3 }
-            },
-            {
-              id: "gps-pos-dot", type: "circle", source: "gps-pos",
-              paint: {
-                "circle-radius": 7.5, "circle-color": "#2b7fff",
-                "circle-stroke-color": "#ffffff", "circle-stroke-width": 3
-              }
-            }
-          ]
-        });
-      }
-      try {
-        tmMapHandle = mountMapHelper(inner, {
-          center: { lat: view.lat, lng: view.lon },
-          zoom: view.zoom,
-          baseStyle: "dark",
-          navigationControlPosition: "top-left",
-          places: places,
-          overlays: overlays
-        }, function () { showTownsMapFallback(host, cat); });
-        if (!tmMapHandle) showTownsMapFallback(host, cat);
-      } catch (e) {
-        showTownsMapFallback(host, cat);
-      }
-      // マウント後にもう一度だけ空表示を同期する：ヘルパーのマウント処理が
-      // 同期的に走る環境でも、表示状態が「現在のカテゴリの件数」と一致する
-      // ことをここで保証する。代替表示に倒れた場合は代替側が文言を担う
-      // ため、オーバーレイは再表示しない
-      if (!tmMapFallbackShown) syncTmMapEmpty(cat);
-    }
-    // リスト／地図の表示同期：モードに応じて箱を差し替え、地図モードで
-    // 候補画面が表示中の時だけ地図を組む（隠れた容器へは描かない）。
-    // カテゴリ切替・判定の再計算でも renderTowns 経由でここへ来るため、
-    // 地図表示中のカテゴリ色・範囲の切替は再マウントで追随する
-    function syncTownsView() {
-      var mapMode = tmViewMode === "map";
-      var chips = el("tm-chips"), stage = el("tm-map-stage");
-      if (chips) chips.hidden = mapMode;
-      if (stage) stage.hidden = !mapMode;
-      var btns = document.querySelectorAll("[data-tmview]");
-      for (var i = 0; i < btns.length; i++) {
-        var on = btns[i].getAttribute("data-tmview") === tmViewMode;
-        btns[i].classList.toggle("active", on);
-        btns[i].setAttribute("aria-pressed", on ? "true" : "false");
-      }
-      var note = document.querySelector("#scr-towns .tm-note");
-      if (note) {
-        note.textContent = mapMode
-          ? "候補の町を実際の位置にカテゴリ色で表示しています。町名は丁目まで。"
-          : "町名タップでAppleマップの自転車ナビがその町へ開きます。";
-      }
-      if (mapMode) {
-        if (el("scr-towns").classList.contains("active")) mountTownsMap();
-      } else if (tmMapHandle) {
-        try { tmMapHandle.destroy(); } catch (e) { /* noop */ }
-        tmMapHandle = null;
-      }
-    }
-    function bindTmViewToggle() {
-      var btns = document.querySelectorAll("[data-tmview]");
-      for (var i = 0; i < btns.length; i++) {
-        btns[i].addEventListener("click", function () {
-          tmViewMode = this.getAttribute("data-tmview");
-          syncTownsView();
-        });
-      }
-    }
-    bindTmViewToggle();
-
-    // ===== 入力画面内の候補地点（ピックアップ表示） =====
-    // 入力画面では全件は出さない：経由OK・着地OKの2カテゴリについて
-    // 「有力でアツそうなところ」だけを最大6件ずつ抜粋する。全件判断は
-    // 候補画面（下部の導線から遷移）で行う前提の使い分け。
-    // 抜粋の選出（決定的計算・ランダムなし）。狙いはシンプルに
-    // 「その辺だと効率よく運びやすい／最終的な期待値が高くなる走り方ができる」：
-    //   ①運びやすさ（幾何学）が主軸：経由OKは帯の中心線からの横ずれ
-    //     （判定時の d）が小さい順＝余分な移動が発生しない順、着地OKは
-    //     最終ドロップに近い順＝着地後の空走が少ない順。
-    //   ②期待値（ヒート）が補助：その町が属するエリアの現在時間帯ヒート値
-    //     （町→エリア対応は丁目ポリゴンの重心から最寄りエリアを引く）。
-    //     着地OKでは「着地先で次の案件に連鎖しやすい」分を重く見て、
-    //     ヒート1段＝300mとして実効距離から割り引いてから並べる。
-    //   同値ならヒート値の高い順、それも同値なら町名順で安定させる。
-    function townAreaHeat(t) {
-      var polys = window.TOWN_ZONE_POLYGONS || [];
-      for (var i = 0; i < polys.length; i++) {
-        if (polys[i].town !== t.town || polys[i].city !== t.city) continue;
-        var ring = polys[i].ring, slat = 0, slon = 0, n = Math.max(1, ring.length - 1);
-        for (var k = 0; k < n; k++) { slon += ring[k][0]; slat += ring[k][1]; }
-        var id = nearestAreaIdIn(AREAS, { lat: slat / n, lon: slon / n });
-        return id ? easeLevel(id, bandIdx) : 0;
-      }
-      return 0;
-    }
-    function pickupTowns(list, max, key) {
-      var scored = list.map(function (t) { return { t: t, heat: townAreaHeat(t) }; });
-      scored.forEach(function (s) {
-        s.eff = key === "land" ? s.t.d - s.heat * 300 : s.t.d;
-      });
-      scored.sort(function (a, b) {
-        if (a.eff !== b.eff) return a.eff - b.eff;
-        if (b.heat !== a.heat) return b.heat - a.heat;
-        return a.t.town < b.t.town ? -1 : (a.t.town > b.t.town ? 1 : 0);
-      });
-      return scored.slice(0, max);
-    }
-    function renderInlineTowns() {
-      var box = el("in-chips");
-      if (!box) return;
-      if (!tmState) {
-        box.innerHTML = '<p class="tm-empty">背骨のドロップを選ぶと、経由OK・着地OKの候補がここに出ます。</p>';
-        updateJumpCounts();
-        return;
-      }
-      var html = "";
-      tmState.cats.forEach(function (c) {
-        if (c.key !== "band" && c.key !== "land") return; // 後・待機は入力画面に出さない
-        var picks = pickupTowns(c.list, 6, c.key);
-        html += '<p class="tm-h ' + c.key + '-h" data-cat="' + c.key + '">' + esc(c.label) +
-          ' <span class="cnt">全' + c.list.length + "町から抜粋</span></p>";
-        if (!picks.length) {
-          html += '<p class="tm-empty">対象の町はありません。</p>';
-          return;
-        }
-        html += '<div class="tm-grid3">';
-        picks.forEach(function (p) { html += townChipHtml(p.t, p.heat); });
-        html += "</div>";
-      });
-      html += '<button type="button" class="in-all-link" id="in-all-link">候補で全件見る ›</button>';
-      box.innerHTML = html;
-      bindTownChips(box);
-      var link = el("in-all-link");
-      if (link) link.addEventListener("click", function () { showScreen("scr-towns"); });
-      updateJumpCounts();
-    }
-
-    // ===== 最適帰路ナビ =====
-    function renderReturnNav() {
-      var a0 = el("return-nav");
+      var cats;
       if (homeMode) {
-        // 帰宅モード中は常時、自宅への帰路便ナビ（店舗街経由1点まで）
-        var via = homeViaSpot();
-        if (via) {
-          a0.href = "https://maps.apple.com/?saddr=" + encodeURIComponent("Current Location") +
-            "&waypoints=" + encodeURIComponent(via.spot.daddr) +
-            "&daddr=" + encodeURIComponent(HOME_POINT.daddr) + "&dirflg=b";
-          a0.textContent = "帰宅ナビ → " + via.spot.name + " 経由 → 自宅";
-        } else {
-          a0.href = appleMapsNavUrl(HOME_POINT.daddr, true);
-          a0.textContent = "帰宅ナビ → 自宅（直行）";
-        }
-        return;
+        cats = [
+          { key: "band", label: "経由OK", note: "帰宅軸（現在地→自宅）の帯（±500m）・判定は丁目単位", list: res.band },
+          { key: "land", label: "着地OK", note: "自宅から1.2km・判定は丁目単位", list: res.land },
+          { key: "pband", label: "経由OK（ドロップ後）", note: res.via ? "経由スポット（" + res.via.spot.name + "）→自宅の帯（±500m）" : "自宅方向の経由スポットがないため対象なし", list: res.postBand },
+          { key: "pland", label: "着地OK（待機寄り）", note: res.via ? res.via.spot.name + "から1.2km" : "自宅方向の経由スポットがないため対象なし", list: res.postLand }
+        ];
+      } else {
+        cats = [
+          { key: "band", label: "経由OK", note: "背骨の帯（軸±500m）・判定は丁目単位", list: res.band },
+          { key: "land", label: "着地OK", note: "最終ドロップから1.2km・判定は丁目単位", list: res.land },
+          { key: "pband", label: "経由OK（ドロップ後）", note: res.post ? "最終ドロップ→" + res.post.spot.name + "の帯（±500m）" : "ドロップ後の待機スポットが定まらないため対象なし", list: res.postBand },
+          { key: "pland", label: "着地OK（待機寄り）", note: res.post ? res.post.spot.name + "から1.2km" : "ドロップ後の待機スポットが定まらないため対象なし", list: res.postLand }
+        ];
       }
-      var now = new Date();
-      var mins = now.getHours() * 60 + now.getMinutes();
-      var homeTime = mins >= 21 * 60 + 30 || mins < 11 * 60;
-      var a = el("return-nav");
-      if (homeTime) {
-        var home = spotForArea("mitaka", bandIdx) || WAIT_SPOTS[4];
-        a.href = appleMapsNavUrl(home.daddr, true);
-        a.textContent = "最適帰路ナビ → " + home.name;
-        return;
-      }
-      var baseId = finalDropId() || currentAreaId;
-      var spot = spotForArea(baseId, bandIdx);
-      if (!spot) spot = WAIT_SPOTS[0];
-      a.href = appleMapsNavUrl(spot.daddr, true);
-      a.textContent = "最適帰路ナビ → " + spot.name;
+      tmState = { cats: cats };
+      window.__lastCandidates = {
+        band: res.band.length, land: res.land.length,
+        postBand: res.postBand.length, postLand: res.postLand.length
+      };
     }
 
     // ===== 待機スポット一覧 =====
@@ -3060,8 +1918,21 @@
           geometry: { type: "Point", coordinates: [pin.lon, pin.lat] }
         });
       }
-      add("pick", pickPin, "P", "ピックアップ");
-      for (var i = 0; i < drops.length; i++) add("drop", dropPins[i], String(i + 1), "ドロップ" + DROP_MARKS[i]);
+      // 未完了タスクのピンを全て立てる（複数ピック対応）。ピックが複数
+      // ある時は脇ラベルを「ピックアップ①②③」で区別し、ドロップの
+      // 番号は従来通り全体の通し番号にする
+      var tasks = unfinishedTasks();
+      var pickTotal = 0;
+      tasks.forEach(function (t) { if (t.kind === "pick" && t.pin && t.pin.lat != null) pickTotal++; });
+      var dropNo = 0;
+      tasks.forEach(function (t) {
+        if (t.kind === "pick") {
+          add("pick", t.pin, "P", "ピックアップ" + (pickTotal > 1 ? DROP_MARKS[t.idx] : ""));
+        } else {
+          dropNo++;
+          add("drop", t.pin, String(dropNo), "ドロップ" + DROP_MARKS[dropNo - 1]);
+        }
+      });
       add("cand", candPin, "候", "候補ドロップ");
       return feats;
     }
@@ -3115,29 +1986,535 @@
         ]
       };
     }
-    // ===== マップ画面のピン別ナビボタン（設定済みのピンの分だけ・1タップ） =====
-    // 判定ストリップの上の帯に置き、最適帰路ナビ（画面下の固定バー）とは重ねない
+    // ===== マップ画面のピン別ナビボタン（未完了タスクの分だけ・1タップ） =====
+    // アクションバーの上に帯で置く。ピックアップ済みの案件はドロップの
+    // ボタンだけが出るため、受け取り直後でも次のナビへすぐ進める
     function renderPinNav() {
       var row = el("pin-nav-row");
       if (!row) return;
       var html = "";
-      if (pickPin) {
-        var pu = pointNavUrl(pickPin, el("pick-input").value, pickAreaId);
-        if (pu) html += '<a class="pin-nav-btn pick" href="' + pu + '" target="_blank" rel="noopener">ピックへ</a>';
-      }
-      for (var i = 0; i < drops.length; i++) {
-        if (!dropPins[i]) continue;
-        var du = pointNavUrl(dropPins[i], dropAddrs[i], drops[i]);
-        if (du) html += '<a class="pin-nav-btn drop" href="' + du + '" target="_blank" rel="noopener">ドロップ' + (i + 1) + "へ</a>";
-      }
-      if (candPin) {
-        var cu = pointNavUrl(candPin, candAddr, candId);
-        if (cu) html += '<a class="pin-nav-btn cand" href="' + cu + '" target="_blank" rel="noopener">候補へ</a>';
-      }
+      unfinishedTasks().forEach(function (t) {
+        var u = pointNavUrl(t.pin, t.addr, t.areaId);
+        if (!u) return;
+        var plat = t.order.platform === "rocket" ? "🚀" : "🐸";
+        var pickCount = 0;
+        t.order.picks.forEach(function (p) { if (!p.done) pickCount++; });
+        var label = t.kind === "pick"
+          ? plat + "ピック" + (pickCount > 1 ? (t.idx + 1) : "") + "へ"
+          : plat + "ドロップ" + (t.idx + 1) + "へ";
+        html += '<a class="pin-nav-btn ' + (t.kind === "pick" ? "pick" : "drop") + '" href="' + u +
+          '" target="_blank" rel="noopener">' + label + "</a>";
+      });
       row.innerHTML = html;
       row.hidden = !html;
     }
 
+    // ===== 候補範囲のマップ表示（候補町のポリゴンをカテゴリ色で着色） =====
+    // 候補計算（tmState）の結果をメインマップへ重ねる：該当する町の
+    // ポリゴンをカテゴリ色で塗り、町名ラベルも同じ色で出す。
+    // 複数カテゴリに該当する町は優先度（経由OK＞着地OK＞経由OK
+    // （ドロップ後）＞着地OK（待機寄り））で1色に決める
+    function candidateOverlays() {
+      if (!tmState) return [];
+      var prio = { band: 0, land: 1, pband: 2, pland: 3 };
+      var assigned = {};
+      tmState.cats.forEach(function (c) {
+        c.list.forEach(function (t) {
+          var k = t.city + "|" + t.town;
+          if (assigned[k] == null || prio[c.key] < prio[assigned[k]]) assigned[k] = c.key;
+        });
+      });
+      var polys = window.TOWN_ZONE_POLYGONS || [];
+      var feats = [], acc = {};
+      polys.forEach(function (p) {
+        var cat = assigned[p.city + "|" + p.town];
+        if (!cat) return;
+        feats.push({ type: "Feature", properties: { cat: cat }, geometry: { type: "Polygon", coordinates: [p.ring] } });
+        var a = acc[p.city + "|" + p.town] || (acc[p.city + "|" + p.town] = { town: p.town, cat: cat, slat: 0, slon: 0, n: 0 });
+        var n = Math.max(1, p.ring.length - 1); // 閉じ点（先頭の複製）は数えない
+        for (var k = 0; k < n; k++) { a.slon += p.ring[k][0]; a.slat += p.ring[k][1]; a.n++; }
+      });
+      if (!feats.length) return [];
+      var labels = [];
+      Object.keys(acc).forEach(function (key) {
+        var a = acc[key];
+        labels.push({
+          type: "Feature", properties: { label: a.town, cat: a.cat },
+          geometry: { type: "Point", coordinates: [a.slon / a.n, a.slat / a.n] }
+        });
+      });
+      var color = ["match", ["get", "cat"],
+        "band", TM_CAT_COLORS.band, "land", TM_CAT_COLORS.land,
+        "pband", TM_CAT_COLORS.pband, TM_CAT_COLORS.pland];
+      return [
+        {
+          id: "cand-polys",
+          data: { type: "FeatureCollection", features: feats },
+          layers: [
+            {
+              id: "cand-polys-fill", type: "fill", source: "cand-polys",
+              paint: { "fill-color": color, "fill-opacity": 0.34 }
+            },
+            {
+              id: "cand-polys-line", type: "line", source: "cand-polys",
+              layout: { "line-join": "round" },
+              paint: { "line-color": color, "line-width": 1.6, "line-opacity": 0.9 }
+            }
+          ]
+        },
+        {
+          id: "cand-labels",
+          data: { type: "FeatureCollection", features: labels },
+          layers: [
+            {
+              id: "cand-label", type: "symbol", source: "cand-labels",
+              filter: ["has", "label"],
+              layout: {
+                "text-field": ["get", "label"],
+                "text-font": ["Optimistic-SemiBold", "NotoSans-Kurrent-Regular"],
+                "text-size": 12.5, "text-anchor": "center",
+                "text-allow-overlap": false, "text-optional": true, "text-padding": 1.5
+              },
+              paint: { "text-color": color, "text-halo-color": "#0b0f14", "text-halo-width": 1.8 }
+            }
+          ]
+        }
+      ];
+    }
+
+    // ===== 帰宅パネル（帰宅ボタンONで出る自宅ナビショートカット） =====
+    function renderHomePanel() {
+      var p = el("home-panel");
+      if (!p) return;
+      p.hidden = !homeMode;
+      if (!homeMode) return;
+      var t = homeTiming();
+      var core = "23:00帰宅まで残り" + Math.max(0, t.remain) + "分｜直行なら" + t.direct + "分｜締切" + fmtClock(t.deadline);
+      el("home-panel-text").textContent = t.overdue ? "締切超過・直行のみ｜" + core : core;
+      p.classList.toggle("over", !!t.overdue);
+      el("home-nav-btn").href = appleMapsNavUrl("三鷹市下連雀5-3-1", true);
+    }
+
+    // ===== 進捗／ナビパネル（🚀／🐸／🗺️） =====
+    var sheetMode = null; // "rocket" | "uber" | "nav"
+    function openSheet(mode) { sheetMode = mode; el("sheet").hidden = false; renderSheet(); }
+    function closeSheet() { sheetMode = null; el("sheet").hidden = true; }
+    function syncBadges() {
+      ["rocket", "uber"].forEach(function (p) {
+        var b = el("badge-" + p);
+        if (!b) return;
+        var n = 0;
+        orders.forEach(function (o) {
+          if (o.platform !== p) return;
+          orderTasks(o).forEach(function (t) { if (!t.done) n++; });
+        });
+        b.hidden = n === 0;
+        b.textContent = n;
+      });
+    }
+    function syncTaskUI() {
+      syncBadges();
+      if (sheetMode) renderSheet();
+    }
+    function taskPlaceName(t) {
+      if (t.areaId) return areaById(t.areaId).label;
+      return t.addr || "地点";
+    }
+    // タスクの種別ラベル：ピックは案件内に複数ある時だけ①②③で区別する
+    // （単独ピックは従来通り「ピックアップ」のまま）
+    function taskKindLabel(t) {
+      if (t.kind === "pick") return "ピックアップ" + (t.order.picks.length > 1 ? DROP_MARKS[t.idx] : "");
+      return "ドロップ" + DROP_MARKS[t.idx];
+    }
+    function taskRowHtml(t, extra) {
+      var kind = taskKindLabel(t);
+      var html = '<div class="task-row' + (t.done ? " done" : "") + '"><div class="task-info">' +
+        '<span class="task-kind">' + esc(extra || kind) + '</span>' +
+        '<span class="task-name">' + esc(taskPlaceName(t)) + "</span>";
+      if (t.addr && t.areaId) html += '<span class="task-addr">' + esc(t.addr) + "</span>";
+      html += "</div>";
+      if (t.done) {
+        html += '<span class="task-done-tag">完了済</span>';
+      } else {
+        var u = pointNavUrl(t.pin, t.addr, t.areaId);
+        if (u) html += '<a class="task-nav" href="' + u + '" target="_blank" rel="noopener">ナビ</a>';
+        html += '<button type="button" class="task-done-btn" data-done="' + t.order.id + ":" +
+          (t.kind === "pick" ? "p" + t.idx : t.idx) + '">完了</button>';
+      }
+      return html + "</div>";
+    }
+    function progressPanelHtml(platform) {
+      var list = orders.filter(function (o) { return o.platform === platform; });
+      if (!list.length) return '<p class="empty-note">現在進行中無し</p>';
+      var html = "";
+      list.forEach(function (o, oi) {
+        html += '<div class="task-order"><div class="task-order-head"><span>案件' + (oi + 1) + "</span>" +
+          '<button type="button" class="order-cancel" data-cancel="' + o.id + '">案件を取り消す</button></div>';
+        // 入力時点でピックアップ済みにされた行（preDone）はタスクとして現れない
+        orderTasks(o).forEach(function (t) { if (!t.preDone) html += taskRowHtml(t, null); });
+        html += "</div>";
+      });
+      return html;
+    }
+    function completeTask(spec) {
+      var parts = String(spec).split(":");
+      var id = parseInt(parts[0], 10);
+      var o = null;
+      orders.forEach(function (x) { if (x.id === id) o = x; });
+      if (!o) return;
+      if (parts[1].charAt(0) === "p") {
+        var pidx = parseInt(parts[1].slice(1), 10);
+        if (o.picks[pidx]) o.picks[pidx].done = true;
+      }
+      else if (o.drops[parseInt(parts[1], 10)]) o.drops[parseInt(parts[1], 10)].done = true;
+      if (orderFinished(o)) orders = orders.filter(function (x) { return x !== o; });
+      syncLegacyFromOrders();
+      refresh();
+    }
+    function cancelOrder(id) {
+      orders = orders.filter(function (x) { return x.id !== id; });
+      syncLegacyFromOrders();
+      refresh();
+    }
+    // ===== ナビパネル（🗺️）：未完了タスクを訪問順に並べる =====
+    // 順序：現在地から一番遠い地点を最後にし、それ以外は近い順。
+    // ただし同一案件内では、その案件の全ピックアップが全ドロップより
+    // 必ず先になる（ピック→ドロップの制約を案件単位に拡張）
+    function orderedNavTasks() {
+      var origin = mapGps ? { lat: mapGps.lat, lon: mapGps.lon } : spineStart();
+      var withPt = [], noPt = [];
+      unfinishedTasks().forEach(function (t) {
+        var p = taskPoint(t);
+        var item = { t: t, pt: p, dist: p ? haversineKm(origin.lat, origin.lon, p.lat, p.lon) : null };
+        if (p) withPt.push(item); else noPt.push(item);
+      });
+      // 最後に回す地点：座標のあるタスクのうち最遠。ただし未完了ドロップを
+      // 抱えたピックアップは最後にできない（自分のドロップが先行してしまう）
+      var last = null;
+      withPt.forEach(function (x) {
+        if (x.t.kind === "pick" && x.t.order.drops.some(function (d) { return !d.done; })) return;
+        if (!last || x.dist > last.dist) last = x;
+      });
+      var rest = withPt.filter(function (x) { return x !== last; });
+      var placed = [];
+      function pickReady(x) {
+        if (x.t.kind !== "drop") return true;
+        // ドロップは、同一案件の未完了ピックアップが（座標のあるものは）
+        // 全て配置済みになって初めて置ける。座標の無いピックは末尾に
+        // 回るため、この判定では待たない（従来の保険で詰まりは回避）
+        return withPt.every(function (y) {
+          return !(y.t.kind === "pick" && y.t.order === x.t.order) || placed.indexOf(y) >= 0;
+        });
+      }
+      while (rest.length) {
+        var best = null;
+        rest.forEach(function (x) { if (pickReady(x) && (!best || x.dist < best.dist)) best = x; });
+        if (!best) best = rest[0]; // 理論上到達しないが、無限ループ回避の保険
+        placed.push(best);
+        rest.splice(rest.indexOf(best), 1);
+      }
+      if (last) placed.push(last);
+      return placed.concat(noPt);
+    }
+    function navBulkUrl(ordered) {
+      if (ordered.length < 2) return null;
+      var stops = [];
+      ordered.forEach(function (x) {
+        var a = (x.t.addr || "").trim();
+        if (x.pt && x.t.pin && x.t.pin.exact) stops.push(x.pt.lat + "," + x.pt.lon);
+        else if (a) stops.push(a);
+        else if (x.pt) stops.push(x.pt.lat + "," + x.pt.lon);
+      });
+      if (stops.length < 2) return null;
+      return "https://maps.apple.com/?saddr=" + encodeURIComponent("Current Location") +
+        "&waypoints=" + stops.slice(0, stops.length - 1).map(function (x) { return encodeURIComponent(x); }).join("|") +
+        "&daddr=" + encodeURIComponent(stops[stops.length - 1]) + "&dirflg=b";
+    }
+    function navPanelHtml() {
+      var ordered = orderedNavTasks();
+      if (!ordered.length) return '<p class="empty-note">現在進行中無し</p>';
+      var html = "";
+      ordered.forEach(function (x, i) {
+        var t = x.t;
+        var plat = t.order.platform === "rocket" ? "🚀" : "🐸";
+        var kind = (i + 1) + ". " + plat + " " + taskKindLabel(t);
+        var html2 = '<div class="task-row"><div class="task-info">' +
+          '<span class="task-kind">' + esc(kind) + '</span>' +
+          '<span class="task-name">' + esc(taskPlaceName(t)) + "</span>";
+        if (x.dist != null) html2 += '<span class="task-addr">現在地から約' + x.dist.toFixed(1) + "km" + (i === ordered.length - 1 && ordered.length > 1 ? "（最終）" : "") + "</span>";
+        html2 += "</div>";
+        var u = pointNavUrl(t.pin, t.addr, t.areaId);
+        if (u) html2 += '<a class="task-nav" href="' + u + '" target="_blank" rel="noopener">ナビ開始</a>';
+        html += html2 + "</div>";
+      });
+      var bulk = navBulkUrl(ordered);
+      if (bulk) {
+        html += '<a class="addr-btn primary" style="margin-top:8px" href="' + bulk +
+          '" target="_blank" rel="noopener">一括ルートナビ（訪問順・全' + ordered.length + '地点）</a>';
+      }
+      return html;
+    }
+    function renderSheet() {
+      if (!sheetMode) return;
+      var title = el("sheet-title"), body = el("sheet-body");
+      if (sheetMode === "nav") {
+        title.textContent = "🗺️ ナビ（訪問順）";
+        body.innerHTML = navPanelHtml();
+        return;
+      }
+      title.textContent = sheetMode === "rocket" ? "🚀 ロケット進捗" : "🐸 Uber進捗";
+      body.innerHTML = progressPanelHtml(sheetMode);
+      var dbtns = body.querySelectorAll("button[data-done]");
+      for (var i = 0; i < dbtns.length; i++) {
+        dbtns[i].addEventListener("click", function () { completeTask(this.getAttribute("data-done")); });
+      }
+      var cbtns = body.querySelectorAll("button[data-cancel]");
+      for (var j = 0; j < cbtns.length; j++) {
+        cbtns[j].addEventListener("click", function () { cancelOrder(parseInt(this.getAttribute("data-cancel"), 10)); });
+      }
+    }
+    el("act-input").addEventListener("click", function () { openModal(); });
+    el("act-rocket").addEventListener("click", function () { sheetMode === "rocket" ? closeSheet() : openSheet("rocket"); });
+    el("act-uber").addEventListener("click", function () { sheetMode === "uber" ? closeSheet() : openSheet("uber"); });
+    el("act-nav").addEventListener("click", function () { sheetMode === "nav" ? closeSheet() : openSheet("nav"); });
+    el("sheet-close").addEventListener("click", function () { closeSheet(); });
+
+    // ===== 案件入力モーダル（🚲💨） =====
+    // 入力完了を押すまではマップへ反映しない：編集中の値はモーダル内の
+    // 保持オブジェクトだけが持ち、確定した時点で案件として積まれる。
+    // 移動中に新規案件が入った場合も、ここから積めば進捗へそのまま入る
+    var modalOpen = false;
+    var modalPlatform = "rocket";
+    // ピックアップ枠はドロップと同じ保持オブジェクト＋行ごとの「済み」
+    // フラグ（done）。済みの行は入力欄が無効化され、確定時に preDone の
+    // 完了タスクとして積まれる（進捗には現れない）
+    var modalPicks = [{ addr: "", areaId: null, pin: null, done: false }];
+    var modalDrops = [{ addr: "", areaId: null, pin: null }];
+    function resetModal() {
+      modalPlatform = "rocket";
+      modalPicks = [{ addr: "", areaId: null, pin: null, done: false }];
+      modalDrops = [{ addr: "", areaId: null, pin: null }];
+    }
+    function openModal() {
+      resetModal();
+      modalOpen = true;
+      el("order-modal").hidden = false;
+      renderModal();
+    }
+    function closeModal() {
+      modalOpen = false;
+      el("order-modal").hidden = true;
+    }
+    function renderModal() {
+      el("plat-rocket").classList.toggle("active", modalPlatform === "rocket");
+      el("plat-uber").classList.toggle("active", modalPlatform === "uber");
+      el("plat-rocket").setAttribute("aria-pressed", modalPlatform === "rocket" ? "true" : "false");
+      el("plat-uber").setAttribute("aria-pressed", modalPlatform === "uber" ? "true" : "false");
+      // ピックアップ枠（最大3件・ドロップ枠と同じ静的3枠＋追加ボタン方式）。
+      // 「ピックアップ済み」は行ごとに持ち、済みの行は入力系を無効化する
+      for (var pi2 = 0; pi2 < 3; pi2++) {
+        var pfr = el("m-pick-frame-" + pi2);
+        if (pfr) pfr.hidden = pi2 >= modalPicks.length;
+        var pin2 = el("m-pick-input-" + pi2);
+        var prow = modalPicks[pi2];
+        if (pin2 && prow) {
+          if (pin2.value !== prow.addr) pin2.value = prow.addr;
+          pin2.disabled = !!prow.done;
+        }
+        var pdb = document.querySelector('[data-pick-done="' + pi2 + '"]');
+        if (pdb && prow) {
+          pdb.classList.toggle("active", !!prow.done);
+          pdb.setAttribute("aria-pressed", prow.done ? "true" : "false");
+          pdb.textContent = prow.done ? "✓ ピックアップ済み" : "ピックアップ済みにする";
+        }
+        var pcl = document.querySelector('[data-pick-clear="' + pi2 + '"]');
+        if (pcl && prow) pcl.disabled = !!prow.done;
+        var pps = document.querySelector('[data-pick-paste="' + pi2 + '"]');
+        if (pps && prow) pps.disabled = !!prow.done;
+      }
+      var pAddBtn = el("m-pick-add");
+      if (pAddBtn) {
+        var pAtMax = modalPicks.length >= 3;
+        pAddBtn.disabled = pAtMax;
+        pAddBtn.textContent = pAtMax ? "ピックアップは最大3件まで" : "＋ ピックアップ追加";
+      }
+      // ドロップ枠（最大3件・縦積みで全枠を同時表示する）。
+      // 枠の実体はHTML側に常設し、ここでは表示件数と入力値の同期だけを行う。
+      // 追加ボタンもHTML側に常設し、3件に達したら無効化して増えない状態にする
+      for (var fi = 0; fi < 3; fi++) {
+        var fr = el("m-drop-frame-" + fi);
+        if (fr) fr.hidden = fi >= modalDrops.length;
+        var fin = el("m-drop-input-" + fi);
+        if (fin && modalDrops[fi] && fin.value !== modalDrops[fi].addr) fin.value = modalDrops[fi].addr;
+      }
+      var addBtn = el("m-drop-add");
+      if (addBtn) {
+        var atMax = modalDrops.length >= 3;
+        addBtn.disabled = atMax;
+        addBtn.textContent = atMax ? "ドロップは最大3件まで" : "＋ ドロップ追加";
+      }
+      renderModalBands();
+    }
+    // 候補フレーム（時間帯）：通常は現在時刻のバンドへ自動追随。
+    // 手動で選んだ間は自動追随を止め、「自動」で現在時刻へ戻す
+    function renderModalBands() {
+      var row = el("m-band-row");
+      if (!row) return;
+      var html = '<button type="button" class="band-chip' + (!bandManual ? " active" : "") +
+        '" data-band="auto" aria-pressed="' + (!bandManual) + '">自動</button>';
+      TIME_BANDS.forEach(function (b, i) {
+        html += '<button type="button" class="band-chip num' + (bandManual && bandIdx === i ? " active" : "") +
+          '" data-band="' + i + '" aria-pressed="' + (bandManual && bandIdx === i) + '">' + b + "</button>";
+      });
+      row.innerHTML = html;
+      var btns = row.querySelectorAll("button[data-band]");
+      for (var i = 0; i < btns.length; i++) {
+        btns[i].addEventListener("click", function () {
+          var v = this.getAttribute("data-band");
+          if (v === "auto") {
+            bandManual = false;
+            bandIdx = bandIndexForHour(new Date().getHours());
+          } else {
+            bandManual = true;
+            bandIdx = parseInt(v, 10);
+          }
+          renderModalBands();
+          refresh();
+        });
+      }
+    }
+    function modalNote(msg) {
+      var n = el("modal-note");
+      n.textContent = msg;
+      n.hidden = !msg;
+    }
+    function commitModal() {
+      // 表示中の全枠の未確定テキストを先に確定させる（ピック・ドロップ
+      // とも最大3件すべて）。済みにしたピック行は住所テキストだけ取り込み、
+      // 解決（ピン化）はしない
+      for (var pi3 = 0; pi3 < modalPicks.length; pi3++) {
+        var pin3 = el("m-pick-input-" + pi3);
+        if (!pin3) continue;
+        if (modalPicks[pi3].done) modalPicks[pi3].addr = pin3.value.trim();
+        else resolveInto(modalPicks[pi3], pin3.value.trim());
+      }
+      for (var ci = 0; ci < modalDrops.length; ci++) {
+        var cin = el("m-drop-input-" + ci);
+        if (cin) resolveInto(modalDrops[ci], cin.value.trim());
+      }
+      var pickList = [];
+      modalPicks.forEach(function (p) {
+        // 済みの行は住所が空でも番号（①②③）の対応を保つため積む。
+        // 未済みで空の行は積まない（ドロップの空枠と同じ扱い）
+        if (p.done) pickList.push({ pin: null, areaId: null, addr: p.addr, done: true, preDone: true });
+        else if (p.pin || p.addr) pickList.push({ pin: clonePin(p.pin), areaId: p.areaId, addr: p.addr, done: false, preDone: false });
+      });
+      var dropList = [];
+      modalDrops.forEach(function (d) {
+        if (d.pin || d.addr) dropList.push({ pin: clonePin(d.pin), areaId: d.areaId, addr: d.addr, done: false });
+      });
+      var hasOpenPick = pickList.some(function (p) { return !p.done; });
+      if (!dropList.length) {
+        modalNote(hasOpenPick
+          ? "ドロップを1件以上入れてください（ドロップ欄で住所をペースト）"
+          : "ピックアップかドロップを入力してください");
+        return;
+      }
+      orders.push({
+        id: ++orderSeq,
+        platform: modalPlatform,
+        picks: pickList,
+        drops: dropList
+      });
+      syncLegacyFromOrders();
+      closeModal();
+      refresh();
+    }
+    el("plat-rocket").addEventListener("click", function () { modalPlatform = "rocket"; renderModal(); });
+    el("plat-uber").addEventListener("click", function () { modalPlatform = "uber"; renderModal(); });
+    el("modal-close").addEventListener("click", function () { closeModal(); });
+    el("modal-cancel").addEventListener("click", function () { closeModal(); });
+    el("modal-done").addEventListener("click", function () { commitModal(); });
+    // ピックアップ枠ごとの入力ハンドラ（ドロップ枠と同じ結線方式）
+    function bindPickFrame(idx) {
+      var inp = el("m-pick-input-" + idx);
+      if (!inp) return;
+      inp.addEventListener("input", function () {
+        if (modalPicks[idx]) modalPicks[idx].addr = this.value;
+      });
+      inp.addEventListener("blur", function () {
+        if (modalPicks[idx] && !modalPicks[idx].done) { resolveInto(modalPicks[idx], this.value.trim()); renderModal(); }
+      });
+      var clr = document.querySelector('[data-pick-clear="' + idx + '"]');
+      if (clr) clr.addEventListener("click", function () {
+        if (!modalPicks[idx]) return;
+        modalPicks[idx] = { addr: "", areaId: null, pin: null, done: false };
+        inp.value = "";
+        renderModal();
+      });
+      var pst = document.querySelector('[data-pick-paste="' + idx + '"]');
+      if (pst) pst.addEventListener("click", function () {
+        pasteIntoField("m-pick-input-" + idx, function (t) {
+          if (modalPicks[idx] && !modalPicks[idx].done) { resolveInto(modalPicks[idx], t); renderModal(); }
+        });
+      });
+      var dn = document.querySelector('[data-pick-done="' + idx + '"]');
+      if (dn) dn.addEventListener("click", function () {
+        if (!modalPicks[idx]) return;
+        modalPicks[idx].done = !modalPicks[idx].done;
+        renderModal();
+      });
+    }
+    for (var bpi = 0; bpi < 3; bpi++) bindPickFrame(bpi);
+    // ピックアップ枠の追加（最大3件）。追加前に表示中の全枠の未確定テキストを取り込む
+    el("m-pick-add").addEventListener("click", function () {
+      if (modalPicks.length >= 3) return;
+      for (var ai2 = 0; ai2 < modalPicks.length; ai2++) {
+        var ain2 = el("m-pick-input-" + ai2);
+        if (ain2 && !modalPicks[ai2].done) resolveInto(modalPicks[ai2], ain2.value.trim());
+      }
+      modalPicks.push({ addr: "", areaId: null, pin: null, done: false });
+      renderModal();
+      var nin2 = el("m-pick-input-" + (modalPicks.length - 1));
+      if (nin2) { try { nin2.focus(); } catch (e) { /* noop */ } }
+    });
+    // ドロップ枠ごとの入力ハンドラ（枠はHTML側に常設の3枠へ固定で結ぶ）
+    function bindDropFrame(idx) {
+      var inp = el("m-drop-input-" + idx);
+      if (!inp) return;
+      inp.addEventListener("input", function () {
+        if (modalDrops[idx]) modalDrops[idx].addr = this.value;
+      });
+      inp.addEventListener("blur", function () {
+        if (modalDrops[idx]) { resolveInto(modalDrops[idx], this.value.trim()); renderModal(); }
+      });
+      var clr = document.querySelector('[data-drop-clear="' + idx + '"]');
+      if (clr) clr.addEventListener("click", function () {
+        if (!modalDrops[idx]) return;
+        modalDrops[idx] = { addr: "", areaId: null, pin: null };
+        inp.value = "";
+        renderModal();
+      });
+      var pst = document.querySelector('[data-drop-paste="' + idx + '"]');
+      if (pst) pst.addEventListener("click", function () {
+        pasteIntoField("m-drop-input-" + idx, function (t) {
+          if (modalDrops[idx]) { resolveInto(modalDrops[idx], t); renderModal(); }
+        });
+      });
+    }
+    for (var bdi = 0; bdi < 3; bdi++) bindDropFrame(bdi);
+    // ドロップ枠の追加（最大3件）。追加前に表示中の全枠の未確定テキストを取り込む
+    el("m-drop-add").addEventListener("click", function () {
+      if (modalDrops.length >= 3) return;
+      for (var ai = 0; ai < modalDrops.length; ai++) {
+        var ain = el("m-drop-input-" + ai);
+        if (ain) resolveInto(modalDrops[ai], ain.value.trim());
+      }
+      modalDrops.push({ addr: "", areaId: null, pin: null });
+      renderModal();
+      var nin = el("m-drop-input-" + (modalDrops.length - 1));
+      if (nin) { try { nin.focus(); } catch (e) { /* noop */ } }
+    });
     // ===== マップ =====
     function mountMapHelper(container, options, onUnavailable) {
       if (!window.HatchMaps || !window.HatchMaps.isMetaMapSupported) { onUnavailable(); return null; }
@@ -3370,6 +2747,7 @@
       }
       // 住所ピン（ピックアップ／ドロップ／候補）：帯・圏の図形より前面に出す
       var corridorPinsOverlay = pinsOverlay("corridor");
+      var candOverlays = candidateOverlays();
       // 帰宅モード中は帰宅軸（現在地→自宅）を太い橙線で強調し、自宅点も出す
       var homeAxisOverlay = null;
       if (homeMode) {
@@ -3458,6 +2836,7 @@
                 }
               ]
             },
+            ...candOverlays,
             // ===== ここからラベル類（全図形より前面） =====
             {
               id: "rings-labels",
@@ -3512,13 +2891,13 @@
 
     // ===== 全体再描画 =====
     function refresh() {
-      renderInputs();
       renderResults();
-      renderReturnNav();
       renderSpots();
       renderHeat();
       renderMapControls();
       renderPinNav();
+      renderHomePanel();
+      syncTaskUI();
       // マップ画面が表示中の時だけ再マウントする（隠れた容器へ描くと崩れるため）
       if (el("scr-map").classList.contains("active")) mountCorridorMap();
     }
@@ -3530,8 +2909,6 @@
       var btns = document.querySelectorAll(".tabbar button[data-screen]");
       for (var j = 0; j < btns.length; j++) btns[j].classList.toggle("active", btns[j].getAttribute("data-screen") === id);
       if (id === "scr-map") mountCorridorMap(); // 表示されてから描き直す（容器サイズ確定後）
-      if (id === "scr-towns") renderTowns();
-      if (id === "scr-input") renderInlineTowns();
       if (id === "scr-heat") renderHeat(); // 表示されてから地図を組む（容器サイズ確定後）
     }
     (function () {
@@ -3540,7 +2917,6 @@
         btns[i].addEventListener("click", function () { showScreen(this.getAttribute("data-screen")); });
       }
     })();
-    el("map-verdict").addEventListener("click", function () { showScreen("scr-towns"); });
 
     // ===== 帰宅トグル（マップ画面に常設。手動のみ・自動起動なし） =====
     function syncHomeToggle() {
@@ -3556,24 +2932,23 @@
     });
 
     // ===== 初期描画 =====
-    renderInputs();
     renderResults();
-    renderReturnNav();
     renderSpots();
     renderHeat();
     renderMapControls();
     renderPinNav();
+    renderHomePanel();
+    syncBadges();
     requestAnimationFrame(function () { mountCorridorMap(); });
 
     // 時間帯バンドの追随（1分ごと）
     setInterval(function () {
       var b = bandIndexForHour(new Date().getHours());
-      if (b !== bandIdx) {
+      if (!bandManual && b !== bandIdx) {
         bandIdx = b;
         refresh();
-      } else {
-        renderReturnNav(); // 21:30の帰宅モード切替に追随
-        if (homeMode) renderResults(); // 帰宅モード中は残り時間・締切を1分ごとに更新
+      } else if (homeMode) {
+        renderResults(); renderHomePanel(); // 帰宅モード中は残り時間・締切を1分ごとに更新
       }
     }, 60000);
     </script>
