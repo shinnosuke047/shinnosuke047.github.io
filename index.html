@@ -2463,12 +2463,10 @@
       // 現在地マーカーは回廊マップと同じ見た目で重ねる（取得済みの時だけ。
       // 初期表示の範囲計算には含めない：回廊外にいても候補が収まる倍率を保つ）
       if (mapGps) {
-        var gpsInfo = townInfoAt(mapGps.lat, mapGps.lon);
-        var gpsLabel = gpsInfo ? gpsTownLabel(gpsInfo) : "現在地";
         overlays.push({
           id: "gps-pos",
           data: { type: "FeatureCollection", features: [
-            { type: "Feature", properties: { label: gpsLabel }, geometry: { type: "Point", coordinates: [mapGps.lon, mapGps.lat] } }
+            { type: "Feature", properties: {}, geometry: { type: "Point", coordinates: [mapGps.lon, mapGps.lat] } }
           ] },
           layers: [
             {
@@ -2481,17 +2479,6 @@
                 "circle-radius": 7.5, "circle-color": "#2b7fff",
                 "circle-stroke-color": "#ffffff", "circle-stroke-width": 3
               }
-            },
-            {
-              id: "gps-pos-label", type: "symbol", source: "gps-pos",
-              filter: ["has", "label"],
-              layout: {
-                "text-field": ["get", "label"],
-                "text-font": ["Optimistic-SemiBold", "NotoSans-Kurrent-Regular"],
-                "text-size": 13, "text-anchor": "left", "text-offset": [1.1, 0],
-                "text-allow-overlap": true, "text-ignore-placement": true, "text-optional": true
-              },
-              paint: { "text-color": "#ffffff", "text-halo-color": "#0b0f14", "text-halo-width": 2.4 }
             }
           ]
         });
@@ -3358,18 +3345,13 @@
       // 現在地マーカー（GPS取得済みの時だけ）：ヒート画面の現在地ドットと
       // 同じ見た目（白フチの青ドット＋ハロー）。中心モードによらず現在地の
       // 位置に残る（ドロップ地へ中心を切り替えても自分の位置は把握できる）。
-      // ドットの脇には町名ラベル（「現在地：」＋市区町村＋町丁・丁目。
-      // 範囲外の推定でも同じ接頭辞）を付け、マーカーと一体で「今どの町か」が読める
-      // 形にする。ラベルはこのオーバーレイの最後のレイヤーとして描き、
-      // オーバーレイ自体も配列の最後尾＝最前面に置く
+      // 町名の文字はピンの脇には出さない（現在地の情報表示は左上チップに一本化）
       var gpsMarkerOverlays = [];
       if (mapGps) {
-        var gpsInfo = townInfoAt(mapGps.lat, mapGps.lon);
-        var gpsLabel = gpsInfo ? gpsTownLabel(gpsInfo) : "現在地";
         gpsMarkerOverlays.push({
           id: "gps-pos",
           data: { type: "FeatureCollection", features: [
-            { type: "Feature", properties: { label: gpsLabel }, geometry: { type: "Point", coordinates: [mapGps.lon, mapGps.lat] } }
+            { type: "Feature", properties: {}, geometry: { type: "Point", coordinates: [mapGps.lon, mapGps.lat] } }
           ] },
           layers: [
             {
@@ -3382,17 +3364,6 @@
                 "circle-radius": 7.5, "circle-color": "#2b7fff",
                 "circle-stroke-color": "#ffffff", "circle-stroke-width": 3
               }
-            },
-            {
-              id: "gps-pos-label", type: "symbol", source: "gps-pos",
-              filter: ["has", "label"],
-              layout: {
-                "text-field": ["get", "label"],
-                "text-font": ["Optimistic-SemiBold", "NotoSans-Kurrent-Regular"],
-                "text-size": 13, "text-anchor": "left", "text-offset": [1.1, 0],
-                "text-allow-overlap": true, "text-ignore-placement": true, "text-optional": true
-              },
-              paint: { "text-color": "#ffffff", "text-halo-color": "#0b0f14", "text-halo-width": 2.4 }
             }
           ]
         });
