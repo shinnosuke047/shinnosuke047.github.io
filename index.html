@@ -360,9 +360,20 @@
       }
       .undo-btn:disabled { opacity: 0.4; }
 
-      /* ===== スロット式ドロップ入力 ===== */
-      #scr-input { padding: 4px; gap: 4px; }
-      #scr-input .drop-sec { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+      /* ===== スロット式ドロップ入力 =====
+         入力画面だけは例外として縦スクロール可（2026-11-11 利用者指定）：
+         ピックアップ駅チップ＋エリアチップの増加で固定ビューポートを
+         超えた分を、少しスクロールすれば一括ルートナビまで届く形にする。
+         他の4画面は従来通りスクロール不可。タブバーと最適帰路ナビは
+         このスクロール領域の外（.app直下）にあり固定のまま */
+      #scr-input {
+        padding: 4px; gap: 4px;
+        overflow-y: auto; overflow-x: hidden;
+        -webkit-overflow-scrolling: touch; overscroll-behavior: contain; touch-action: pan-y;
+      }
+      /* drop-sec は内容の高さ以下に縮めない（flex-shrink:0）。縦に余れば
+         flex-grow で画面いっぱいに広がり、余分は候補ブロックが受け取る */
+      #scr-input .drop-sec { flex: 1 0 auto; min-height: 0; display: flex; flex-direction: column; }
       /* 候補ブロック以外は縮まず、余った縦は全て候補ブロックが受け取る */
       #scr-input .drop-sec > * { flex-shrink: 0; }
       #scr-input .drop-sec > .in-towns { flex-shrink: 1; }
@@ -507,6 +518,7 @@
           <div class="addr-row">
             <input id="pick-input" type="text" autocomplete="off" placeholder="例：荻窪5丁目／店舗の住所" aria-label="ピックアップ地点の町名と番号または住所" />
             <button type="button" class="addr-clear" id="pick-clear">消す</button>
+            <button type="button" class="addr-clear" id="pick-paste">ペースト</button>
           </div>
           <div class="addr-actions" id="pick-actions" hidden>
             <a class="addr-btn" id="pick-nav" target="_blank" rel="noopener">ピックアップへナビ開始</a>
@@ -516,6 +528,7 @@
           <div class="addr-row">
             <input id="addr-input" type="text" autocomplete="off" placeholder="例：阿佐谷南1丁目／届け先の住所" aria-label="ドロップ先の住所または町名" />
             <button type="button" class="addr-clear" id="addr-clear">消す</button>
+            <button type="button" class="addr-clear" id="addr-paste">ペースト</button>
           </div>
           <div class="addr-actions" id="addr-actions" hidden>
             <a class="addr-btn primary" id="addr-nav" target="_blank" rel="noopener">ドロップ①へナビ開始</a>
@@ -1695,6 +1708,27 @@
       pushHistory();
       el("pick-input").value = ""; committedFieldVal["pick-input"] = ""; syncAddrLinks();
     });
+
+    // ===== ペーストボタン（配達アプリからコピーした住所をワンタップで貼る） =====
+    // 読み取りが成功したら、手入力＋blur確定と全く同じ経路（input イベント
+    // → commitTextField → 住所欄なら resolveAddrToSlot）を即時に通し、
+    // 町名・エリア解決とナビ／一括ナビの活性更新まで一気に進める。
+    // 読み取りが権限等で失敗した場合（空含む）はエラーで止めず、その欄へ
+    // フォーカスを当てるだけにして、システムのペースト呼び出しに委ねる
+    function pasteIntoField(id) {
+      var f = el(id);
+      function fallback() { try { f.focus(); } catch (e) { /* noop */ } }
+      if (!navigator.clipboard || typeof navigator.clipboard.readText !== "function") { fallback(); return; }
+      navigator.clipboard.readText().then(function (text) {
+        var t = (text || "").trim();
+        if (!t) { fallback(); return; }
+        f.value = t;
+        f.dispatchEvent(new Event("input", { bubbles: true }));
+        if (commitTextField(id) && id === "addr-input") resolveAddrToSlot();
+      }).catch(function () { fallback(); });
+    }
+    el("pick-paste").addEventListener("click", function () { pasteIntoField("pick-input"); });
+    el("addr-paste").addEventListener("click", function () { pasteIntoField("addr-input"); });
 
     // ===== ピックアップ駅チップ（回廊の駅＋待機スポットで使う駅） =====
     // タップ1回で駅名がピックアップ欄に入り確定する。同じ駅をもう一度
