@@ -252,6 +252,16 @@
       }
       .ab-badge[hidden] { display: none; }
 
+      /* ===== パネル共通オーバーレイ（外側タップで閉じる） =====
+         シート（🚀／🐸／🗺️）表示中だけシートの背後に敷く半透明の面。
+         z-index はシート(7)より下・アクションバー(6)とは同値だが、
+         DOM順でアクションバーが後にあるためボタン類は押せるままになる */
+      .sheet-backdrop {
+        position: absolute; inset: 0; z-index: 6;
+        background: rgba(4, 6, 9, 0.45);
+      }
+      .sheet-backdrop[hidden] { display: none; }
+
       /* ===== 進捗／ナビパネル（マップ下部に重ねるシート） ===== */
       .sheet {
         position: absolute; left: 8px; right: 8px; bottom: 76px; z-index: 7;
@@ -382,6 +392,7 @@
             </div>
           </div>
           <div class="pin-nav-row" id="pin-nav-row" hidden></div>
+          <div class="sheet-backdrop" id="sheet-backdrop" hidden></div>
           <div class="sheet" id="sheet" hidden>
             <div class="sheet-head">
               <span class="sheet-title" id="sheet-title"></span>
@@ -2097,8 +2108,20 @@
 
     // ===== 進捗／ナビパネル（🚀／🐸／🗺️） =====
     var sheetMode = null; // "rocket" | "uber" | "nav"
-    function openSheet(mode) { sheetMode = mode; el("sheet").hidden = false; renderSheet(); }
-    function closeSheet() { sheetMode = null; el("sheet").hidden = true; }
+    function openSheet(mode) {
+      sheetMode = mode;
+      el("sheet").hidden = false;
+      el("sheet-backdrop").hidden = false;
+      renderSheet();
+    }
+    function closeSheet() {
+      sheetMode = null;
+      el("sheet").hidden = true;
+      el("sheet-backdrop").hidden = true;
+    }
+    // シートの外側（半透明オーバーレイ部分）をタップしたら閉じる。
+    // シート本体内のタップはオーバーレイに届かないので閉じない
+    el("sheet-backdrop").addEventListener("click", function () { closeSheet(); });
     function syncBadges() {
       ["rocket", "uber"].forEach(function (p) {
         var b = el("badge-" + p);
@@ -2226,9 +2249,13 @@
         else if (x.pt) stops.push(x.pt.lat + "," + x.pt.lon);
       });
       if (stops.length < 2) return null;
+      // Appleマップの複数地点ルートは daddr に「地点1+to:地点2+to:最終地点」
+      // と連ねる形式が正仕様。waypoints= パラメータは Apple では無視され、
+      // daddr の最終地点だけへのナビになってしまう（実機で確認された不具合）。
+      // 区切りの +to: はエンコードせずリテラルで置き、各地点だけを個別に
+      // エンコードする（正確ピンは座標・近似ピンは住所文字列：個別ナビと同じ表現）
       return "https://maps.apple.com/?saddr=" + encodeURIComponent("Current Location") +
-        "&waypoints=" + stops.slice(0, stops.length - 1).map(function (x) { return encodeURIComponent(x); }).join("|") +
-        "&daddr=" + encodeURIComponent(stops[stops.length - 1]) + "&dirflg=b";
+        "&daddr=" + stops.map(function (s) { return encodeURIComponent(s); }).join("+to:") + "&dirflg=b";
     }
     function navPanelHtml() {
       var ordered = orderedNavTasks();
@@ -2434,6 +2461,10 @@
     el("plat-uber").addEventListener("click", function () { modalPlatform = "uber"; renderModal(); });
     el("modal-close").addEventListener("click", function () { closeModal(); });
     el("modal-cancel").addEventListener("click", function () { closeModal(); });
+    // モーダルの外側（暗い背景部分）をタップしたら閉じる。カード本体内の
+    // タップは対象がカード側の要素になるため、背景自身がタップされた
+    // 時だけ閉じる。入力途中でも閉じてよい（利用者の明示指示）
+    el("order-modal").addEventListener("click", function (e) { if (e.target === this) closeModal(); });
     el("modal-done").addEventListener("click", function () { commitModal(); });
     // ピックアップ枠ごとの入力ハンドラ（ドロップ枠と同じ結線方式）
     function bindPickFrame(idx) {
@@ -2927,6 +2958,22 @@
     }
     el("home-toggle").addEventListener("click", function () {
       homeMode = !homeMode;
+      syncHomeToggle();
+      refresh();
+    });
+    // 帰宅パネルの外側タップで閉じる（＝帰宅モードOFF。パネルの表示は
+    // homeMode と連動しているため、これでパネルも消える）。パネル本体・
+    // 帰宅ボタン自身・他の操作要素（シート／アクションバー／中心切替／
+    // ピンナビ／タブ）へのタップでは閉じない
+    document.addEventListener("click", function (e) {
+      if (!homeMode) return;
+      if (!el("scr-map").classList.contains("active")) return;
+      var t = e.target;
+      if (!t || typeof t.closest !== "function") return;
+      if (t.closest("#home-panel") || t.closest("#home-toggle") || t.closest(".sheet") ||
+          t.closest(".action-bar") || t.closest(".center-row") || t.closest(".pin-nav-row") ||
+          t.closest(".tabbar") || t.closest(".modal-card")) return;
+      homeMode = false;
       syncHomeToggle();
       refresh();
     });
