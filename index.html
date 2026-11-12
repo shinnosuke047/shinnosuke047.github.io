@@ -2999,5 +2999,87 @@
       }
     }, 60000);
     </script>
+<!-- cockpit-persist-v1: 端末内保存パッチ（アーティファクト側では保存APIが使えないため本番コピーへ直接適用。輸出のたびに再適用が必要） -->
+<script>
+(function () {
+  "use strict";
+  var KEY = "cockpit-state-v1";
+  var lastSaved = null;
+  var lastOrderCount = -1;
+  var lastCommittedDraft = null;
+  function draftJSON() {
+    try { return JSON.stringify({ p: window.modalPicks, d: window.modalDrops }); } catch (e) { return null; }
+  }
+  function snapshot() {
+    try {
+      if (window.orders && window.orders.length !== lastOrderCount) {
+        if (lastOrderCount >= 0 && window.orders.length > lastOrderCount) lastCommittedDraft = draftJSON();
+        lastOrderCount = window.orders.length;
+      }
+      return JSON.stringify({
+        orders: window.orders, orderSeq: window.orderSeq,
+        homeMode: window.homeMode, centerMode: window.centerMode,
+        bandIdx: window.bandIdx, bandManual: window.bandManual,
+        currentAreaId: window.currentAreaId,
+        modalPicks: window.modalPicks, modalDrops: window.modalDrops,
+        modalPlatform: window.modalPlatform
+      });
+    } catch (e) { return null; }
+  }
+  function save() {
+    var s = snapshot();
+    if (s && s !== lastSaved) { lastSaved = s; try { localStorage.setItem(KEY, s); } catch (e) {} }
+  }
+  // モーダル下書きの保護: openModal 内の resetModal（開くたびに下書きを消す）を包み、
+  // 入力途中の下書きがあれば開いた直後に戻す。入力完了した下書きは戻さない。
+  var origReset = window.resetModal;
+  if (typeof origReset === "function") {
+    window.resetModal = function () {
+      var stashP = window.modalPicks, stashD = window.modalDrops, stashPlat = window.modalPlatform;
+      var stashJ = null;
+      try { stashJ = JSON.stringify({ p: stashP, d: stashD }); } catch (e) {}
+      var has = false;
+      try {
+        has = (stashP || []).some(function (r) { return r && r.addr; }) ||
+              (stashD || []).some(function (r) { return r && r.addr; });
+      } catch (e) {}
+      origReset.apply(this, arguments);
+      if (has && stashJ !== lastCommittedDraft) {
+        window.modalPicks = stashP; window.modalDrops = stashD;
+        if (stashPlat) window.modalPlatform = stashPlat;
+      }
+    };
+  }
+  // 保存済み状態の復元（本スクリプトは本体スクリプトの後ろに置かれ、初期描画の後に走る）
+  try {
+    var raw = localStorage.getItem(KEY);
+    if (raw) {
+      var st = JSON.parse(raw);
+      if (st && Array.isArray(st.orders)) {
+        window.orders.length = 0;
+        for (var i = 0; i < st.orders.length; i++) window.orders.push(st.orders[i]);
+        window.orderSeq = st.orderSeq || 0;
+        window.homeMode = !!st.homeMode;
+        if (st.centerMode) window.centerMode = st.centerMode;
+        if (typeof st.bandIdx === "number") window.bandIdx = st.bandIdx;
+        window.bandManual = !!st.bandManual;
+        if (st.currentAreaId) window.currentAreaId = st.currentAreaId;
+        if (Array.isArray(st.modalPicks)) window.modalPicks = st.modalPicks;
+        if (Array.isArray(st.modalDrops)) window.modalDrops = st.modalDrops;
+        if (st.modalPlatform) window.modalPlatform = st.modalPlatform;
+        if (typeof window.syncHomeToggle === "function") window.syncHomeToggle();
+        if (typeof window.syncLegacyFromOrders === "function") window.syncLegacyFromOrders();
+        if (typeof window.refresh === "function") window.refresh();
+        if (typeof window.syncBadges === "function") window.syncBadges();
+      }
+    }
+  } catch (e) {}
+  lastSaved = snapshot();
+  setInterval(save, 1500);
+  document.addEventListener("visibilitychange", function () { if (document.visibilityState === "hidden") save(); });
+  window.addEventListener("pagehide", save);
+})();
+</script>
+
   </body>
 </html>
